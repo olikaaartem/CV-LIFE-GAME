@@ -9,508 +9,325 @@
 html,
 body {
  width: 100%;
- height: 100%;
+ min-height: 100%;
 }
 body {
+ font-family: Arial, sans-serif;
  overflow: hidden;
- font-family: Arial, Helvetica, sans-serif;
- color: #1f1f1f;
  background: #111;
 }
-button,
-input {
- font: inherit;
-}
 button {
- border: none;
- cursor: pointer;
+ font-family: inherit;
 }
+
+/* =====================================================
+  ОСНОВНИЙ КОНТЕЙНЕР
+===================================================== */
 #financeGameApp {
- position: relative;
  width: 100vw;
  height: 100vh;
  overflow: hidden;
 }
 
 /* =====================================================
-  ЗАГАЛЬНИЙ ЕКРАН ГРИ
-===================================================== */
-.game-screen {
- position: absolute;
- inset: 0;
- width: 100%;
- height: 100%;
- background-position: center;
- background-repeat: no-repeat;
- background-size: cover;
-}
-
-/* =====================================================
   СТАРТОВИЙ ЕКРАН
 ===================================================== */
 .start-screen {
- display: flex;
- align-items: center;
- justify-content: center;
- /* ФОН ПІДКЛЮЧИМО ПІСЛЯ ЗАВАНТАЖЕННЯ КАРТИНКИ */
- background-color: #f6d900;
-}
-.start-content {
  position: relative;
- z-index: 2;
+ width: 100%;
+ height: 100vh;
+ background-image:
+   linear-gradient(
+     rgba(0, 0, 0, 0.12),
+     rgba(0, 0, 0, 0.20)
+   ),
+   url("assets/bg-start.png");
+ background-size: cover;
+ background-position: center;
+ background-repeat: no-repeat;
+}
+.start-overlay {
+ position: absolute;
+ inset: 0;
  display: flex;
  flex-direction: column;
  align-items: center;
- width: min(90%, 700px);
- text-align: center;
+ justify-content: center;
+ padding: 40px;
 }
 
 /* =====================================================
-  ЛОГО CV ЖИТТЯ
+  ЛОГО
 ===================================================== */
 .game-logo {
- display: block;
- width: min(520px, 80vw);
- max-height: 45vh;
+ width: min(560px, 65vw);
+ max-height: 42vh;
  object-fit: contain;
  margin-bottom: 35px;
+ filter:
+   drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
+}
+.small-game-logo {
+ width: min(330px, 65vw);
+ margin-bottom: 15px;
 }
 
 /* =====================================================
-  ОСНОВНІ КНОПКИ
+  ГОЛОВНА КНОПКА
 ===================================================== */
 .main-game-btn {
- min-width: 250px;
- padding: 16px 32px;
- border-radius: 14px;
- background: #111;
- color: #fff;
+ min-width: 240px;
+ padding: 17px 32px;
+ border: none;
+ border-radius: 18px;
+ background:
+   linear-gradient(
+     135deg,
+     #ffe23a,
+     #f6c900
+   );
+ color: #111;
  font-size: 18px;
- font-weight: 700;
- box-shadow: 0 8px 20px rgba(0, 0, 0, 0.20);
+ font-weight: 800;
+ letter-spacing: 0.6px;
+ cursor: pointer;
+ box-shadow:
+   0 10px 30px rgba(0, 0, 0, 0.24);
  transition:
    transform 0.2s ease,
    box-shadow 0.2s ease;
 }
 .main-game-btn:hover {
- transform: translateY(-3px);
- box-shadow: 0 12px 25px rgba(0, 0, 0, 0.28);
+ transform: translateY(-3px) scale(1.02);
+ box-shadow:
+   0 14px 36px rgba(0, 0, 0, 0.30);
 }
 .main-game-btn:active {
- transform: translateY(0);
+ transform: scale(0.98);
 }
 
 /* =====================================================
-  МОДАЛЬНІ ВІКНА
+  МОДАЛКА
 ===================================================== */
-.finance-modal {
+.game-modal {
  position: fixed;
  inset: 0;
  z-index: 1000;
  display: flex;
  align-items: center;
  justify-content: center;
- padding: 20px;
- background: rgba(0, 0, 0, 0.55);
- backdrop-filter: blur(5px);
+ padding: 24px;
+ background: rgba(10, 15, 20, 0.55);
+ backdrop-filter: blur(8px);
+ -webkit-backdrop-filter: blur(8px);
 }
-.finance-modal-card {
+.game-modal.hidden {
+ display: none;
+}
+.game-modal-card {
  position: relative;
- width: min(92vw, 520px);
- padding: 35px;
- border-radius: 24px;
- background: rgba(255, 255, 255, 0.97);
+ width: min(720px, 94vw);
+ padding: 42px;
+ border-radius: 28px;
+ background:
+   linear-gradient(
+     145deg,
+     rgba(255, 255, 255, 0.96),
+     rgba(248, 248, 240, 0.94)
+   );
  box-shadow:
-   0 25px 60px rgba(0, 0, 0, 0.30);
+   0 25px 70px rgba(0, 0, 0, 0.35);
  text-align: center;
+ animation: modalAppear 0.25s ease;
 }
-.finance-modal-card h2 {
- margin-bottom: 12px;
- font-size: 28px;
+@keyframes modalAppear {
+ from {
+   opacity: 0;
+   transform: translateY(20px) scale(0.96);
+ }
+ to {
+   opacity: 1;
+   transform: translateY(0) scale(1);
+ }
 }
-.finance-modal-card p {
- margin-bottom: 25px;
- color: #555;
+.game-modal-card h2 {
+ font-size: clamp(25px, 3vw, 38px);
+ margin-bottom: 10px;
+ color: #222;
+}
+.modal-subtitle {
+ color: #686868;
  font-size: 16px;
- line-height: 1.5;
+ margin-bottom: 30px;
 }
 
 /* =====================================================
-  ЗАКРИТТЯ МОДАЛКИ
+  КНОПКА ЗАКРИТТЯ
 ===================================================== */
 .modal-close {
  position: absolute;
- top: 14px;
- right: 16px;
- width: 38px;
- height: 38px;
+ top: 16px;
+ right: 18px;
+ width: 42px;
+ height: 42px;
+ border: none;
  border-radius: 50%;
- background: #f1f1f1;
- color: #111;
- font-size: 22px;
- font-weight: 700;
+ background: rgba(0, 0, 0, 0.07);
+ font-size: 26px;
+ line-height: 1;
+ cursor: pointer;
+ transition: 0.2s ease;
 }
 .modal-close:hover {
- background: #ddd;
+ background: rgba(0, 0, 0, 0.13);
 }
 
 /* =====================================================
-  ВИБІР РЕЖИМУ ГРИ
+  ВИБІР РЕЖИМУ
 ===================================================== */
 .game-mode-buttons {
- display: flex;
- flex-direction: column;
- gap: 14px;
- width: 100%;
+ display: grid;
+ grid-template-columns:
+   repeat(2, minmax(0, 1fr));
+ gap: 18px;
 }
-.mode-btn {
- width: 100%;
- padding: 17px 20px;
- border-radius: 14px;
- background: #f6d900;
- color: #111;
- font-size: 17px;
- font-weight: 700;
+.game-mode-btn {
+ display: flex;
+ align-items: center;
+ gap: 16px;
+ min-height: 125px;
+ padding: 22px;
+ border: 2px solid rgba(0, 0, 0, 0.07);
+ border-radius: 22px;
+ background: rgba(255, 255, 255, 0.86);
+ cursor: pointer;
+ text-align: left;
  transition:
    transform 0.2s ease,
-   background 0.2s ease;
+   border-color 0.2s ease,
+   box-shadow 0.2s ease;
 }
-.mode-btn:hover {
- transform: translateY(-2px);
- background: #ffe600;
+.game-mode-btn:hover {
+ transform: translateY(-4px);
+ border-color: #f2cf00;
+ box-shadow:
+   0 14px 30px rgba(0, 0, 0, 0.12);
 }
-
-/* =====================================================
-  ПОЛЯ ВВЕДЕННЯ
-===================================================== */
-.finance-input {
- width: 100%;
- margin-bottom: 15px;
- padding: 15px 17px;
- border: 2px solid #ddd;
- border-radius: 12px;
- outline: none;
- background: #fff;
- color: #111;
- font-size: 16px;
+.mode-icon {
+ font-size: 42px;
+ flex-shrink: 0;
 }
-.finance-input:focus {
- border-color: #f6d900;
-}
-
-/* =====================================================
-  ПОВІДОМЛЕННЯ ПРО ПОМИЛКУ
-===================================================== */
-.finance-error {
- min-height: 20px;
- margin: -5px 0 15px;
- color: #c62828;
- font-size: 14px;
- font-weight: 600;
-}
-
-/* =====================================================
-  КІМНАТА — ЛОБІ
-===================================================== */
-.room-code-box {
- margin: 20px 0;
- padding: 18px;
- border: 2px dashed #111;
- border-radius: 15px;
- background: #fff8c5;
-}
-.room-code-label {
- margin-bottom: 6px;
- font-size: 14px;
- color: #555;
-}
-.room-code {
- font-size: 30px;
- font-weight: 800;
- letter-spacing: 5px;
-}
-.players-list {
+.mode-text {
  display: flex;
  flex-direction: column;
- gap: 8px;
- margin: 18px 0;
- text-align: left;
+ gap: 7px;
 }
-.player-item {
- padding: 12px 15px;
- border-radius: 10px;
- background: #f3f3f3;
- font-weight: 600;
+.mode-text strong {
+ color: #222;
+ font-size: 17px;
 }
-
-/* =====================================================
-  ІГРОВИЙ ЕКРАН
-===================================================== */
-.main-game-screen {
- position: relative;
- /* ФОН ГРИ ПІДКЛЮЧИМО ПІЗНІШЕ */
- background-color: #e8e2cf;
+.mode-text small {
+ color: #707070;
+ line-height: 1.35;
 }
 
 /* =====================================================
-  ВЕРХНЯ ПАНЕЛЬ ГРАВЦЯ
+  ТИМЧАСОВІ ЕКРАНИ НАСТУПНИХ КРОКІВ
 ===================================================== */
-.player-panel {
- position: absolute;
- top: 20px;
- left: 20px;
- z-index: 20;
- display: flex;
- align-items: center;
- gap: 14px;
- padding: 12px 18px;
- border-radius: 16px;
- background: rgba(255, 255, 255, 0.92);
- box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-}
-.player-name {
- font-size: 18px;
- font-weight: 800;
-}
-
-/* =====================================================
-  ПОКАЗНИКИ ГРАВЦЯ
-===================================================== */
-.player-stats {
- display: flex;
- gap: 10px;
-}
-.stat-item {
- padding: 8px 11px;
- border-radius: 10px;
- background: #f5f5f5;
- font-size: 14px;
- font-weight: 700;
-}
-
-/* =====================================================
-  ОБЛАСТЬ ІГРОВОГО ПОЛЯ
-===================================================== */
-.game-board-area {
- position: absolute;
- inset: 0;
+.game-screen {
+ width: 100%;
+ height: 100vh;
  display: flex;
  align-items: center;
  justify-content: center;
- padding: 80px 120px 60px;
+ padding: 30px;
+ background-image:
+   linear-gradient(
+     rgba(5, 10, 15, 0.28),
+     rgba(5, 10, 15, 0.34)
+   ),
+   url("assets/bg-game.png");
+ background-size: cover;
+ background-position: center;
+ background-repeat: no-repeat;
 }
-
-/* =====================================================
-  МІСЦЕ ДЛЯ КІЛ ГРИ
-  САМІ КОЛА БУДЕМО МАЛЮВАТИ КОДОМ
-===================================================== */
-.game-board {
- position: relative;
- width: min(82vw, 1250px);
- height: min(78vh, 780px);
-}
-
-/* =====================================================
-  ПАНЕЛЬ КАРТКИ
-===================================================== */
-.card-panel {
- position: absolute;
- top: 20px;
- right: 20px;
- z-index: 20;
- width: min(310px, 28vw);
- padding: 18px;
- border-radius: 18px;
+.temporary-game-card {
+ width: min(650px, 94vw);
+ padding: 40px;
+ border-radius: 28px;
  background: rgba(255, 255, 255, 0.94);
- box-shadow: 0 8px 25px rgba(0, 0, 0, 0.16);
-}
-.card-panel-title {
- margin-bottom: 10px;
- font-size: 14px;
- font-weight: 800;
- text-transform: uppercase;
-}
-.current-card {
- min-height: 120px;
- display: flex;
- align-items: center;
- justify-content: center;
- padding: 15px;
- border-radius: 12px;
- background: #f6d900;
+ backdrop-filter: blur(10px);
+ box-shadow:
+   0 25px 70px rgba(0, 0, 0, 0.30);
  text-align: center;
+}
+.temporary-game-card h2 {
+ font-size: clamp(25px, 3vw, 38px);
+ margin-bottom: 15px;
+}
+.temporary-game-card p {
+ color: #666;
+ line-height: 1.6;
+ margin-bottom: 25px;
 }
 
 /* =====================================================
-  КУБИК
+  СПІЛЬНА ГРА
 ===================================================== */
-.dice-panel {
- position: absolute;
- right: 25px;
- bottom: 25px;
- z-index: 20;
+.multiplayer-buttons {
  display: flex;
  flex-direction: column;
+ gap: 14px;
  align-items: center;
- gap: 10px;
 }
-.dice {
- display: flex;
- align-items: center;
- justify-content: center;
- width: 82px;
- height: 82px;
+.secondary-game-btn {
+ min-width: 240px;
+ padding: 15px 30px;
  border-radius: 18px;
- background: #fff;
- box-shadow: 0 8px 25px rgba(0, 0, 0, 0.20);
- font-size: 38px;
- font-weight: 800;
-}
-
-/* =====================================================
-  РАЙФИК — НАСТАВНИК
-===================================================== */
-.raifik-mentor {
- position: absolute;
- left: 20px;
- bottom: 0;
- z-index: 30;
- width: min(240px, 20vw);
- pointer-events: none;
-}
-.raifik-mentor img {
- display: block;
- width: 100%;
- height: auto;
-}
-
-/* =====================================================
-  РЕПЛІКА РАЙФИКА
-===================================================== */
-.mentor-message {
- position: absolute;
- left: 190px;
- bottom: 120px;
- z-index: 31;
- width: min(420px, 40vw);
- padding: 18px 22px;
- border-radius: 18px;
- background: rgba(255, 255, 255, 0.96);
- box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
- font-size: 16px;
- line-height: 1.45;
-}
-
-/* =====================================================
-  ТИМЧАСОВА КНОПКА ЗАВЕРШЕННЯ ГРИ
-  ПІЗНІШЕ ЇЇ ПРИБЕРЕМО
-===================================================== */
-.finish-test-btn {
- position: absolute;
- left: 50%;
- bottom: 25px;
- z-index: 40;
- transform: translateX(-50%);
- padding: 12px 20px;
- border-radius: 12px;
- background: rgba(0, 0, 0, 0.75);
- color: #fff;
+ border: 2px solid #e0c100;
+ background: white;
+ color: #222;
+ font-size: 17px;
  font-weight: 700;
+ cursor: pointer;
+ transition: 0.2s ease;
+}
+.secondary-game-btn:hover {
+ background: #fff8c7;
+}
+.text-back-btn {
+ margin-top: 22px;
+ border: none;
+ background: transparent;
+ color: #555;
+ font-size: 15px;
+ cursor: pointer;
+}
+.text-back-btn:hover {
+ color: #111;
 }
 
 /* =====================================================
-  ФІНАЛЬНИЙ ЕКРАН
+  АДАПТИВ
 ===================================================== */
-.finish-screen {
- display: flex;
- align-items: center;
- justify-content: center;
- /* ФІНАЛЬНИЙ ФОН ПІДКЛЮЧИМО ПІЗНІШЕ */
- background-color: #f6d900;
-}
-.finish-content {
- width: min(90%, 700px);
- padding: 35px;
- border-radius: 25px;
- background: rgba(255, 255, 255, 0.92);
- text-align: center;
- box-shadow: 0 20px 50px rgba(0, 0, 0, 0.20);
-}
-.finish-content h1 {
- margin-bottom: 15px;
- font-size: clamp(32px, 5vw, 58px);
-}
-.finish-content p {
- margin-bottom: 25px;
- font-size: 18px;
- line-height: 1.5;
-}
-
-/* =====================================================
-  СЛУЖБОВІ КЛАСИ
-===================================================== */
-.hidden {
- display: none !important;
-}
-
-/* =====================================================
-  АДАПТАЦІЯ ПІД МЕНШІ ЕКРАНИ
-===================================================== */
-@media (max-width: 900px) {
- .player-panel {
-   top: 10px;
-   left: 10px;
-   max-width: calc(100% - 20px);
-   flex-wrap: wrap;
- }
- .card-panel {
-   top: auto;
-   right: 10px;
-   bottom: 120px;
-   width: 260px;
- }
- .game-board-area {
-   padding: 100px 20px 100px;
- }
- .game-board {
-   width: 95vw;
-   height: 70vh;
- }
- .raifik-mentor {
-   width: 150px;
- }
- .mentor-message {
-   left: 120px;
-   bottom: 100px;
-   width: min(330px, 60vw);
- }
-}
-
-/* =====================================================
-  МОБІЛЬНА ВЕРСІЯ
-===================================================== */
-@media (max-width: 600px) {
- .finance-modal-card {
-   padding: 30px 20px 24px;
+@media (max-width: 700px) {
+ .start-overlay {
+   padding: 20px;
  }
  .game-logo {
-   width: 85vw;
+   width: 82vw;
+   margin-bottom: 25px;
  }
- .main-game-btn {
-   width: 100%;
+ .game-modal-card {
+   padding:
+     50px
+     22px
+     28px;
  }
- .player-stats {
-   flex-wrap: wrap;
+ .game-mode-buttons {
+   grid-template-columns: 1fr;
  }
- .card-panel {
-   width: 220px;
- }
- .raifik-mentor {
-   width: 120px;
- }
- .mentor-message {
-   left: 20px;
-   bottom: 130px;
-   width: calc(100% - 40px);
+ .game-mode-btn {
+   min-height: 105px;
  }
 }
