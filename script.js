@@ -244,6 +244,49 @@ const CAREER_SECTORS = [
     }
 
 ];
+/* =========================================================
+   ПОКАЗНИКИ 4 РІВНІВ КАР'ЄРИ
+
+   ПОКИ ОДНАКОВІ ДЛЯ ВСІХ СФЕР.
+   Пізніше можемо задати окремі значення
+   для кожної професії.
+========================================================= */
+
+const CAREER_LEVEL_STATS = [
+
+    {
+        level: 1,
+        money: 10000,
+        reputation: 10,
+        knowledge: 10,
+        energy: 100
+    },
+
+    {
+        level: 2,
+        money: 25000,
+        reputation: 25,
+        knowledge: 30,
+        energy: 90
+    },
+
+    {
+        level: 3,
+        money: 50000,
+        reputation: 45,
+        knowledge: 55,
+        energy: 80
+    },
+
+    {
+        level: 4,
+        money: 100000,
+        reputation: 70,
+        knowledge: 80,
+        energy: 70
+    }
+
+];
 
 
 /* =========================================================
@@ -692,32 +735,42 @@ function selectToken(tokenId) {
 
 
 /* =========================================================
-   12. ВИПАДКОВА ПРОФЕСІЯ
+   ВИПАДКОВА ПРОФЕСІЙНА СФЕРА
 ========================================================= */
 
 function assignRandomCareer() {
 
     const sector =
-        randomItem(
-            CAREER_SECTORS
-        );
+        randomItem(CAREER_SECTORS);
+
+    gameState.player.sector = sector;
+
+    /*
+       0 = перша професія масиву,
+       тобто РІВЕНЬ 1
+    */
+
+    gameState.player.careerLevel = 0;
 
 
-    gameState.player.sector =
-        sector;
+    const startStats =
+        CAREER_LEVEL_STATS[0];
 
 
-    gameState.player.careerLevel =
-        0;
+    gameState.player.money =
+        startStats.money;
 
+    gameState.player.reputation =
+        startStats.reputation;
 
-    copyStartingStats(
-        gameState.player
-    );
+    gameState.player.knowledge =
+        startStats.knowledge;
+
+    gameState.player.energy =
+        startStats.energy;
 
 
     showCareerReveal();
-
 }
 
 
@@ -725,85 +778,185 @@ function assignRandomCareer() {
    13. ПОКАЗ ПРОФЕСІЇ
 ========================================================= */
 
+/* =========================================================
+   ЕКРАН — ТВІЙ ЖИТТЄВИЙ ШЛЯХ
+========================================================= */
+
 function showCareerReveal() {
 
-    gameState.phase =
-        "career";
-
+    gameState.phase = "career";
 
     const player =
         gameState.player;
 
+    const sector =
+        player.sector;
 
-    const profession =
-        player.sector
-            .levels[
-                player.careerLevel
-            ];
+
+    const careerHTML =
+        sector.levels.map((profession, index) => {
+
+            const stats =
+                CAREER_LEVEL_STATS[index];
+
+            const isCurrent =
+                index === player.careerLevel;
+
+
+            return `
+
+                <div class="
+                    career-path-card
+                    ${isCurrent ? "career-current" : "career-locked"}
+                ">
+
+                    <div class="career-level-top">
+
+                        <span class="career-level-number">
+                            ${index + 1}
+                        </span>
+
+                        ${
+                            isCurrent
+
+                            ? `
+                                <span class="career-current-label">
+                                    ТИ ТУТ
+                                </span>
+                              `
+
+                            : `
+                                <span class="career-lock">
+                                    🔒
+                                </span>
+                              `
+                        }
+
+                    </div>
+
+
+                    <div class="career-job-name">
+                        ${profession}
+                    </div>
+
+
+                    <div class="career-level-stats">
+
+                        <span>
+                            💰
+                            ${stats.money.toLocaleString("uk-UA")}
+                        </span>
+
+                        <span>
+                            ⭐
+                            ${stats.reputation}
+                        </span>
+
+                        <span>
+                            🧠
+                            ${stats.knowledge}
+                        </span>
+
+                        <span>
+                            ⚡
+                            ${stats.energy}
+                        </span>
+
+                    </div>
+
+                </div>
+
+                ${
+                    index < sector.levels.length - 1
+                    ? `
+                        <div class="career-path-arrow">
+                            ↓
+                        </div>
+                      `
+                    : ""
+                }
+
+            `;
+
+        }).join("");
 
 
     setScreen(`
 
         <section class="game-screen">
 
-            <div class="temporary-game-card">
-
-                <img
-                    src="assets/raifik.png"
-                    class="small-game-logo"
-                    alt="Райфик"
-                >
-
-                <div class="career-icon">
-                    ${player.sector.icon}
-                </div>
-
-                <p>
-                    Життя зробило свій вибір...
-                </p>
-
-                <h2>
-                    ${player.sector.name}
-                </h2>
-
-                <div class="revealed-profession">
-
-                    ${profession}
-
-                </div>
+            <div class="temporary-game-card career-screen-card">
 
 
-                <div class="profession-stats">
+                <!-- РАЙФИК -->
 
-                    <div>
-                        💰
-                        ${player.money.toLocaleString("uk-UA")}
-                    </div>
+                <div class="career-raifik-side">
 
-                    <div>
-                        ⭐
-                        ${player.reputation}
-                    </div>
+                    <img
+                        src="assets/raifik.png"
+                        class="small-game-logo"
+                        alt="Райфик"
+                    >
 
-                    <div>
-                        🧠
-                        ${player.knowledge}
-                    </div>
+                    <div class="raifik-career-message">
 
-                    <div>
-                        ⚡
-                        ${player.energy}
+                        Мрія — твоя ціль.
+
+                        <br>
+
+                        А кар'єра — шлях,
+                        який допоможе тобі
+                        до неї дістатися.
+
                     </div>
 
                 </div>
 
 
-                <button
-                    id="chooseDreamButton"
-                    class="main-game-btn"
-                >
-                    ОБРАТИ МРІЮ
-                </button>
+                <!-- КАР'ЄРНИЙ ШЛЯХ -->
+
+                <div class="career-content">
+
+                    <div class="career-sector-icon">
+                        ${sector.icon}
+                    </div>
+
+                    <div class="career-sector-name">
+                        ${sector.name}
+                    </div>
+
+
+                    <h2>
+                        Ось твій життєвий шлях
+                    </h2>
+
+
+                    <p class="career-description">
+
+                        Ти починаєш із першої сходинки.
+
+                        Розвивай навички,
+                        репутацію та фінансові можливості,
+                        щоб рухатися кар'єрним шляхом.
+
+                    </p>
+
+
+                    <div class="career-path">
+
+                        ${careerHTML}
+
+                    </div>
+
+
+                    <button
+                        id="chooseDreamButton"
+                        class="main-game-btn"
+                    >
+                        ОБРАТИ МРІЮ
+                    </button>
+
+                </div>
 
             </div>
 
@@ -813,16 +966,12 @@ function showCareerReveal() {
 
 
     document
-        .getElementById(
-            "chooseDreamButton"
-        )
+        .getElementById("chooseDreamButton")
         .addEventListener(
             "click",
             showDreamSelection
         );
-
 }
-
 
 /* =========================================================
    14. ВИБІР МРІЇ
