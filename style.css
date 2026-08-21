@@ -331,3 +331,293 @@ button {
    min-height: 105px;
  }
 }
+/* =====================================================
+   ОНОВЛЕНИЙ ЕКРАН СТВОРЕННЯ ГЕРОЯ
+===================================================== */
+
+.game-screen {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        linear-gradient(
+            rgba(255,255,255,0.06),
+            rgba(255,255,255,0.06)
+        ),
+        url("assets/bg-start.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+
+/* центральна картка більше НЕ біла коробка */
+
+.temporary-game-card {
+    width: min(1180px, 92vw);
+    min-height: 620px;
+
+    padding: 35px 45px;
+
+    display: grid;
+    grid-template-columns: 38% 62%;
+    align-items: center;
+    gap: 35px;
+
+    background: rgba(255, 255, 255, 0.82);
+
+    border-radius: 32px;
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    box-shadow:
+        0 24px 60px rgba(0,0,0,0.22);
+}
+
+
+/* =====================================================
+   РАЙФИК
+===================================================== */
+
+.small-game-logo {
+    grid-column: 1;
+    grid-row: 1 / span 10;
+
+    width: min(300px, 28vw);
+    max-height: 520px;
+
+    object-fit: contain;
+
+    justify-self: center;
+    align-self: center;
+
+    margin: 0;
+}
+
+
+/* =====================================================
+   ТЕКСТ ПРАВОРУЧ
+===================================================== */
+
+.temporary-game-card > h2,
+.temporary-game-card > p,
+.temporary-game-card > input,
+.temporary-game-card > button,
+.temporary-game-card > .form-error,
+.temporary-game-card > .token-grid {
+
+    grid-column: 2;
+
+}
+
+
+.temporary-game-card h2 {
+    font-size: clamp(32px, 3vw, 48px);
+    color: #171717;
+
+    margin: 0 0 8px;
+}
+
+
+.temporary-game-card p {
+    font-size: 18px;
+    line-height: 1.5;
+    color: #555;
+
+    margin: 0 0 8px;
+}
+
+
+/* =====================================================
+   ІМ'Я
+===================================================== */
+
+.player-name-input {
+    width: 100%;
+    max-width: 520px;
+
+    padding: 17px 20px;
+
+    border-radius: 16px;
+    border: 2px solid rgba(0,0,0,0.12);
+
+    background: rgba(255,255,255,0.94);
+
+    font-size: 18px;
+
+    outline: none;
+
+    margin: 10px 0;
+}
+
+
+.player-name-input:focus {
+    border-color: #f2cf00;
+
+    box-shadow:
+        0 0 0 4px rgba(242,207,0,0.14);
+}
+
+
+.form-error {
+    color: #b42318;
+    font-size: 14px;
+}
+
+
+/* =====================================================
+   ВИБІР ФІШКИ
+===================================================== */
+
+.token-selection-card {
+    width: min(1250px, 94vw);
+
+    grid-template-columns: 30% 70%;
+
+    gap: 30px;
+}
+
+
+.token-selection-card .small-game-logo {
+    width: min(270px, 25vw);
+}
+
+
+.token-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(120px, 1fr));
+
+    gap: 16px;
+
+    width: 100%;
+
+    margin-top: 10px;
+}
+
+
+.token-option {
+    position: relative;
+
+    min-height: 190px;
+
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 5px;
+
+    border: 2px solid rgba(0,0,0,0.08);
+    border-radius: 20px;
+
+    background:
+        rgba(255,255,255,0.75);
+
+    cursor: pointer;
+
+    overflow: hidden;
+
+    transition:
+        transform .2s ease,
+        box-shadow .2s ease,
+        border-color .2s ease;
+}
+
+
+.token-option img {
+    width: 120px;
+    height: 120px;
+
+    object-fit: contain;
+
+    display: block;
+}
+
+
+.token-option span {
+    font-size: 14px;
+    font-weight: 700;
+
+    color: #222;
+}
+
+
+.token-option:hover {
+    transform: translateY(-4px);
+
+    border-color: #f1cd00;
+
+    box-shadow:
+        0 14px 30px rgba(0,0,0,0.14);
+}
+
+
+/* =====================================================
+   КНОПКИ
+===================================================== */
+
+.temporary-game-card .main-game-btn {
+    justify-self: start;
+
+    min-width: 240px;
+
+    margin-top: 10px;
+}
+
+
+/* =====================================================
+   АДАПТИВ
+===================================================== */
+
+@media (max-width: 900px) {
+
+    .temporary-game-card,
+    .token-selection-card {
+
+        grid-template-columns: 1fr;
+
+        overflow-y: auto;
+
+        max-height: 92vh;
+    }
+
+
+    .small-game-logo {
+
+        grid-column: 1;
+        grid-row: auto;
+
+        width: 180px;
+        max-height: 220px;
+    }
+
+
+    .temporary-game-card > h2,
+    .temporary-game-card > p,
+    .temporary-game-card > input,
+    .temporary-game-card > button,
+    .temporary-game-card > .form-error,
+    .temporary-game-card > .token-grid {
+
+        grid-column: 1;
+    }
+
+
+    .token-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+}
