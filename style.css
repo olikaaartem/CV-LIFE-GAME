@@ -13,7 +13,8 @@ body {
 }
 body {
  font-family: Arial, sans-serif;
- overflow: hidden;
+ overflow-x: hidden;
+ overflow-y: auto;
  background: #111;
 }
 button {
@@ -24,8 +25,9 @@ button {
   ОСНОВНИЙ КОНТЕЙНЕР
 ===================================================== */
 #financeGameApp {
- width: 100vw;
- height: 100vh;
+ width: 100%;
+ min-height:100vh;
+ height: auto;
  overflow: hidden;
 }
 
@@ -618,6 +620,312 @@ button {
     .token-grid {
         grid-template-columns:
             repeat(2, 1fr);
+    }
+
+}
+/* =====================================================
+   FIX — ПРОКРУТКА + ЕКРАН СТВОРЕННЯ ГЕРОЯ
+===================================================== */
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+    height: auto !important;
+
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+}
+
+
+body {
+    min-height: 100vh;
+}
+
+
+#financeGameApp {
+    width: 100%;
+    min-height: 100vh;
+
+    height: auto !important;
+
+    overflow: visible !important;
+}
+
+
+/* =====================================================
+   ЕКРАН
+===================================================== */
+
+.game-screen {
+    position: relative;
+
+    width: 100%;
+    min-height: 100vh;
+
+    height: auto !important;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 35px;
+
+    overflow: visible !important;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.05),
+            rgba(255,255,255,0.05)
+        ),
+        url("assets/bg-start.png");
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+
+/* =====================================================
+   ОСНОВНА КАРТКА
+===================================================== */
+
+.temporary-game-card {
+    width: min(1180px, 94vw) !important;
+    min-height: 560px;
+
+    display: grid !important;
+
+    grid-template-columns:
+        minmax(220px, 32%)
+        minmax(0, 68%);
+
+    grid-auto-rows: auto;
+
+    column-gap: 40px;
+    row-gap: 14px;
+
+    align-items: center;
+
+    padding: 30px 40px !important;
+    margin: 20px auto;
+
+    border-radius: 30px;
+
+    background:
+        rgba(255,255,255,0.88);
+
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+
+    overflow: visible !important;
+}
+
+
+/* =====================================================
+   РАЙФИК ЗЛІВА
+===================================================== */
+
+.temporary-game-card .small-game-logo {
+    grid-column: 1 !important;
+    grid-row: 1 / 20 !important;
+
+    width: 230px !important;
+    height: auto !important;
+
+    max-width: 100% !important;
+    max-height: 470px !important;
+
+    object-fit: contain !important;
+
+    justify-self: center;
+    align-self: center;
+
+    margin: 0 !important;
+}
+
+
+/* =====================================================
+   ВСЕ ІНШЕ СПРАВА
+===================================================== */
+
+.temporary-game-card > h2,
+.temporary-game-card > p,
+.temporary-game-card > input,
+.temporary-game-card > button,
+.temporary-game-card > .form-error,
+.temporary-game-card > .token-grid,
+.temporary-game-card > .career-icon,
+.temporary-game-card > .revealed-profession,
+.temporary-game-card > .profession-stats,
+.temporary-game-card > .dream-grid,
+.temporary-game-card > .opponents-preview,
+.temporary-game-card > .player-dream-preview {
+
+    grid-column: 2 !important;
+}
+
+
+.temporary-game-card h2 {
+    font-size: clamp(30px, 3vw, 46px) !important;
+    margin: 0 !important;
+}
+
+
+.temporary-game-card p {
+    font-size: 17px;
+    line-height: 1.45;
+    margin: 0;
+}
+
+
+/* =====================================================
+   ВИБІР ФІШОК
+===================================================== */
+
+.token-selection-card {
+    width: min(1250px, 95vw) !important;
+}
+
+
+.token-grid {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(4, minmax(120px, 1fr)) !important;
+
+    gap: 12px !important;
+
+    width: 100% !important;
+
+    max-height: none !important;
+
+    overflow: visible !important;
+}
+
+
+.token-option {
+    width: 100% !important;
+    min-width: 0 !important;
+
+    height: 175px !important;
+    min-height: 175px !important;
+
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    padding: 8px !important;
+
+    border-radius: 18px;
+    border: 2px solid rgba(0,0,0,0.08);
+
+    background:
+        rgba(255,255,255,0.78);
+
+    overflow: hidden !important;
+
+    cursor: pointer;
+}
+
+
+.token-option img {
+    display: block !important;
+
+    width: 125px !important;
+    height: 125px !important;
+
+    max-width: 125px !important;
+    max-height: 125px !important;
+
+    object-fit: contain !important;
+
+    margin: 0 auto !important;
+}
+
+
+.token-option span {
+    display: block;
+
+    margin-top: 3px;
+
+    font-size: 13px;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   ПОЛЕ ІМЕНІ
+===================================================== */
+
+.player-name-input {
+    width: min(520px, 100%) !important;
+
+    padding: 16px 18px;
+
+    font-size: 17px;
+
+    border-radius: 14px;
+
+    border:
+        2px solid rgba(0,0,0,0.13);
+}
+
+
+/* =====================================================
+   МЕНШІ ЕКРАНИ
+===================================================== */
+
+@media (max-width: 850px) {
+
+    .game-screen {
+        align-items: flex-start;
+
+        padding:
+            20px
+            15px
+            40px;
+    }
+
+
+    .temporary-game-card {
+        display: flex !important;
+        flex-direction: column;
+
+        width: 96vw !important;
+
+        min-height: auto;
+
+        padding: 25px 18px !important;
+    }
+
+
+    .temporary-game-card .small-game-logo {
+        width: 150px !important;
+
+        max-height: 220px !important;
+
+        margin-bottom: 5px !important;
+    }
+
+
+    .token-grid {
+        grid-template-columns:
+            repeat(2, minmax(0,1fr)) !important;
+    }
+
+
+    .token-option {
+        height: 155px !important;
+        min-height: 155px !important;
+    }
+
+
+    .token-option img {
+        width: 105px !important;
+        height: 105px !important;
     }
 
 }
