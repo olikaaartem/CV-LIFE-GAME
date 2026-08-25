@@ -288,70 +288,210 @@ const CAREER_LEVEL_STATS = [
 
 ];
 
-
-/* =========================================================
+/* =====================================================
    4. МРІЇ
 
-   ПОКИ ТЕСТОВІ.
-   Пізніше сюди вставимо фінальний перелік
-   ваших карток Мрії та точні показники.
-========================================================= */
+   Гравець сам обирає свою Мрію.
+   Для досягнення кожної Мрії потрібно накопичити
+   відповідні показники.
+===================================================== */
 
 const DREAMS = [
 
     {
-        id: "home",
-        icon: "🏠",
-        name: "Власне житло",
-
+        id: "world_trip",
+        icon: "🌍",
+        name: "Навколосвітня подорож",
         requirements: {
-            money: 300000,
-            reputation: 30,
-            knowledge: 30,
-            energy: 30
+            money: 400000,
+            reputation: 25,
+            knowledge: 35,
+            energy: 60
         }
     },
 
     {
-        id: "business",
-        icon: "🚀",
-        name: "Власний бізнес",
-
+        id: "car_park",
+        icon: "🏎️",
+        name: "Власний автопарк",
         requirements: {
-            money: 500000,
-            reputation: 50,
-            knowledge: 60,
+            money: 600000,
+            reputation: 40,
+            knowledge: 30,
             energy: 40
         }
     },
 
     {
-        id: "travel",
-        icon: "✈️",
-        name: "Подорож мрії",
-
+        id: "book",
+        icon: "📖",
+        name: "Написати та видати власну книгу",
         requirements: {
             money: 200000,
-            reputation: 20,
-            knowledge: 20,
+            reputation: 50,
+            knowledge: 70,
             energy: 50
         }
     },
 
     {
-        id: "freedom",
-        icon: "✨",
-        name: "Фінансова свобода",
-
+        id: "animal_shelter",
+        icon: "🐾",
+        name: "Відкрити притулок для тварин",
         requirements: {
-            money: 700000,
+            money: 500000,
             reputation: 60,
+            knowledge: 45,
+            energy: 65
+        }
+    },
+
+    {
+        id: "everest",
+        icon: "🏔️",
+        name: "Підкорити Еверест",
+        requirements: {
+            money: 300000,
+            reputation: 30,
+            knowledge: 40,
+            energy: 100
+        }
+    },
+
+    {
+        id: "yacht",
+        icon: "🛥️",
+        name: "Купити власну яхту",
+        requirements: {
+            money: 900000,
+            reputation: 50,
+            knowledge: 35,
+            energy: 40
+        }
+    },
+
+    {
+        id: "plane",
+        icon: "✈️",
+        name: "Власний літак",
+        requirements: {
+            money: 1200000,
+            reputation: 70,
             knowledge: 50,
             energy: 40
+        }
+    },
+
+    {
+        id: "dream_house",
+        icon: "🏡",
+        name: "Будинок мрії",
+        requirements: {
+            money: 700000,
+            reputation: 40,
+            knowledge: 30,
+            energy: 50
+        }
+    },
+
+    {
+        id: "ocean_house",
+        icon: "🌴",
+        name: "Будинок біля океану",
+        requirements: {
+            money: 850000,
+            reputation: 45,
+            knowledge: 35,
+            energy: 50
+        }
+    },
+
+    {
+        id: "education",
+        icon: "🎓",
+        name: "Навчатися у найкращому університеті",
+        requirements: {
+            money: 350000,
+            reputation: 35,
+            knowledge: 90,
+            energy: 65
+        }
+    },
+
+    {
+        id: "charity",
+        icon: "❤️",
+        name: "Займатися благодійністю",
+        requirements: {
+            money: 400000,
+            reputation: 80,
+            knowledge: 40,
+            energy: 60
+        }
+    },
+
+    {
+        id: "eco_project",
+        icon: "🌱",
+        name: "Створити власний екопроєкт",
+        requirements: {
+            money: 450000,
+            reputation: 65,
+            knowledge: 65,
+            energy: 60
+        }
+    },
+
+    {
+        id: "creative_space",
+        icon: "🎭",
+        name: "Власний творчий простір",
+        requirements: {
+            money: 550000,
+            reputation: 65,
+            knowledge: 55,
+            energy: 60
+        }
+    },
+
+    {
+        id: "business",
+        icon: "🏦",
+        name: "Власний бізнес",
+        requirements: {
+            money: 700000,
+            reputation: 70,
+            knowledge: 70,
+            energy: 65
+        }
+    },
+
+    {
+        id: "foundation",
+        icon: "🤝",
+        name: "Створити благодійний фонд",
+        requirements: {
+            money: 650000,
+            reputation: 90,
+            knowledge: 65,
+            energy: 70
+        }
+    },
+
+    {
+        id: "life_dream",
+        icon: "⭐",
+        name: "Мрія життя",
+        requirements: {
+            money: 1000000,
+            reputation: 80,
+            knowledge: 80,
+            energy: 80
         }
     }
 
 ];
+
 
 
 /* =========================================================
@@ -373,6 +513,8 @@ const gameState = {
         id: "player",
 
         name: "",
+
+        gender: null,
 
         token: null,
 
