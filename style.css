@@ -7827,3 +7827,274 @@ button {
     }
 
 }
+/* =========================================================
+   FINAL FIX — ІГРОВИЙ ЕКРАН
+   вставити В САМИЙ КІНЕЦЬ style.css
+========================================================= */
+
+
+/* =========================
+   1. БІЛЬШІ КОМІРКИ
+========================= */
+
+.board-cell {
+    width: 44px !important;
+    height: 44px !important;
+
+    border-radius: 11px !important;
+}
+
+.special-board-cell {
+    width: 50px !important;
+    height: 50px !important;
+}
+
+.start-board-cell,
+.transition-board-cell {
+    width: 54px !important;
+    height: 54px !important;
+}
+
+.cell-icon {
+    font-size: 21px !important;
+}
+
+.special-board-cell .cell-icon {
+    font-size: 24px !important;
+}
+
+.cell-number {
+    font-size: 8px !important;
+}
+
+
+/* =========================
+   2. БАНК — ГОЛУБИЙ
+========================= */
+
+.hud-bank-button {
+    background:
+        linear-gradient(
+            145deg,
+            #dff4ff,
+            #9fddff
+        ) !important;
+
+    border:
+        2px solid
+        rgba(51, 153, 204, 0.45) !important;
+}
+
+.hud-bank-button:hover {
+    background:
+        linear-gradient(
+            145deg,
+            #caedff,
+            #7fd1ff
+        ) !important;
+}
+
+
+/* =========================
+   3. ШРИФТИ HUD БІЛЬШІ
+========================= */
+
+.hud-player-name {
+    font-size: 15px !important;
+}
+
+.hud-player-profession {
+    font-size: 12px !important;
+}
+
+.hud-career-text small {
+    font-size: 9px !important;
+}
+
+.hud-stat-item small {
+    font-size: 8px !important;
+}
+
+.hud-stat-item strong {
+    font-size: 14px !important;
+}
+
+.hud-feature-button small {
+    font-size: 9px !important;
+}
+
+.hud-feature-button strong {
+    font-size: 12px !important;
+}
+
+
+/* =========================
+   4. ПРАВА ПАНЕЛЬ — ШРИФТИ
+========================= */
+
+.game-work-panel .dice-title {
+    font-size: 19px !important;
+}
+
+.game-work-panel .dice-message {
+    font-size: 12px !important;
+}
+
+.raifik-board-message strong {
+    font-size: 15px !important;
+}
+
+.raifik-board-message p {
+    font-size: 12px !important;
+}
+
+.other-players-block h3 {
+    font-size: 12px !important;
+}
+
+.mini-opponent-button span {
+    font-size: 12px !important;
+}
+
+.work-panel-button {
+    font-size: 11px !important;
+}
+
+
+/* =========================
+   5. КАРТКА — БІЛЬШИЙ ТЕКСТ
+========================= */
+
+.revealed-card-type {
+    font-size: 12px !important;
+}
+
+.revealed-current-card h3 {
+    font-size: 17px !important;
+}
+
+.revealed-current-card p,
+.decision-card-text {
+    font-size: 12px !important;
+}
+
+.revealed-card-effects span {
+    font-size: 11px !important;
+}
+
+
+/* =========================
+   6. КНОПКИ РІШЕННЯ
+========================= */
+
+.card-decision-buttons {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(3, 1fr) !important;
+
+    gap: 7px !important;
+
+    margin-top: 10px !important;
+}
+
+.card-action-btn {
+    min-height: 40px !important;
+
+    padding: 8px !important;
+
+    font-size: 10px !important;
+
+    border-radius: 10px !important;
+}
+
+.accept-card-btn {
+    background: #ffe13b !important;
+}
+
+.partial-card-btn {
+    background: #dff4ff !important;
+}
+
+.decline-card-btn {
+    background: #eeeeee !important;
+}
+
+
+/* =========================
+   7. ПОЛЕ ЧАСТКОВОЇ СУМИ
+========================= */
+
+.partial-amount-box {
+    margin-top: 10px;
+
+    padding: 10px;
+
+    border-radius: 12px;
+
+    background: #eef8ff;
+}
+
+.partial-amount-box label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.partial-amount-box input {
+    width: 100%;
+
+    padding: 9px 10px;
+
+    border:
+        2px solid
+        rgba(51,153,204,0.45);
+
+    border-radius: 9px;
+
+    font-size: 13px;
+}
+
+
+/* =========================
+   8. ЗАВЕРШИТИ ХІД
+========================= */
+
+.finish-turn-btn {
+    width: 100% !important;
+
+    margin-top: 10px !important;
+
+    min-height: 42px !important;
+
+    font-size: 11px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe63c,
+            #f4c900
+        ) !important;
+}
+
+
+/* =========================
+   9. ЖУРНАЛ
+========================= */
+
+#journalButton {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+#journalCount {
+    font-size: 10px !important;
+
+    min-width: 22px !important;
+    height: 22px !important;
+}
+
