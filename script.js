@@ -1,26 +1,23 @@
 /* =========================================================
    CV ЖИТТЯ — ЛЮБИ. МРІЙ. ДІЙ.
-   ОДИНОЧНА ГРА
+   ОНОВЛЕНИЙ SCRIPT.JS
 
-   ПОТОЧНА ВЕРСІЯ:
-   - старт
+   ЛОГІКА:
    - вибір режиму
    - ім'я
    - стать
    - вибір фішки
    - випадкова професія
+   - окремий показ результату професії
    - 4 рівні кар'єри
-   - 4 випадкові Мрії
-   - підтвердження Мрії
-   - 2 AI-суперники
-   - 3 учасники перед стартом
-   - велике коло 56
+   - 20 мрій
+   - 2 AI-гравці
    - мале коло 28
+   - перехід на велике коло 56
    - кубик
-   - ручний рух фішки
-   - перехід велике → мале → Мрія
-   - клікабельні типи комірок
-   - перегляд показників AI
+   - повільні ходи AI
+   - Подія / Банк / Життя / Доля
+   - Райфик-підказки
 ========================================================= */
 
 
@@ -28,27 +25,25 @@ const app = document.getElementById("financeGameApp");
 
 
 /* =========================================================
-   1. ОСНОВНІ НАЛАШТУВАННЯ
+   1. НАЛАШТУВАННЯ ГРИ
 ========================================================= */
 
 const GAME_CONFIG = {
 
-    bigCircleCells: 56,
-
     smallCircleCells: 28,
+    bigCircleCells: 56,
 
     aiPlayers: 2,
 
+    aiThinkDelay: 1100,
+    aiMoveStepDelay: 180,
+    aiResultDelay: 1500,
+
     startingStats: {
-
         money: 10000,
-
         reputation: 10,
-
         knowledge: 10,
-
         energy: 100
-
     }
 
 };
@@ -114,9 +109,10 @@ const TOKENS = [
 /* =========================================================
    3. ПРОФЕСІЙНІ СФЕРИ
 
-   Гравець НЕ обирає професію.
-   Система випадково визначає сферу
-   і дає перший рівень професії.
+   ВАЖЛИВО:
+   у levels завжди:
+
+   ЧОЛОВІЧИЙ ВАРІАНТ / ЖІНОЧИЙ ВАРІАНТ
 ========================================================= */
 
 const CAREER_SECTORS = [
@@ -127,15 +123,10 @@ const CAREER_SECTORS = [
         icon: "💻",
 
         levels: [
-
             "Програміст / Програмістка",
-
-            "Керівник / Керівниця команди розробки",
-
+            "Керівник команди розробки / Керівниця команди розробки",
             "IT-директор / IT-директорка",
-
-            "CTO / Технічний директор"
-
+            "CTO / Технічна директорка"
         ]
     },
 
@@ -145,15 +136,10 @@ const CAREER_SECTORS = [
         icon: "☕",
 
         levels: [
-
-            "Бариста",
-
-            "Адміністратор / Адміністраторка ресторану",
-
-            "Керуючий / Керуюча рестораном",
-
-            "Власник / Власниця ресторану"
-
+            "Бариста / Бариста",
+            "Адміністратор ресторану / Адміністраторка ресторану",
+            "Керуючий рестораном / Керуюча рестораном",
+            "Власник ресторану / Власниця ресторану"
         ]
     },
 
@@ -163,15 +149,10 @@ const CAREER_SECTORS = [
         icon: "🎓",
 
         levels: [
-
             "Вчитель / Вчителька",
-
-            "Директор / Директорка закладу освіти",
-
-            "Ректор / Ректорка університету",
-
-            "Міністр / Міністерка освіти і науки України"
-
+            "Директор закладу освіти / Директорка закладу освіти",
+            "Ректор університету / Ректорка університету",
+            "Міністр освіти і науки України / Міністерка освіти і науки України"
         ]
     },
 
@@ -181,15 +162,10 @@ const CAREER_SECTORS = [
         icon: "🎨",
 
         levels: [
-
             "Художник / Художниця",
-
             "Артдиректор / Артдиректорка",
-
-            "Власник / Власниця артгалереї",
-
-            "Директор / Директорка музею"
-
+            "Власник артгалереї / Власниця артгалереї",
+            "Директор музею / Директорка музею"
         ]
     },
 
@@ -199,15 +175,10 @@ const CAREER_SECTORS = [
         icon: "🩺",
 
         levels: [
-
-            "Медсестра / Медбрат",
-
+            "Медбрат / Медсестра",
             "Лікар / Лікарка",
-
-            "Завідувач / Завідувачка відділення",
-
+            "Завідувач відділення / Завідувачка відділення",
             "Головний лікар / Головна лікарка"
-
         ]
     },
 
@@ -217,15 +188,10 @@ const CAREER_SECTORS = [
         icon: "🎥",
 
         levels: [
-
             "Контент-креатор / Контент-креаторка",
-
-            "YouTube-блогер / Блогерка",
-
-            "Продюсер / Продюсерка контенту",
-
-            "Власник / Власниця медіакомпанії"
-
+            "YouTube-блогер / YouTube-блогерка",
+            "Продюсер контенту / Продюсерка контенту",
+            "Власник медіакомпанії / Власниця медіакомпанії"
         ]
     },
 
@@ -235,15 +201,10 @@ const CAREER_SECTORS = [
         icon: "🚚",
 
         levels: [
-
             "Логіст / Логістка",
-
-            "Координатор / Координаторка логістики",
-
-            "Менеджер / Менеджерка з логістики",
-
-            "Директор / Директорка з логістики"
-
+            "Координатор логістики / Координаторка логістики",
+            "Менеджер з логістики / Менеджерка з логістики",
+            "Директор з логістики / Директорка з логістики"
         ]
     },
 
@@ -253,15 +214,10 @@ const CAREER_SECTORS = [
         icon: "🏦",
 
         levels: [
-
             "Банківський працівник / Банківська працівниця",
-
             "Бухгалтер / Бухгалтерка",
-
             "Фінансовий директор / Фінансова директорка",
-
-            "Власник / Власниця фінансової компанії"
-
+            "Власник фінансової компанії / Власниця фінансової компанії"
         ]
     },
 
@@ -271,15 +227,10 @@ const CAREER_SECTORS = [
         icon: "🛡️",
 
         levels: [
-
-            "Оператор / Операторка БпЛА",
-
+            "Оператор БпЛА / Операторка БпЛА",
             "Інструктор / Інструкторка",
-
             "Офіцер / Офіцерка",
-
-            "Начальник / Начальниця штабу"
-
+            "Начальник штабу / Начальниця штабу"
         ]
     },
 
@@ -289,15 +240,10 @@ const CAREER_SECTORS = [
         icon: "🌾",
 
         levels: [
-
             "Фермер / Фермерка",
-
             "Агроном / Агрономка",
-
-            "Керівник / Керівниця агропідприємства",
-
-            "Власник / Власниця агрохолдингу"
-
+            "Керівник агропідприємства / Керівниця агропідприємства",
+            "Власник агрохолдингу / Власниця агрохолдингу"
         ]
     }
 
@@ -305,11 +251,12 @@ const CAREER_SECTORS = [
 
 
 /* =========================================================
-   4. ПОКАЗНИКИ 4 РІВНІВ КАР'ЄРИ
+   4. ПОКАЗНИКИ КАР'ЄРИ
 
-   ПОКИ ОДНАКОВІ ДЛЯ ВСІХ СФЕР.
+   ПОКИ СТАЛІ.
 
-   Пізніше тут просто змінимо цифри.
+   Пізніше тут можемо задати окремі значення
+   для кожної професії / сфери.
 ========================================================= */
 
 const CAREER_LEVEL_STATS = [
@@ -350,10 +297,19 @@ const CAREER_LEVEL_STATS = [
 
 
 /* =========================================================
-   5. МРІЇ
+   5. МРІЇ — 20 КАРТОК
 
-   Поки використовуємо кодові картки.
-   Потім додамо готові картинки Мрій.
+   На самій картці показуємо ТІЛЬКИ:
+   - картинку / іконку
+   - назву
+
+   requirements показуються лише ПІСЛЯ кліку.
+
+   Пізніше:
+   icon можна замінити на:
+   image: "assets/dream-01.png"
+
+   І CSS/JS автоматично показуватиме PNG.
 ========================================================= */
 
 const DREAMS = [
@@ -361,6 +317,7 @@ const DREAMS = [
     {
         id: "world_trip",
         icon: "🌍",
+        image: null,
         name: "Навколосвітня подорож",
 
         requirements: {
@@ -374,6 +331,7 @@ const DREAMS = [
     {
         id: "car_park",
         icon: "🏎️",
+        image: null,
         name: "Власний автопарк",
 
         requirements: {
@@ -387,6 +345,7 @@ const DREAMS = [
     {
         id: "book",
         icon: "📖",
+        image: null,
         name: "Написати та видати власну книгу",
 
         requirements: {
@@ -400,6 +359,7 @@ const DREAMS = [
     {
         id: "animal_shelter",
         icon: "🐾",
+        image: null,
         name: "Відкрити притулок для тварин",
 
         requirements: {
@@ -413,6 +373,7 @@ const DREAMS = [
     {
         id: "everest",
         icon: "🏔️",
+        image: null,
         name: "Підкорити Еверест",
 
         requirements: {
@@ -426,6 +387,7 @@ const DREAMS = [
     {
         id: "yacht",
         icon: "🛥️",
+        image: null,
         name: "Купити власну яхту",
 
         requirements: {
@@ -439,6 +401,7 @@ const DREAMS = [
     {
         id: "plane",
         icon: "✈️",
+        image: null,
         name: "Власний літак",
 
         requirements: {
@@ -452,6 +415,7 @@ const DREAMS = [
     {
         id: "dream_house",
         icon: "🏡",
+        image: null,
         name: "Будинок мрії",
 
         requirements: {
@@ -465,6 +429,7 @@ const DREAMS = [
     {
         id: "ocean_house",
         icon: "🌴",
+        image: null,
         name: "Будинок біля океану",
 
         requirements: {
@@ -478,6 +443,7 @@ const DREAMS = [
     {
         id: "education",
         icon: "🎓",
+        image: null,
         name: "Навчатися у найкращому університеті",
 
         requirements: {
@@ -491,6 +457,7 @@ const DREAMS = [
     {
         id: "charity",
         icon: "❤️",
+        image: null,
         name: "Займатися благодійністю",
 
         requirements: {
@@ -504,6 +471,7 @@ const DREAMS = [
     {
         id: "eco_project",
         icon: "🌱",
+        image: null,
         name: "Створити власний екопроєкт",
 
         requirements: {
@@ -517,6 +485,7 @@ const DREAMS = [
     {
         id: "creative_space",
         icon: "🎭",
+        image: null,
         name: "Власний творчий простір",
 
         requirements: {
@@ -530,6 +499,7 @@ const DREAMS = [
     {
         id: "business",
         icon: "🏦",
+        image: null,
         name: "Власний бізнес",
 
         requirements: {
@@ -543,6 +513,7 @@ const DREAMS = [
     {
         id: "foundation",
         icon: "🤝",
+        image: null,
         name: "Створити благодійний фонд",
 
         requirements: {
@@ -556,6 +527,7 @@ const DREAMS = [
     {
         id: "life_dream",
         icon: "⭐",
+        image: null,
         name: "Мрія життя",
 
         requirements: {
@@ -564,184 +536,518 @@ const DREAMS = [
             knowledge: 80,
             energy: 80
         }
+    },
+
+
+    /* =====================================================
+       НОВІ МРІЇ 17–20
+
+       ПОКАЗНИКИ ПОКИ ТЕСТОВІ.
+       Пізніше просто змінюємо цифри тут.
+    ===================================================== */
+
+    {
+        id: "sports_form",
+        icon: "🏅",
+        image: null,
+        name: "Досягти ідеальної спортивної форми",
+
+        requirements: {
+            money: 250000,
+            reputation: 40,
+            knowledge: 50,
+            energy: 95
+        }
+    },
+
+    {
+        id: "languages",
+        icon: "🗣️",
+        image: null,
+        name: "Вільно володіти декількома іноземними мовами",
+
+        requirements: {
+            money: 300000,
+            reputation: 45,
+            knowledge: 90,
+            energy: 65
+        }
+    },
+
+    {
+        id: "music_album",
+        icon: "🎵",
+        image: null,
+        name: "Записати музичний альбом",
+
+        requirements: {
+            money: 500000,
+            reputation: 75,
+            knowledge: 65,
+            energy: 70
+        }
+    },
+
+    {
+        id: "international_project",
+        icon: "🌐",
+        image: null,
+        name: "Реалізувати проєкт міжнародного масштабу",
+
+        requirements: {
+            money: 800000,
+            reputation: 90,
+            knowledge: 80,
+            energy: 75
+        }
     }
 
 ];
 
 
 /* =========================================================
-   6. ТИПИ ЗВИЧАЙНИХ КОМІРОК
+   6. ТИПИ КОМІРОК
+
+   Тут потім легко змінюємо іконки / назви.
 ========================================================= */
 
 const CELL_TYPES = {
 
     income: {
-
         id: "income",
-
         icon: "💰",
-
         name: "Дохід",
-
         description:
-            "Комірка доходу. Тут гравець отримує або змінює свій дохід."
-
+            "Отримай дохід та прибуток від своїх фінансових активів."
     },
-
 
     bank: {
-
         id: "bank",
-
         icon: "🏦",
-
         name: "Банк",
-
         description:
-            "Банківська комірка. Тут можуть з'явитися депозит, кредит, заощадження або інша фінансова можливість."
-
+            "Фінансове рішення: депозит, кредит, заощадження або інша банківська можливість."
     },
-
 
     event: {
-
         id: "event",
-
-        icon: "🎴",
-
+        icon: "🎲",
         name: "Подія",
-
         description:
-            "Витягни картку Події та виконай її умову."
-
+            "Життя підкидає нову ситуацію. Обери одну з карток Подій."
     },
-
 
     life: {
-
         id: "life",
-
         icon: "❤️",
-
         name: "Життя",
-
         description:
-            "Життєва ситуація, яка може вплинути на гроші, знання, репутацію або енергію."
-
+            "Особиста життєва ситуація, яка може вплинути на твої показники."
     },
-
 
     fate: {
-
         id: "fate",
-
         icon: "⚡",
-
         name: "Доля",
-
         description:
-            "Несподіваний поворот подій. Результат може допомогти або створити новий виклик."
-
+            "Випадкова подія. Тут рішення за тебе приймає доля."
     },
 
-
-    energy: {
-
-        id: "energy",
-
-        icon: "🔋",
-
-        name: "Енергія",
-
+    lounge: {
+        id: "lounge",
+        icon: "🎯",
+        name: "Lounge & Хобі",
         description:
-            "Комірка, пов'язана з відновленням або витратою енергії."
+            "Спеціальний сектор відновлення енергії та розвитку особистих інтересів."
+    },
 
+    academy: {
+        id: "academy",
+        icon: "🎓",
+        name: "Академія & Soft Skills",
+        description:
+            "Спеціальний сектор розвитку знань, навичок та кар'єри."
+    },
+
+    transition: {
+        id: "transition",
+        icon: "➡️",
+        name: "Перехід на велике коло",
+        description:
+            "Ти завершуєш перший етап і переходиш до великого життєвого кола."
+    },
+
+    dreamCheck: {
+        id: "dreamCheck",
+        icon: "✨",
+        name: "Перевірка Мрії",
+        description:
+            "Час перевірити, наскільки ти наблизився до своєї Мрії."
     }
 
 };
 
 
 /* =========================================================
-   7. СПЕЦІАЛЬНІ КОМІРКИ
+   7. МАЛЕ КОЛО — 28 КОМІРОК
 
-   Поки залишаємо основу.
-   Механіку допишемо після фінального узгодження.
+   Стартуємо саме ТУТ.
+
+   Lounge:
+   6, 22
+
+   Academy:
+   11, 25
+
+   28 — перехід на велике коло.
 ========================================================= */
 
-const SPECIAL_CELLS = {
+const SMALL_BOARD = [
 
-    big: {
+    "income",     // 1
+    "bank",       // 2
+    "event",      // 3
+    "bank",       // 4
+    "event",      // 5
+    "lounge",     // 6
+    "event",      // 7
+    "bank",       // 8
+    "event",      // 9
+    "bank",       // 10
 
-        10: {
-            icon: "🟣",
-            name: "Lounge & Хобі"
-        },
+    "academy",    // 11
+    "event",      // 12
+    "bank",       // 13
+    "event",      // 14
+    "life",       // 15
+    "bank",       // 16
+    "event",      // 17
+    "bank",       // 18
+    "event",      // 19
+    "bank",       // 20
 
-        20: {
-            icon: "🎓",
-            name: "Академія & Soft Skills"
-        },
+    "event",      // 21
+    "lounge",     // 22
+    "event",      // 23
+    "bank",       // 24
+    "academy",    // 25
+    "event",      // 26
+    "bank",       // 27
+    "transition"  // 28
 
-        38: {
-            icon: "🟣",
-            name: "Lounge & Хобі"
-        },
+];
 
-        48: {
-            icon: "🎓",
-            name: "Академія & Soft Skills"
+
+/* =========================================================
+   8. ВЕЛИКЕ КОЛО — 56 КОМІРОК
+
+   Поки тестова схема.
+
+   Lounge:
+   10, 38
+
+   Academy:
+   20, 48
+
+   1 — Дохід
+   56 — перевірка Мрії
+
+   Пізніше легко замінимо послідовність.
+========================================================= */
+
+const BIG_BOARD = Array.from(
+    { length: 56 },
+    (_, index) => {
+
+        const position = index + 1;
+
+        if (position === 1) {
+            return "income";
         }
 
-    },
-
-
-    small: {
-
-        6: {
-            icon: "🟣",
-            name: "Lounge & Хобі"
-        },
-
-        11: {
-            icon: "🎓",
-            name: "Академія & Soft Skills"
-        },
-
-        22: {
-            icon: "🟣",
-            name: "Lounge & Хобі"
-        },
-
-        25: {
-            icon: "🎓",
-            name: "Академія & Soft Skills"
+        if (
+            position === 10 ||
+            position === 38
+        ) {
+            return "lounge";
         }
+
+        if (
+            position === 20 ||
+            position === 48
+        ) {
+            return "academy";
+        }
+
+        if (position === 56) {
+            return "dreamCheck";
+        }
+
+        const pattern = [
+            "bank",
+            "event",
+            "life",
+            "event",
+            "bank",
+            "fate",
+            "event",
+            "life"
+        ];
+
+        return pattern[
+            (position - 2) %
+            pattern.length
+        ];
 
     }
+);
+
+
+/* =========================================================
+   9. ТЕСТОВІ КАРТКИ
+
+   ЦЕ ТИМЧАСОВИЙ КОНТЕНТ.
+
+   Пізніше сюди вставимо фінальні
+   картки Подій, Банку, Життя та Долі.
+========================================================= */
+
+const CARD_DECKS = {
+
+    event: [
+
+        {
+            title: "Неочікувана можливість",
+            text:
+                "Тобі запропонували взяти участь у новому проєкті.",
+            effects: {
+                knowledge: 10,
+                reputation: 5,
+                energy: -5
+            }
+        },
+
+        {
+            title: "Новий виклик",
+            text:
+                "Складне завдання допомогло тобі отримати новий досвід.",
+            effects: {
+                knowledge: 15,
+                energy: -10
+            }
+        },
+
+        {
+            title: "Корисне знайомство",
+            text:
+                "Ти познайомився з людиною, яка відкрила нові можливості.",
+            effects: {
+                reputation: 10
+            }
+        },
+
+        {
+            title: "Помилка — теж досвід",
+            text:
+                "Не все вдалося, але ти зробив важливі висновки.",
+            effects: {
+                knowledge: 10,
+                money: -5000
+            }
+        },
+
+        {
+            title: "Вдалий день",
+            text:
+                "Сьогодні обставини працюють на твою користь.",
+            effects: {
+                money: 10000,
+                energy: 5
+            }
+        }
+
+    ],
+
+
+    bank: [
+
+        {
+            title: "Вдале заощадження",
+            text:
+                "Ти грамотно розподілив гроші.",
+            effects: {
+                money: 15000,
+                knowledge: 5
+            }
+        },
+
+        {
+            title: "Фінансова консультація",
+            text:
+                "Ти дізнався більше про особисті фінанси.",
+            effects: {
+                knowledge: 10
+            }
+        },
+
+        {
+            title: "Несподівана витрата",
+            text:
+                "Довелося використати частину накопичень.",
+            effects: {
+                money: -10000
+            }
+        },
+
+        {
+            title: "Вигідна можливість",
+            text:
+                "Правильне фінансове рішення принесло прибуток.",
+            effects: {
+                money: 20000,
+                reputation: 5
+            }
+        },
+
+        {
+            title: "Фінансова дисципліна",
+            text:
+                "Ти втримався від імпульсивної покупки.",
+            effects: {
+                money: 10000,
+                knowledge: 5
+            }
+        }
+
+    ],
+
+
+    life: [
+
+        {
+            title: "Час для себе",
+            text:
+                "Ти добре відпочив і відновив сили.",
+            effects: {
+                energy: 15
+            }
+        },
+
+        {
+            title: "Новий курс",
+            text:
+                "Ти вирішив інвестувати час у навчання.",
+            effects: {
+                knowledge: 15,
+                energy: -5
+            }
+        },
+
+        {
+            title: "Допомога друзям",
+            text:
+                "Твоя підтримка не залишилась непоміченою.",
+            effects: {
+                reputation: 10,
+                energy: -5
+            }
+        },
+
+        {
+            title: "Велика покупка",
+            text:
+                "Ти придбав річ, яку давно хотів.",
+            effects: {
+                money: -15000,
+                energy: 10
+            }
+        },
+
+        {
+            title: "Баланс",
+            text:
+                "Ти вдало поєднав роботу й відпочинок.",
+            effects: {
+                energy: 10,
+                reputation: 5
+            }
+        }
+
+    ],
+
+
+    fate: [
+
+        {
+            title: "Доля посміхнулась",
+            text:
+                "Сьогодні тобі щастить!",
+            effects: {
+                money: 20000
+            }
+        },
+
+        {
+            title: "Неочікуваний поворот",
+            text:
+                "Плани змінились, але ти отримав новий досвід.",
+            effects: {
+                knowledge: 10,
+                energy: -10
+            }
+        },
+
+        {
+            title: "Приємний сюрприз",
+            text:
+                "Ти отримав гарну новину.",
+            effects: {
+                reputation: 10,
+                energy: 10
+            }
+        },
+
+        {
+            title: "Складний день",
+            text:
+                "Доведеться трохи відновити сили.",
+            effects: {
+                energy: -15
+            }
+        },
+
+        {
+            title: "Вдалий шанс",
+            text:
+                "Випадкова можливість принесла результат.",
+            effects: {
+                money: 10000,
+                reputation: 10
+            }
+        }
+
+    ]
 
 };
 
 
 /* =========================================================
-   8. СТАН ГРИ
+   10. СТАН ГРИ
 ========================================================= */
 
 const gameState = {
 
     phase: "start",
 
+    mode: null,
+
     currentTurn: "player",
 
     diceValue: null,
 
-    targetPosition: null,
+    target: null,
 
-    targetCircle: null,
-
-    dreamOptions: [],
-
-    pendingDream: null,
-
+    selectedDreamId: null,
 
     player: {
 
@@ -760,21 +1066,15 @@ const gameState = {
         dream: null,
 
         money: 0,
-
         reputation: 0,
-
         knowledge: 0,
-
         energy: 0,
 
-        circle: "big",
+        circle: "small",
 
-        position: 1,
-
-        finished: false
+        position: 1
 
     },
-
 
     opponents: []
 
@@ -782,14 +1082,15 @@ const gameState = {
 
 
 /* =========================================================
-   9. ДОПОМІЖНІ ФУНКЦІЇ
+   11. ДОПОМІЖНІ ФУНКЦІЇ
 ========================================================= */
 
 function randomItem(array) {
 
     return array[
         Math.floor(
-            Math.random() * array.length
+            Math.random() *
+            array.length
         )
     ];
 
@@ -799,179 +1100,101 @@ function randomItem(array) {
 function randomNumber(min, max) {
 
     return Math.floor(
-        Math.random() * (max - min + 1)
+        Math.random() *
+        (max - min + 1)
     ) + min;
 
 }
 
 
-function shuffleArray(array) {
+function delay(ms) {
 
-    const result =
-        [...array];
-
-
-    for (
-        let i = result.length - 1;
-        i > 0;
-        i--
-    ) {
-
-        const j =
-            Math.floor(
-                Math.random() * (i + 1)
-            );
-
-
-        [
-            result[i],
-            result[j]
-        ] =
-        [
-            result[j],
-            result[i]
-        ];
-
-    }
-
-
-    return result;
+    return new Promise(
+        resolve =>
+            setTimeout(resolve, ms)
+    );
 
 }
 
 
 function setScreen(html) {
 
-    app.innerHTML =
-        html;
+    app.innerHTML = html;
+
+    window.scrollTo({
+        top: 0,
+        behavior: "instant"
+    });
+
+}
+
+
+function formatMoney(value) {
+
+    return Number(value)
+        .toLocaleString("uk-UA");
 
 }
 
 
 function copyStartingStats(target) {
 
-    const stats =
-        CAREER_LEVEL_STATS[0];
-
-
     target.money =
-        stats.money;
-
+        GAME_CONFIG.startingStats.money;
 
     target.reputation =
-        stats.reputation;
-
+        GAME_CONFIG.startingStats.reputation;
 
     target.knowledge =
-        stats.knowledge;
-
+        GAME_CONFIG.startingStats.knowledge;
 
     target.energy =
-        stats.energy;
+        GAME_CONFIG.startingStats.energy;
 
 }
 
 
 /* =========================================================
-   ПРОФЕСІЯ ВІДПОВІДНО ДО СТАТІ
+   12. НАЗВА ПРОФЕСІЇ ЗА СТАТТЮ
 ========================================================= */
 
 function getProfessionName(
     profession,
-    gender
+    gender = gameState.player.gender
 ) {
 
     if (!profession) {
-
         return "";
-
     }
 
-
-    if (
-        profession ===
-        "Медсестра / Медбрат"
-    ) {
-
-        return gender === "female"
-            ? "Медсестра"
-            : "Медбрат";
-
-    }
-
-
-    if (
-        profession ===
-        "CTO / Технічний директор"
-    ) {
-
-        return profession;
-
-    }
-
-
-    if (
-        !profession.includes("/")
-    ) {
-
-        return profession.trim();
-
-    }
-
-
-    const variants =
+    const parts =
         profession
             .split("/")
-            .map(
-                item =>
-                    item.trim()
-            );
+            .map(item => item.trim());
 
 
-    return gender === "female"
-        ? variants[1]
-        : variants[0];
-
-}
-
-
-function getParticipantProfession(
-    participant
-) {
-
-    if (
-        !participant ||
-        !participant.sector
-    ) {
-
-        return "";
-
+    if (parts.length < 2) {
+        return profession;
     }
 
 
-    return getProfessionName(
+    if (gender === "girl") {
+        return parts[1];
+    }
 
-        participant
-            .sector
-            .levels[
-                participant.careerLevel
-            ],
 
-        participant.gender
-
-    );
+    return parts[0];
 
 }
 
 
 /* =========================================================
-   10. СТАРТОВИЙ ЕКРАН
+   13. СТАРТОВИЙ ЕКРАН
 ========================================================= */
 
 function showStartScreen() {
 
-    gameState.phase =
-        "start";
+    gameState.phase = "start";
 
 
     setScreen(`
@@ -1006,20 +1229,21 @@ function showStartScreen() {
         )
         .addEventListener(
             "click",
-            showModeSelection
+            showModeScreen
         );
 
 }
 
 
 /* =========================================================
-   11. ВИБІР РЕЖИМУ ГРИ
+   14. ВИБІР РЕЖИМУ
+
+   Повертаємо вікно, яке загубили.
 ========================================================= */
 
-function showModeSelection() {
+function showModeScreen() {
 
-    gameState.phase =
-        "mode";
+    gameState.phase = "mode";
 
 
     setScreen(`
@@ -1031,16 +1255,14 @@ function showModeSelection() {
                 <button
                     id="closeModeButton"
                     class="screen-close-button"
-                    type="button"
                 >
-                    ✕
+                    ×
                 </button>
 
 
                 <h2>
                     ОБЕРИ РЕЖИМ ГРИ
                 </h2>
-
 
                 <p>
                     Як ти хочеш пройти свою історію?
@@ -1049,11 +1271,9 @@ function showModeSelection() {
 
                 <div class="mode-options">
 
-
                     <button
-                        id="soloModeButton"
+                        id="singleModeButton"
                         class="mode-option"
-                        type="button"
                     >
 
                         <span class="mode-icon">
@@ -1065,16 +1285,15 @@ function showModeSelection() {
                         </strong>
 
                         <small>
-                            Ти + 2 віртуальні гравці
+                            Ти + два AI-гравці
                         </small>
 
                     </button>
 
 
                     <button
-                        id="groupModeButton"
+                        id="multiplayerModeButton"
                         class="mode-option"
-                        type="button"
                     >
 
                         <span class="mode-icon">
@@ -1092,14 +1311,7 @@ function showModeSelection() {
 
                     </button>
 
-
                 </div>
-
-
-                <div
-                    id="modeMessage"
-                    class="form-error form-error-card"
-                ></div>
 
             </div>
 
@@ -1110,30 +1322,27 @@ function showModeSelection() {
 
     document
         .getElementById(
-            "soloModeButton"
-        )
-        .addEventListener(
-            "click",
-            showNameScreen
-        );
-
-
-    document
-        .getElementById(
-            "groupModeButton"
+            "singleModeButton"
         )
         .addEventListener(
             "click",
             () => {
 
-                document
-                    .getElementById(
-                        "modeMessage"
-                    )
-                    .textContent =
-                    "Спільний режим додамо наступним етапом 🙂";
+                gameState.mode = "single";
+
+                showNameScreen();
 
             }
+        );
+
+
+    document
+        .getElementById(
+            "multiplayerModeButton"
+        )
+        .addEventListener(
+            "click",
+            showMultiplayerPlaceholder
         );
 
 
@@ -1150,30 +1359,79 @@ function showModeSelection() {
 
 
 /* =========================================================
-   12. СТВОРЕННЯ ГЕРОЯ
-   ІМ'Я + ХЛОПЧИК / ДІВЧИНКА
+   15. СПІЛЬНА ГРА — ПОКИ ЗАГЛУШКА
+========================================================= */
+
+function showMultiplayerPlaceholder() {
+
+    setScreen(`
+
+        <section class="game-screen">
+
+            <div class="dream-confirmed-card">
+
+                <div class="dream-confirmed-icon">
+                    👥
+                </div>
+
+                <h2>
+                    Спільна гра
+                </h2>
+
+                <p>
+                    Цей режим підключимо
+                    на наступному етапі.
+                </p>
+
+                <button
+                    id="backToModeButton"
+                    class="main-game-btn"
+                >
+                    НАЗАД
+                </button>
+
+            </div>
+
+        </section>
+
+    `);
+
+
+    document
+        .getElementById(
+            "backToModeButton"
+        )
+        .addEventListener(
+            "click",
+            showModeScreen
+        );
+
+}
+
+
+/* =========================================================
+   16. ІМ'Я + СТАТЬ
 ========================================================= */
 
 function showNameScreen() {
 
-    gameState.phase =
-        "name";
+    gameState.phase = "name";
 
 
     setScreen(`
 
         <section class="game-screen">
 
+
             <button
-                id="backFromName"
+                id="nameBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
 
 
-            <div class="temporary-game-card name-screen-card">
+            <div class="temporary-game-card">
 
 
                 <img
@@ -1184,7 +1442,6 @@ function showNameScreen() {
 
 
                 <div class="name-screen-content">
-
 
                     <h2>
                         Привіт! 👋
@@ -1200,9 +1457,7 @@ function showNameScreen() {
 
 
                     <p class="name-question">
-
                         Як тебе звати?
-
                     </p>
 
 
@@ -1212,34 +1467,29 @@ function showNameScreen() {
                         maxlength="20"
                         placeholder="Введи своє ім'я"
                         autocomplete="off"
-                        value="${gameState.player.name || ""}"
+                        value="${gameState.player.name}"
                     >
 
 
                     <div class="gender-section">
 
-
                         <p class="gender-title">
-
                             Хто ти?
-
                         </p>
 
 
                         <div class="gender-options">
 
-
                             <button
                                 class="
                                     gender-button
                                     ${
-                                        gameState.player.gender === "male"
-                                            ? "selected"
-                                            : ""
+                                        gameState.player.gender === "boy"
+                                        ? "selected"
+                                        : ""
                                     }
                                 "
-                                data-gender="male"
-                                type="button"
+                                data-gender="boy"
                             >
 
                                 <span>
@@ -1257,13 +1507,12 @@ function showNameScreen() {
                                 class="
                                     gender-button
                                     ${
-                                        gameState.player.gender === "female"
-                                            ? "selected"
-                                            : ""
+                                        gameState.player.gender === "girl"
+                                        ? "selected"
+                                        : ""
                                     }
                                 "
-                                data-gender="female"
-                                type="button"
+                                data-gender="girl"
                             >
 
                                 <span>
@@ -1275,7 +1524,6 @@ function showNameScreen() {
                                 </strong>
 
                             </button>
-
 
                         </div>
 
@@ -1294,7 +1542,6 @@ function showNameScreen() {
                         id="nameError"
                         class="form-error form-error-card"
                     ></div>
-
 
                 </div>
 
@@ -1332,11 +1579,10 @@ function showNameScreen() {
                         .querySelectorAll(
                             ".gender-button"
                         )
-                        .forEach(
-                            item =>
-                                item.classList.remove(
-                                    "selected"
-                                )
+                        .forEach(item =>
+                            item.classList.remove(
+                                "selected"
+                            )
                         );
 
 
@@ -1356,17 +1602,7 @@ function showNameScreen() {
         )
         .addEventListener(
             "click",
-            savePlayerName
-        );
-
-
-    document
-        .getElementById(
-            "backFromName"
-        )
-        .addEventListener(
-            "click",
-            showModeSelection
+            savePlayerSetup
         );
 
 
@@ -1374,30 +1610,40 @@ function showNameScreen() {
         "keydown",
         event => {
 
-            if (
-                event.key === "Enter"
-            ) {
-
-                savePlayerName();
-
+            if (event.key === "Enter") {
+                savePlayerSetup();
             }
 
         }
     );
 
+
+    document
+        .getElementById(
+            "nameBackButton"
+        )
+        .addEventListener(
+            "click",
+            showModeScreen
+        );
+
 }
 
 
 /* =========================================================
-   13. ЗБЕРЕЖЕННЯ ІМЕНІ
+   17. ЗБЕРЕЖЕННЯ ІМЕНІ + СТАТІ
 ========================================================= */
 
-function savePlayerName() {
+function savePlayerSetup() {
 
     const input =
         document.getElementById(
             "playerNameInput"
         );
+
+
+    const name =
+        input.value.trim();
 
 
     const error =
@@ -1406,34 +1652,22 @@ function savePlayerName() {
         );
 
 
-    const name =
-        input.value.trim();
-
-
     if (!name) {
 
         error.textContent =
             "Напиши своє ім'я 🙂";
 
         return;
-
     }
 
 
-    if (
-        !gameState.player.gender
-    ) {
+    if (!gameState.player.gender) {
 
         error.textContent =
             "Обери: хлопчик чи дівчинка 🙂";
 
         return;
-
     }
-
-
-    error.textContent =
-        "";
 
 
     gameState.player.name =
@@ -1446,7 +1680,7 @@ function savePlayerName() {
 
 
 /* =========================================================
-   14. ВИБІР ФІШКИ
+   18. ВИБІР ФІШКИ
 ========================================================= */
 
 function showTokenSelection() {
@@ -1463,14 +1697,12 @@ function showTokenSelection() {
                     class="
                         token-option
                         ${
-                            gameState.player.token &&
-                            gameState.player.token.id === token.id
-                                ? "selected"
-                                : ""
+                            gameState.player.token?.id === token.id
+                            ? "selected"
+                            : ""
                         }
                     "
                     data-token="${token.id}"
-                    type="button"
                 >
 
                     <img
@@ -1494,15 +1726,19 @@ function showTokenSelection() {
 
 
             <button
-                id="backFromTokens"
+                id="tokenBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
 
 
-            <div class="temporary-game-card token-selection-card">
+            <div
+                class="
+                    temporary-game-card
+                    token-selection-card
+                "
+            >
 
 
                 <img
@@ -1514,7 +1750,6 @@ function showTokenSelection() {
 
                 <div class="token-selection-content">
 
-
                     <h2>
 
                         ${gameState.player.name},
@@ -1525,8 +1760,8 @@ function showTokenSelection() {
 
                     <p>
 
-                        Саме нею ти будеш рухатися
-                        фінансовим шляхом.
+                        Саме нею ти будеш
+                        рухатися фінансовим шляхом.
 
                     </p>
 
@@ -1536,7 +1771,6 @@ function showTokenSelection() {
                         ${tokensHTML}
 
                     </div>
-
 
                 </div>
 
@@ -1555,13 +1789,10 @@ function showTokenSelection() {
 
             button.addEventListener(
                 "click",
-                () => {
-
+                () =>
                     selectToken(
                         button.dataset.token
-                    );
-
-                }
+                    )
             );
 
         });
@@ -1569,7 +1800,7 @@ function showTokenSelection() {
 
     document
         .getElementById(
-            "backFromTokens"
+            "tokenBackButton"
         )
         .addEventListener(
             "click",
@@ -1580,7 +1811,7 @@ function showTokenSelection() {
 
 
 /* =========================================================
-   15. ЗБЕРЕЖЕННЯ ФІШКИ
+   19. ЗБЕРЕЖЕННЯ ФІШКИ
 ========================================================= */
 
 function selectToken(tokenId) {
@@ -1593,9 +1824,7 @@ function selectToken(tokenId) {
 
 
     if (!token) {
-
         return;
-
     }
 
 
@@ -1609,7 +1838,9 @@ function selectToken(tokenId) {
 
 
 /* =========================================================
-   16. ЕКРАН ВИПАДКОВОЇ ПРОФЕСІЇ
+   20. ЕКРАН "ОТРИМАТИ ПРОФЕСІЮ"
+
+   НЕ ПЕРЕКИДАЄМО ОДРАЗУ ДАЛІ.
 ========================================================= */
 
 function showCareerRandomScreen() {
@@ -1620,32 +1851,25 @@ function showCareerRandomScreen() {
 
     const careersHTML =
         CAREER_SECTORS
-            .map(sector => {
+            .map(sector => `
 
-                const firstProfession =
-                    getProfessionName(
-                        sector.levels[0],
-                        gameState.player.gender
-                    );
+                <div class="career-random-option">
 
+                    <span class="career-random-icon">
+                        ${sector.icon}
+                    </span>
 
-                return `
+                    <strong>
+                        ${
+                            getProfessionName(
+                                sector.levels[0]
+                            )
+                        }
+                    </strong>
 
-                    <div class="career-random-option">
+                </div>
 
-                        <div class="career-random-icon">
-                            ${sector.icon}
-                        </div>
-
-                        <strong>
-                            ${firstProfession}
-                        </strong>
-
-                    </div>
-
-                `;
-
-            })
+            `)
             .join("");
 
 
@@ -1655,15 +1879,14 @@ function showCareerRandomScreen() {
 
 
             <button
-                id="backFromCareerRandom"
+                id="careerRandomBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
 
 
-            <div class="temporary-game-card career-random-card">
+            <div class="career-random-card">
 
 
                 <h2>
@@ -1672,41 +1895,35 @@ function showCareerRandomScreen() {
 
 
                 <p>
-
                     Життя саме визначить,
                     з якої професії почнеться твій шлях.
-
                 </p>
 
 
-                <div class="career-random-box">
-
+                <div
+                    id="careerRandomBox"
+                    class="career-random-box"
+                >
 
                     <div class="career-random-dice">
                         🎲
                     </div>
 
-
                     <strong>
                         ГОТОВИЙ?
                     </strong>
 
-
                     <span>
-
                         Натисни кнопку,
                         щоб випадково отримати професію.
-
                     </span>
-
 
                 </div>
 
 
                 <button
-                    id="randomCareerButton"
+                    id="getCareerButton"
                     class="main-game-btn"
-                    type="button"
                 >
                     🎲 ОТРИМАТИ ПРОФЕСІЮ
                 </button>
@@ -1718,7 +1935,6 @@ function showCareerRandomScreen() {
 
                 </div>
 
-
             </div>
 
         </section>
@@ -1728,32 +1944,17 @@ function showCareerRandomScreen() {
 
     document
         .getElementById(
-            "randomCareerButton"
+            "getCareerButton"
         )
         .addEventListener(
             "click",
-            () => {
-
-                if (
-                    gameState.player.sector
-                ) {
-
-                    showCareerReveal();
-
-                }
-                else {
-
-                    assignRandomCareer();
-
-                }
-
-            }
+            assignRandomCareer
         );
 
 
     document
         .getElementById(
-            "backFromCareerRandom"
+            "careerRandomBackButton"
         )
         .addEventListener(
             "click",
@@ -1764,7 +1965,7 @@ function showCareerRandomScreen() {
 
 
 /* =========================================================
-   17. ВИПАДКОВА ПРОФЕСІЙНА СФЕРА
+   21. ВИПАДКОВА ПРОФЕСІЯ
 ========================================================= */
 
 function assignRandomCareer() {
@@ -1783,18 +1984,115 @@ function assignRandomCareer() {
         0;
 
 
-    copyStartingStats(
-        gameState.player
-    );
+    const startStats =
+        CAREER_LEVEL_STATS[0];
 
 
-    showCareerReveal();
+    gameState.player.money =
+        startStats.money;
+
+    gameState.player.reputation =
+        startStats.reputation;
+
+    gameState.player.knowledge =
+        startStats.knowledge;
+
+    gameState.player.energy =
+        startStats.energy;
+
+
+    showCareerResult();
 
 }
 
 
 /* =========================================================
-   18. ЕКРАН — ТВІЙ ЖИТТЄВИЙ ШЛЯХ
+   22. ПОКАЗ РЕЗУЛЬТАТУ ПРОФЕСІЇ
+========================================================= */
+
+function showCareerResult() {
+
+    const player =
+        gameState.player;
+
+
+    const sector =
+        player.sector;
+
+
+    const profession =
+        getProfessionName(
+            sector.levels[0]
+        );
+
+
+    const resultBox =
+        document.getElementById(
+            "careerRandomBox"
+        );
+
+
+    const oldButton =
+        document.getElementById(
+            "getCareerButton"
+        );
+
+
+    resultBox.innerHTML = `
+
+        <div class="career-result-reveal">
+
+            <div class="career-result-label">
+                🎉 ТВОЯ ПРОФЕСІЯ
+            </div>
+
+            <div class="career-result-icon">
+                ${sector.icon}
+            </div>
+
+            <div class="career-result-profession">
+                ${profession}
+            </div>
+
+            <div class="career-result-sector">
+                ${sector.name}
+            </div>
+
+            <div class="career-result-text">
+
+                Це перша сходинка
+                твого професійного шляху.
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    const newButton =
+        oldButton.cloneNode(true);
+
+
+    oldButton.replaceWith(
+        newButton
+    );
+
+
+    newButton.textContent =
+        "ПРОДОВЖИТИ →";
+
+
+    newButton.addEventListener(
+        "click",
+        showCareerReveal
+    );
+
+}
+
+
+/* =========================================================
+   23. ЖИТТЄВИЙ ШЛЯХ
 ========================================================= */
 
 function showCareerReveal() {
@@ -1811,17 +2109,41 @@ function showCareerReveal() {
         player.sector;
 
 
-    const levels =
-        sector.levels.map(
-            (
-                profession,
-                index
-            ) => {
+    /*
+       Показуємо зверху рівень 4,
+       а внизу рівень 1.
+
+       Тобто видно:
+       ТИ ТУТ → треба підійматись.
+    */
+
+    const reversedLevels =
+        sector.levels
+            .map(
+                (profession, index) => ({
+                    profession,
+                    index
+                })
+            )
+            .reverse();
+
+
+    const careerHTML =
+        reversedLevels
+            .map(item => {
+
+                const index =
+                    item.index;
+
+
+                const profession =
+                    getProfessionName(
+                        item.profession
+                    );
+
 
                 const stats =
-                    CAREER_LEVEL_STATS[
-                        index
-                    ];
+                    CAREER_LEVEL_STATS[index];
 
 
                 const isCurrent =
@@ -1829,131 +2151,80 @@ function showCareerReveal() {
                     player.careerLevel;
 
 
-                return {
+                return `
 
-                    index,
-
-                    profession:
-                        getProfessionName(
-                            profession,
-                            player.gender
-                        ),
-
-                    stats,
-
-                    isCurrent
-
-                };
-
-            }
-        );
-
-
-    const careerHTML =
-        levels
-            .reverse()
-            .map(level => `
-
-                <div
-                    class="
-                        career-path-card
-                        career-step
-                        ${
-                            level.isCurrent
+                    <div
+                        class="
+                            career-path-card
+                            ${
+                                isCurrent
                                 ? "career-current"
-                                : "career-locked"
-                        }
-                    "
-                    data-level="${level.index + 1}"
-                >
+                                : "career-future"
+                            }
+                        "
+                    >
 
+                        <div class="career-level-top">
 
-                    <div class="career-level-top">
+                            <span class="career-level-number">
+                                ${index + 1}
+                            </span>
 
-
-                        <span class="career-level-number">
-
-                            ${level.index + 1}
-
-                        </span>
-
-
-                        ${
-                            level.isCurrent
+                            ${
+                                isCurrent
 
                                 ? `
-
-                                    <span class="career-current-label">
-
-                                        👤 ТИ ТУТ
-
+                                    <span
+                                        class="
+                                            career-current-label
+                                        "
+                                    >
+                                        ТИ ТУТ
                                     </span>
-
                                   `
 
                                 : `
-
                                     <span class="career-up-label">
-
                                         ↑
-
                                     </span>
-
                                   `
-                        }
+                            }
+
+                        </div>
 
 
-                    </div>
+                        <div class="career-job-name">
+
+                            ${profession}
+
+                        </div>
 
 
-                    <div class="career-job-name">
+                        <div class="career-level-stats">
 
-                        ${level.profession}
+                            <span>
+                                💰 ${formatMoney(stats.money)}
+                            </span>
 
-                    </div>
+                            <span>
+                                ⭐ ${stats.reputation}
+                            </span>
 
+                            <span>
+                                🧠 ${stats.knowledge}
+                            </span>
 
-                    <div class="career-level-stats">
+                            <span>
+                                ⚡ ${stats.energy}
+                            </span>
 
-
-                        <span>
-
-                            💰
-                            ${level.stats.money.toLocaleString("uk-UA")}
-
-                        </span>
-
-
-                        <span>
-
-                            ⭐
-                            ${level.stats.reputation}
-
-                        </span>
-
-
-                        <span>
-
-                            🧠
-                            ${level.stats.knowledge}
-
-                        </span>
-
-
-                        <span>
-
-                            ⚡
-                            ${level.stats.energy}
-
-                        </span>
-
+                        </div>
 
                     </div>
 
+                `;
 
-                </div>
-
-            `)
+            })
             .join("");
 
 
@@ -1963,19 +2234,22 @@ function showCareerReveal() {
 
 
             <button
-                id="backFromCareer"
+                id="careerBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
 
 
-            <div class="temporary-game-card career-screen-card">
+            <div
+                class="
+                    temporary-game-card
+                    career-screen-card
+                "
+            >
 
 
                 <div class="career-raifik-side">
-
 
                     <img
                         src="assets/raifik.png"
@@ -1986,24 +2260,17 @@ function showCareerReveal() {
 
                     <div class="raifik-career-message">
 
-
                         <strong>
-
                             Мрія — твоя ціль.
-
                         </strong>
 
-
-                        <br>
-
+                        <br><br>
 
                         А кар'єра — шлях,
                         який допоможе тобі
                         до неї дістатися.
 
-
                     </div>
-
 
                 </div>
 
@@ -2013,24 +2280,19 @@ function showCareerReveal() {
 
                     <div class="career-sector-badge">
 
-
                         <span>
                             ${sector.icon}
                         </span>
-
 
                         <strong>
                             ${sector.name}
                         </strong>
 
-
                     </div>
 
 
                     <h2>
-
                         Ось твій життєвий шлях
-
                     </h2>
 
 
@@ -2046,13 +2308,10 @@ function showCareerReveal() {
                     </p>
 
 
-                    <div class="career-path career-ladder">
-
+                    <div class="career-ladder">
 
                         <div class="career-goal-label">
-
                             🏆 КАР'ЄРНА ВЕРШИНА
-
                         </div>
 
 
@@ -2060,11 +2319,8 @@ function showCareerReveal() {
 
 
                         <div class="career-start-label">
-
                             👤 ТИ ПОЧИНАЄШ ТУТ
-
                         </div>
-
 
                     </div>
 
@@ -2072,14 +2328,11 @@ function showCareerReveal() {
                     <button
                         id="chooseDreamButton"
                         class="main-game-btn"
-                        type="button"
                     >
                         ОБРАТИ МРІЮ
                     </button>
 
-
                 </div>
-
 
             </div>
 
@@ -2100,7 +2353,7 @@ function showCareerReveal() {
 
     document
         .getElementById(
-            "backFromCareer"
+            "careerBackButton"
         )
         .addEventListener(
             "click",
@@ -2111,34 +2364,10 @@ function showCareerReveal() {
 
 
 /* =========================================================
-   19. ГЕНЕРАЦІЯ 4 МРІЙ
-========================================================= */
+   24. ВИБІР МРІЇ — ВСІ 20
 
-function prepareDreamOptions() {
-
-    if (
-        gameState.dreamOptions.length
-    ) {
-
-        return;
-
-    }
-
-
-    gameState.dreamOptions =
-        shuffleArray(
-            DREAMS
-        )
-        .slice(
-            0,
-            4
-        );
-
-}
-
-
-/* =========================================================
-   20. ЕКРАН ВИБОРУ МРІЇ
+   CSS:
+   4 В РЯД × 5 РЯДІВ.
 ========================================================= */
 
 function showDreamSelection() {
@@ -2147,68 +2376,78 @@ function showDreamSelection() {
         "dream";
 
 
-    prepareDreamOptions();
+    gameState.selectedDreamId =
+        gameState.player.dream?.id || null;
 
 
     const dreamsHTML =
-        gameState.dreamOptions
-            .map(dream => `
+        DREAMS
+            .map(dream => {
 
-                <button
-                    class="
-                        dream-option
-                        dream-card
-                        ${
-                            gameState.pendingDream &&
-                            gameState.pendingDream.id === dream.id
+                const visual = dream.image
+
+                    ? `
+                        <img
+                            src="${dream.image}"
+                            class="dream-card-image"
+                            alt="${dream.name}"
+                        >
+                      `
+
+                    : `
+                        <div class="dream-icon">
+                            ${dream.icon}
+                        </div>
+                      `;
+
+
+                return `
+
+                    <button
+                        class="
+                            dream-option
+                            ${
+                                gameState.selectedDreamId === dream.id
                                 ? "selected"
                                 : ""
-                        }
-                    "
-                    data-dream="${dream.id}"
-                    type="button"
-                >
+                            }
+                        "
+                        data-dream="${dream.id}"
+                    >
 
+                        ${visual}
 
-                    <div class="dream-card-top">
-
-                        <div class="dream-icon">
-
-                            ${dream.icon}
-
+                        <div class="dream-name">
+                            ${dream.name}
                         </div>
 
-                    </div>
+                    </button>
 
+                `;
 
-                    <strong class="dream-name">
-
-                        ${dream.name}
-
-                    </strong>
-
-
-                </button>
-
-            `)
+            })
             .join("");
 
 
     setScreen(`
 
-        <section class="game-screen">
+        <section class="game-screen dream-scroll-screen">
 
 
             <button
-                id="backFromDream"
+                id="dreamBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
 
 
-            <div class="temporary-game-card dream-selection-card">
+            <div
+                class="
+                    temporary-game-card
+                    dream-selection-card
+                "
+            >
 
 
                 <img
@@ -2220,11 +2459,8 @@ function showDreamSelection() {
 
                 <div class="dream-selection-content">
 
-
                     <h2>
-
-                        Тепер обери свою Мрію ✨
-
+                        Обери свою Мрію ✨
                     </h2>
 
 
@@ -2248,9 +2484,7 @@ function showDreamSelection() {
                         class="dream-details"
                     ></div>
 
-
                 </div>
-
 
             </div>
 
@@ -2267,13 +2501,10 @@ function showDreamSelection() {
 
             button.addEventListener(
                 "click",
-                () => {
-
+                () =>
                     previewDream(
                         button.dataset.dream
-                    );
-
-                }
+                    )
             );
 
         });
@@ -2281,7 +2512,7 @@ function showDreamSelection() {
 
     document
         .getElementById(
-            "backFromDream"
+            "dreamBackButton"
         )
         .addEventListener(
             "click",
@@ -2289,11 +2520,12 @@ function showDreamSelection() {
         );
 
 
-    if (
-        gameState.pendingDream
-    ) {
+    if (gameState.selectedDreamId) {
 
-        renderDreamDetails();
+        previewDream(
+            gameState.selectedDreamId,
+            false
+        );
 
     }
 
@@ -2301,29 +2533,30 @@ function showDreamSelection() {
 
 
 /* =========================================================
-   21. ПЕРЕГЛЯД МРІЇ
+   25. ПЕРЕГЛЯД МРІЇ
+
+   Перший клік НЕ підтверджує вибір.
 ========================================================= */
 
-function previewDream(dreamId) {
+function previewDream(
+    dreamId,
+    scrollToDetails = true
+) {
 
     const dream =
-        gameState
-            .dreamOptions
-            .find(
-                item =>
-                    item.id === dreamId
-            );
+        DREAMS.find(
+            item =>
+                item.id === dreamId
+        );
 
 
     if (!dream) {
-
         return;
-
     }
 
 
-    gameState.pendingDream =
-        dream;
+    gameState.selectedDreamId =
+        dreamId;
 
 
     document
@@ -2332,55 +2565,24 @@ function previewDream(dreamId) {
         )
         .forEach(button => {
 
-            button
-                .classList
-                .toggle(
-
-                    "selected",
-
-                    button.dataset.dream ===
-                    dreamId
-
-                );
+            button.classList.toggle(
+                "selected",
+                button.dataset.dream ===
+                dreamId
+            );
 
         });
 
 
-    renderDreamDetails();
-
-}
-
-
-/* =========================================================
-   22. ПОКАЗ ПОКАЗНИКІВ МРІЇ
-========================================================= */
-
-function renderDreamDetails() {
-
-    const container =
+    const details =
         document.getElementById(
             "dreamDetails"
         );
 
 
-    const dream =
-        gameState.pendingDream;
-
-
-    if (
-        !container ||
-        !dream
-    ) {
-
-        return;
-
-    }
-
-
-    container.innerHTML = `
+    details.innerHTML = `
 
         <div class="dream-details-card">
-
 
             <h3>
 
@@ -2391,46 +2593,34 @@ function renderDreamDetails() {
 
 
             <p>
-
-                Для здійснення цієї Мрії потрібно:
-
+                Для досягнення цієї Мрії
+                потрібно накопичити:
             </p>
 
 
             <div class="dream-requirements">
 
-
                 <span>
-
                     💰
-                    ${dream.requirements.money.toLocaleString("uk-UA")}
-
+                    ${formatMoney(
+                        dream.requirements.money
+                    )}
                 </span>
 
-
                 <span>
-
                     ⭐
                     ${dream.requirements.reputation}
-
                 </span>
 
-
                 <span>
-
                     🧠
                     ${dream.requirements.knowledge}
-
                 </span>
-
 
                 <span>
-
                     ⚡
                     ${dream.requirements.energy}
-
                 </span>
-
 
             </div>
 
@@ -2438,11 +2628,9 @@ function renderDreamDetails() {
             <button
                 id="confirmDreamButton"
                 class="main-game-btn"
-                type="button"
             >
                 ОБРАТИ ЦЮ МРІЮ
             </button>
-
 
         </div>
 
@@ -2455,231 +2643,110 @@ function renderDreamDetails() {
         )
         .addEventListener(
             "click",
-            confirmDream
+            () =>
+                selectDream(
+                    dreamId
+                )
         );
+
+
+    if (scrollToDetails) {
+
+        details.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+    }
 
 }
 
 
 /* =========================================================
-   23. ПІДТВЕРДЖЕННЯ МРІЇ
+   26. ЗБЕРЕЖЕННЯ МРІЇ
 ========================================================= */
 
-function confirmDream() {
+function selectDream(dreamId) {
 
-    if (
-        !gameState.pendingDream
-    ) {
+    const dream =
+        DREAMS.find(
+            item =>
+                item.id === dreamId
+        );
 
+
+    if (!dream) {
         return;
-
     }
 
 
     gameState.player.dream =
-        gameState.pendingDream;
+        dream;
 
 
-    showDreamConfirmed();
-
-}
+    createAIPlayers();
 
 
-/* =========================================================
-   24. МРІЮ ОБРАНО
-========================================================= */
-
-function showDreamConfirmed() {
-
-    gameState.phase =
-        "dream-confirmed";
-
-
-    const player =
-        gameState.player;
-
-
-    setScreen(`
-
-        <section class="game-screen">
-
-
-            <div class="dream-confirmed-card">
-
-
-                <div class="dream-confirmed-icon">
-
-                    ✨
-
-                </div>
-
-
-                <h2>
-
-                    МРІЮ ОБРАНО
-
-                </h2>
-
-
-                <div class="dream-confirmed-sector">
-
-                    ${player.sector.icon}
-
-                    <strong>
-
-                        ${player.sector.name}
-
-                    </strong>
-
-                </div>
-
-
-                <h3>
-
-                    ${player.dream.icon}
-
-                    ${player.dream.name}
-
-                </h3>
-
-
-                <div class="dream-confirmed-actions">
-
-
-                    <button
-                        id="changeDreamButton"
-                        class="secondary-game-btn"
-                        type="button"
-                    >
-                        ← ЗМІНИТИ МРІЮ
-                    </button>
-
-
-                    <button
-                        id="continueAfterDreamButton"
-                        class="main-game-btn"
-                        type="button"
-                    >
-                        ПРОДОВЖИТИ
-                    </button>
-
-
-                </div>
-
-
-            </div>
-
-
-        </section>
-
-    `);
-
-
-    document
-        .getElementById(
-            "changeDreamButton"
-        )
-        .addEventListener(
-            "click",
-            showDreamSelection
-        );
-
-
-    document
-        .getElementById(
-            "continueAfterDreamButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                createAIPlayers();
-
-                showBeforeGameScreen();
-
-            }
-        );
+    showBeforeGameScreen();
 
 }
 
 
 /* =========================================================
-   25. СТВОРЕННЯ AI-СУПЕРНИКІВ
+   27. AI-ГРАВЦІ
+
+   Вони використовують:
+   - ті самі професії
+   - ті самі 20 Мрій
+   - ті самі фішки
 ========================================================= */
 
 function createAIPlayers() {
 
-    gameState.opponents =
-        [];
+    gameState.opponents = [];
 
-
-    /*
-       Викидаємо фішку,
-       яку вибрав гравець.
-
-       Потім перемішуємо —
-       тому AI також не повторяться.
-    */
 
     const availableTokens =
-        shuffleArray(
-
-            TOKENS.filter(
-                token =>
-                    token.id !==
-                    gameState.player.token.id
-            )
-
+        TOKENS.filter(
+            token =>
+                token.id !==
+                gameState.player.token.id
         );
 
 
-    const availablePeople =
-        shuffleArray([
+    const aiProfiles = [
 
-            {
-                name: "Марко",
-                gender: "male"
-            },
+        {
+            name: "Софія",
+            gender: "girl"
+        },
 
-            {
-                name: "Софія",
-                gender: "female"
-            },
+        {
+            name: "Марко",
+            gender: "boy"
+        },
 
-            {
-                name: "Макс",
-                gender: "male"
-            },
+        {
+            name: "Анна",
+            gender: "girl"
+        },
 
-            {
-                name: "Анна",
-                gender: "female"
-            },
+        {
+            name: "Лео",
+            gender: "boy"
+        },
 
-            {
-                name: "Лео",
-                gender: "male"
-            },
+        {
+            name: "Мія",
+            gender: "girl"
+        },
 
-            {
-                name: "Мія",
-                gender: "female"
-            }
+        {
+            name: "Макс",
+            gender: "boy"
+        }
 
-        ]);
-
-
-    const availableDreams =
-        shuffleArray(
-
-            DREAMS.filter(
-                dream =>
-                    !gameState.player.dream ||
-                    dream.id !==
-                    gameState.player.dream.id
-            )
-
-        );
+    ];
 
 
     for (
@@ -2688,8 +2755,8 @@ function createAIPlayers() {
         i++
     ) {
 
-        const person =
-            availablePeople[i];
+        const profile =
+            aiProfiles[i];
 
 
         const sector =
@@ -2698,55 +2765,58 @@ function createAIPlayers() {
             );
 
 
+        const randomTokenIndex =
+            randomNumber(
+                0,
+                availableTokens.length - 1
+            );
+
+
+        const token =
+            availableTokens.splice(
+                randomTokenIndex,
+                1
+            )[0];
+
+
         const ai = {
 
-            id:
-                `ai-${i + 1}`,
+            id: `ai-${i + 1}`,
 
             name:
-                person.name,
+                profile.name,
 
             gender:
-                person.gender,
+                profile.gender,
 
-            token:
-                availableTokens[i],
+            token,
 
             sector,
 
-            careerLevel:
-                0,
+            careerLevel: 0,
 
             dream:
-                availableDreams[i],
+                randomItem(
+                    DREAMS
+                ),
 
             money:
-                0,
+                GAME_CONFIG.startingStats.money,
 
             reputation:
-                0,
+                GAME_CONFIG.startingStats.reputation,
 
             knowledge:
-                0,
+                GAME_CONFIG.startingStats.knowledge,
 
             energy:
-                0,
+                GAME_CONFIG.startingStats.energy,
 
-            circle:
-                "big",
+            circle: "small",
 
-            position:
-                1,
-
-            finished:
-                false
+            position: 1
 
         };
-
-
-        copyStartingStats(
-            ai
-        );
 
 
         gameState.opponents.push(
@@ -2759,7 +2829,13 @@ function createAIPlayers() {
 
 
 /* =========================================================
-   26. ЕКРАН ТРЬОХ УЧАСНИКІВ
+   28. ЕКРАН ПЕРЕД СТАРТОМ
+
+   УСІ ТРОЄ ПОКАЗАНІ ОДНАКОВО:
+   - фішка
+   - ім'я
+   - професія
+   - мрія
 ========================================================= */
 
 function showBeforeGameScreen() {
@@ -2771,7 +2847,6 @@ function showBeforeGameScreen() {
     const participants = [
 
         gameState.player,
-
         ...gameState.opponents
 
     ];
@@ -2780,6 +2855,17 @@ function showBeforeGameScreen() {
     const participantsHTML =
         participants
             .map(participant => {
+
+                const profession =
+                    getProfessionName(
+                        participant
+                            .sector
+                            .levels[
+                                participant.careerLevel
+                            ],
+                        participant.gender
+                    );
+
 
                 const isPlayer =
                     participant.id ===
@@ -2793,27 +2879,26 @@ function showBeforeGameScreen() {
                             participant-preview-card
                             ${
                                 isPlayer
-                                    ? "participant-is-player"
-                                    : ""
+                                ? "participant-is-player"
+                                : ""
                             }
                         "
                     >
 
-
                         ${
                             isPlayer
 
-                                ? `
+                            ? `
+                                <span
+                                    class="
+                                        participant-you-label
+                                    "
+                                >
+                                    ЦЕ ТИ
+                                </span>
+                              `
 
-                                    <div class="participant-you-label">
-
-                                        ЦЕ ТИ
-
-                                    </div>
-
-                                  `
-
-                                : ""
+                            : ""
                         }
 
 
@@ -2824,34 +2909,46 @@ function showBeforeGameScreen() {
                         >
 
 
-                        <strong class="participant-preview-name">
-
+                        <div
+                            class="
+                                participant-preview-name
+                            "
+                        >
                             ${participant.name}
+                        </div>
 
-                        </strong>
 
-
-                        <span class="participant-preview-profession">
+                        <div
+                            class="
+                                participant-preview-profession
+                            "
+                        >
 
                             ${participant.sector.icon}
 
-                            ${getParticipantProfession(participant)}
+                            ${profession}
 
-                        </span>
+                        </div>
 
 
-                        <span class="participant-preview-dream">
+                        <div
+                            class="
+                                participant-preview-dream
+                            "
+                        >
 
-                            ✨ Мрія:
+                            <span>
+                                Мрія
+                            </span>
 
                             <strong>
 
+                                ${participant.dream.icon}
                                 ${participant.dream.name}
 
                             </strong>
 
-                        </span>
-
+                        </div>
 
                     </div>
 
@@ -2867,9 +2964,8 @@ function showBeforeGameScreen() {
 
 
             <button
-                id="backFromPlayers"
+                id="beforeGameBackButton"
                 class="screen-back-button"
-                type="button"
             >
                 ← Назад
             </button>
@@ -2877,18 +2973,16 @@ function showBeforeGameScreen() {
 
             <div class="before-game-content">
 
-
                 <h2>
-
                     Ти не один у цій історії 😉
-
                 </h2>
 
 
                 <p>
 
-                    Разом із тобою свій шлях
-                    проходитимуть ще двоє гравців.
+                    Разом із тобою
+                    свій шлях проходитимуть
+                    ще двоє гравців.
 
                 </p>
 
@@ -2903,11 +2997,9 @@ function showBeforeGameScreen() {
                 <button
                     id="goToBoardButton"
                     class="main-game-btn"
-                    type="button"
                 >
-                    ПОЧАТИ ГРУ
+                    ВИЙТИ НА СТАРТ
                 </button>
-
 
             </div>
 
@@ -2928,18 +3020,18 @@ function showBeforeGameScreen() {
 
     document
         .getElementById(
-            "backFromPlayers"
+            "beforeGameBackButton"
         )
         .addEventListener(
             "click",
-            showDreamConfirmed
+            showDreamSelection
         );
 
 }
 
 
 /* =========================================================
-   27. ІГРОВИЙ ЕКРАН
+   29. ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
 ========================================================= */
 
 function showGameBoard() {
@@ -2948,35 +3040,22 @@ function showGameBoard() {
         "game";
 
 
+    gameState.currentTurn =
+        "player";
+
+
     const player =
         gameState.player;
 
 
-    const legendHTML =
-        Object
-            .values(
-                CELL_TYPES
-            )
-            .map(type => `
-
-                <button
-                    class="cell-type-info-button"
-                    data-type="${type.id}"
-                    type="button"
-                >
-
-                    <span>
-                        ${type.icon}
-                    </span>
-
-                    <strong>
-                        ${type.name}
-                    </strong>
-
-                </button>
-
-            `)
-            .join("");
+    const profession =
+        getProfessionName(
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ]
+        );
 
 
     const opponentsHTML =
@@ -2985,8 +3064,7 @@ function showGameBoard() {
 
                 <button
                     class="mini-opponent-button"
-                    data-player="${ai.id}"
-                    type="button"
+                    data-player-id="${ai.id}"
                 >
 
                     <img
@@ -3004,12 +3082,40 @@ function showGameBoard() {
             .join("");
 
 
+    const cellTypesHTML = [
+
+        CELL_TYPES.income,
+        CELL_TYPES.bank,
+        CELL_TYPES.event,
+        CELL_TYPES.life,
+        CELL_TYPES.fate
+
+    ]
+        .map(type => `
+
+            <button
+                class="cell-type-info-button"
+                data-cell-type="${type.id}"
+            >
+
+                <span>
+                    ${type.icon}
+                </span>
+
+                <strong>
+                    ${type.name}
+                </strong>
+
+            </button>
+
+        `)
+        .join("");
+
+
     setScreen(`
 
         <section class="main-board-screen">
 
-
-            <!-- МАЛЕНЬКЕ ЛОГО -->
 
             <img
                 src="assets/logo.png"
@@ -3025,134 +3131,91 @@ function showGameBoard() {
 
                 <div class="player-profile">
 
-
                     <img
                         src="${player.token.image}"
                         class="player-token-preview"
                         alt="${player.token.name}"
                     >
 
-
                     <div>
 
-
                         <strong>
-
                             ${player.name}
-
                         </strong>
 
-
                         <small>
-
-                            ${getParticipantProfession(player)}
-
+                            ${profession}
                         </small>
 
-
                     </div>
-
 
                 </div>
 
 
                 <div class="player-stats">
 
-
                     <div>
-
                         💰
-
                         <span id="moneyValue">
-
-                            ${player.money.toLocaleString("uk-UA")}
-
+                            ${formatMoney(player.money)}
                         </span>
-
                     </div>
 
-
                     <div>
-
                         ⭐
-
                         <span id="reputationValue">
-
                             ${player.reputation}
-
                         </span>
-
                     </div>
 
-
                     <div>
-
                         🧠
-
                         <span id="knowledgeValue">
-
                             ${player.knowledge}
-
                         </span>
-
                     </div>
-
 
                     <div>
-
                         ⚡
-
                         <span id="energyValue">
-
                             ${player.energy}
-
                         </span>
-
                     </div>
-
 
                 </div>
 
 
                 <div class="dream-mini">
 
-
                     <span>
-
                         ✨ Моя Мрія
-
                     </span>
 
-
                     <strong>
+
+                        ${player.dream.icon}
 
                         ${player.dream.name}
 
                     </strong>
-
 
                 </div>
 
 
                 <div class="board-help-block">
 
-
                     <h3>
-
                         ТИПИ КОМІРОК
-
                     </h3>
 
 
                     <div class="cell-type-list">
 
-                        ${legendHTML}
+                        ${cellTypesHTML}
 
                     </div>
 
-
                 </div>
-
 
             </aside>
 
@@ -3167,65 +3230,36 @@ function showGameBoard() {
 
                 <div
                     id="bigCircle"
-                    class="board-circle big-circle"
+                    class="
+                        board-circle
+                        big-circle
+                    "
                 ></div>
 
 
                 <div
                     id="smallCircle"
-                    class="board-circle small-circle"
+                    class="
+                        board-circle
+                        small-circle
+                    "
                 ></div>
 
 
-                <div
+                <button
                     id="dreamCenter"
                     class="dream-center"
                 >
 
                     <span>
-
                         ✨
-
                     </span>
 
                     <strong>
-
                         МРІЯ
-
                     </strong>
 
-                </div>
-
-
-                <div
-                    id="eventCardPanel"
-                    class="event-card-panel"
-                >
-
-                    <span class="event-card-question">
-
-                        ?
-
-                    </span>
-
-
-                    <strong>
-
-                        ПОТОЧНА КАРТКА
-
-                    </strong>
-
-
-                    <small>
-
-                        Тут з'явиться подія
-                        після твого ходу.
-
-                    </small>
-
-
-                </div>
-
+                </button>
 
             </main>
 
@@ -3236,9 +3270,7 @@ function showGameBoard() {
 
 
                 <div class="dice-title">
-
                     Твій хід
-
                 </div>
 
 
@@ -3246,16 +3278,13 @@ function showGameBoard() {
                     id="dice"
                     class="dice"
                 >
-
                     ⚀
-
                 </div>
 
 
                 <button
                     id="rollDiceButton"
                     class="main-game-btn"
-                    type="button"
                 >
                     КИНУТИ КУБИК
                 </button>
@@ -3266,18 +3295,42 @@ function showGameBoard() {
                     class="dice-message"
                 >
 
-                    Райфик: кидай кубик 🎲
+                    Райфик:
+                    кидай кубик 🎲
+
+                </div>
+
+
+                <!-- ПОТОЧНА КАРТКА ТЕПЕР СПРАВА -->
+
+                <div
+                    id="currentCardPanel"
+                    class="current-card-panel"
+                >
+
+                    <div class="current-card-empty">
+
+                        <span>
+                            ?
+                        </span>
+
+                        <strong>
+                            ПОТОЧНА КАРТКА
+                        </strong>
+
+                        <small>
+                            Тут з'явиться твоя подія
+                        </small>
+
+                    </div>
 
                 </div>
 
 
                 <div class="other-players-block">
 
-
                     <h3>
-
                         ГРАВЦІ
-
                     </h3>
 
 
@@ -3287,7 +3340,6 @@ function showGameBoard() {
 
                     </div>
 
-
                 </div>
 
 
@@ -3296,11 +3348,10 @@ function showGameBoard() {
                     class="game-log"
                 ></div>
 
-
             </aside>
 
 
-            <!-- МОДАЛКА -->
+            <!-- МОДАЛКА ІНФОРМАЦІЇ -->
 
             <div
                 id="gameInfoModal"
@@ -3308,28 +3359,21 @@ function showGameBoard() {
                 hidden
             >
 
-
                 <div class="game-info-modal-card">
 
-
                     <button
-                        id="closeGameInfoModal"
+                        id="gameInfoClose"
                         class="game-info-close"
-                        type="button"
                     >
-
-                        ✕
-
+                        ×
                     </button>
 
 
                     <div
-                        id="gameInfoModalContent"
+                        id="gameInfoContent"
                     ></div>
 
-
                 </div>
-
 
             </div>
 
@@ -3343,6 +3387,9 @@ function showGameBoard() {
 
 
     placeAllPieces();
+
+
+    updatePlayerStatsUI();
 
 
     document
@@ -3363,13 +3410,10 @@ function showGameBoard() {
 
             button.addEventListener(
                 "click",
-                () => {
-
+                () =>
                     showCellTypeInfo(
-                        button.dataset.type
-                    );
-
-                }
+                        button.dataset.cellType
+                    )
             );
 
         });
@@ -3383,13 +3427,10 @@ function showGameBoard() {
 
             button.addEventListener(
                 "click",
-                () => {
-
+                () =>
                     showParticipantInfo(
-                        button.dataset.player
-                    );
-
-                }
+                        button.dataset.playerId
+                    )
             );
 
         });
@@ -3397,7 +3438,17 @@ function showGameBoard() {
 
     document
         .getElementById(
-            "closeGameInfoModal"
+            "dreamCenter"
+        )
+        .addEventListener(
+            "click",
+            showDreamProgress
+        );
+
+
+    document
+        .getElementById(
+            "gameInfoClose"
         )
         .addEventListener(
             "click",
@@ -3405,174 +3456,60 @@ function showGameBoard() {
         );
 
 
-    const dreamCenter =
-        document.getElementById(
-            "dreamCenter"
-        );
-
-
-    dreamCenter.addEventListener(
-        "dragover",
-        event => {
-
-            event.preventDefault();
-
-        }
-    );
-
-
-    dreamCenter.addEventListener(
-        "drop",
-        event => {
-
-            event.preventDefault();
-
-            tryMovePlayerToDream();
-
-        }
-    );
-
-
-    dreamCenter.addEventListener(
-        "click",
-        tryMovePlayerToDream
+    showRaifikCurrentCardMessage(
+        "Починаємо з малого кола. Кидай кубик 🎲"
     );
 
 }
 
 
 /* =========================================================
-   28. СТВОРЕННЯ ПОЛЯ
+   30. СТВОРЕННЯ ПОЛЯ
 ========================================================= */
 
 function createBoard() {
 
     createCircleCells(
-
         document.getElementById(
-            "bigCircle"
+            "smallCircle"
         ),
-
-        GAME_CONFIG.bigCircleCells,
-
-        "big"
-
+        SMALL_BOARD,
+        "small",
+        "clockwise"
     );
 
 
     createCircleCells(
-
         document.getElementById(
-            "smallCircle"
+            "bigCircle"
         ),
-
-        GAME_CONFIG.smallCircleCells,
-
-        "small"
-
+        BIG_BOARD,
+        "big",
+        "counterclockwise"
     );
 
 }
 
 
 /* =========================================================
-   29. ТИП КОМІРКИ
-========================================================= */
-
-function getCellType(
-    circleName,
-    position
-) {
-
-    const special =
-        SPECIAL_CELLS[
-            circleName
-        ]?.[
-            position
-        ];
-
-
-    if (special) {
-
-        return {
-
-            id: "special",
-
-            icon:
-                special.icon,
-
-            name:
-                special.name,
-
-            description:
-                "Спеціальна комірка. Її механіку допишемо окремо.",
-
-            special:
-                true
-
-        };
-
-    }
-
-
-    if (
-        circleName === "big" &&
-        position === 1
-    ) {
-
-        return CELL_TYPES.income;
-
-    }
-
-
-    const pattern = [
-
-        CELL_TYPES.bank,
-
-        CELL_TYPES.event,
-
-        CELL_TYPES.life,
-
-        CELL_TYPES.fate,
-
-        CELL_TYPES.energy,
-
-        CELL_TYPES.event
-
-    ];
-
-
-    return pattern[
-        (
-            position -
-            2 +
-            pattern.length
-        )
-        %
-        pattern.length
-    ];
-
-}
-
-
-/* =========================================================
-   30. СТВОРЕННЯ 56 / 28 КОМІРОК
-
-   ВЕЛИКЕ:
-   1 → 56 ПРОТИ ГОДИННИКОВОЇ СТРІЛКИ
+   31. СТВОРЕННЯ КОМІРОК ПО КОЛУ
 
    МАЛЕ:
-   1 → 28 ЗА ГОДИННИКОВОЮ СТРІЛКОЮ
+   за годинниковою стрілкою.
+
+   ВЕЛИКЕ:
+   проти годинникової.
 ========================================================= */
 
 function createCircleCells(
     container,
-    amount,
-    circleName
+    boardData,
+    circleName,
+    direction
 ) {
 
-    container.innerHTML =
-        "";
+    const amount =
+        boardData.length;
 
 
     for (
@@ -3581,16 +3518,17 @@ function createCircleCells(
         i++
     ) {
 
-        const cell =
-            document.createElement(
-                "div"
-            );
+        const typeId =
+            boardData[i - 1];
 
 
         const type =
-            getCellType(
-                circleName,
-                i
+            CELL_TYPES[typeId];
+
+
+        const cell =
+            document.createElement(
+                "div"
             );
 
 
@@ -3599,7 +3537,11 @@ function createCircleCells(
 
 
         if (
-            type.special
+            typeId === "lounge" ||
+            typeId === "academy" ||
+            typeId === "transition" ||
+            typeId === "income" ||
+            typeId === "dreamCheck"
         ) {
 
             cell.classList.add(
@@ -3618,22 +3560,18 @@ function createCircleCells(
 
 
         cell.dataset.type =
-            type.id;
+            typeId;
 
 
-        const direction =
-            circleName === "big"
-                ? -1
-                : 1;
-
-
-        const startAngle =
-            -90;
+        const directionMultiplier =
+            direction === "clockwise"
+            ? 1
+            : -1;
 
 
         const angle =
-            startAngle +
-            direction *
+            -90 +
+            directionMultiplier *
             (
                 (i - 1) *
                 360 /
@@ -3648,23 +3586,21 @@ function createCircleCells(
 
 
         const radius =
-            47;
+            circleName === "big"
+            ? 48
+            : 47;
 
 
         const x =
             50 +
-            radius *
-            Math.cos(
-                radians
-            );
+            Math.cos(radians) *
+            radius;
 
 
         const y =
             50 +
-            radius *
-            Math.sin(
-                radians
-            );
+            Math.sin(radians) *
+            radius;
 
 
         cell.style.left =
@@ -3682,59 +3618,29 @@ function createCircleCells(
         cell.innerHTML = `
 
             <span class="cell-number">
-
                 ${i}
-
             </span>
 
-
             <span class="cell-icon">
-
                 ${type.icon}
-
             </span>
 
         `;
 
 
-        cell.title =
-            type.name;
-
-
         cell.addEventListener(
             "click",
-            () => {
-
-                if (
-                    gameState.targetPosition !==
-                    null
-                ) {
-
-                    tryMovePlayerToCell(
-                        cell
-                    );
-
-                }
-                else {
-
-                    showCellInfo(
-                        circleName,
-                        i
-                    );
-
-                }
-
-            }
+            () =>
+                handleBoardCellClick(
+                    cell
+                )
         );
 
 
         cell.addEventListener(
             "dragover",
-            event => {
-
-                event.preventDefault();
-
-            }
+            event =>
+                event.preventDefault()
         );
 
 
@@ -3762,7 +3668,47 @@ function createCircleCells(
 
 
 /* =========================================================
-   31. РОЗМІЩЕННЯ ВСІХ ФІШОК
+   32. КЛІК ПО КОМІРЦІ
+
+   Якщо це ціль — рухаємось.
+   Якщо ні — показуємо, що це за комірка.
+========================================================= */
+
+function handleBoardCellClick(cell) {
+
+    const position =
+        Number(
+            cell.dataset.position
+        );
+
+
+    const circle =
+        cell.dataset.circle;
+
+
+    if (
+        gameState.target &&
+        gameState.target.circle === circle &&
+        gameState.target.position === position
+    ) {
+
+        tryMovePlayerToCell(
+            cell
+        );
+
+        return;
+    }
+
+
+    showCellTypeInfo(
+        cell.dataset.type
+    );
+
+}
+
+
+/* =========================================================
+   33. РОЗМІЩЕННЯ ФІШОК
 ========================================================= */
 
 function placeAllPieces() {
@@ -3774,20 +3720,18 @@ function placeAllPieces() {
 
 
     gameState.opponents
-        .forEach(ai => {
-
+        .forEach(ai =>
             placePiece(
                 ai,
                 false
-            );
-
-        });
+            )
+        );
 
 }
 
 
 /* =========================================================
-   32. РОЗМІЩЕННЯ ОДНІЄЇ ФІШКИ
+   34. ОДНА ФІШКА
 ========================================================= */
 
 function placePiece(
@@ -3804,9 +3748,7 @@ function placePiece(
 
 
     if (!cell) {
-
         return;
-
     }
 
 
@@ -3822,8 +3764,10 @@ function placePiece(
 
     piece.className =
         participant.id === "player"
-            ? "board-piece player-piece"
-            : "board-piece ai-piece";
+
+        ? "board-piece player-piece"
+
+        : "board-piece ai-piece";
 
 
     piece.dataset.playerId =
@@ -3834,9 +3778,7 @@ function placePiece(
         participant.name;
 
 
-    if (
-        draggable
-    ) {
+    if (draggable) {
 
         piece.draggable =
             true;
@@ -3846,12 +3788,10 @@ function placePiece(
             "dragstart",
             event => {
 
-                event
-                    .dataTransfer
-                    .setData(
-                        "text/plain",
-                        participant.id
-                    );
+                event.dataTransfer.setData(
+                    "text/plain",
+                    participant.id
+                );
 
             }
         );
@@ -3867,35 +3807,33 @@ function placePiece(
 
 
 /* =========================================================
-   33. КУБИК
+   35. КУБИК
 ========================================================= */
 
 const DICE_FACES = [
 
     "⚀",
-
     "⚁",
-
     "⚂",
-
     "⚃",
-
     "⚄",
-
     "⚅"
 
 ];
 
 
-function rollDice() {
+async function rollDice() {
 
     if (
         gameState.currentTurn !==
         "player"
     ) {
-
         return;
+    }
 
+
+    if (gameState.target) {
+        return;
     }
 
 
@@ -3911,199 +3849,188 @@ function rollDice() {
         );
 
 
-    const message =
-        document.getElementById(
-            "diceMessage"
-        );
-
-
     button.disabled =
         true;
 
 
-    let count =
-        0;
+    showRaifikCurrentCardMessage(
+        "Кидаємо кубик... 🎲"
+    );
 
 
-    const animation =
-        setInterval(
-            () => {
+    for (
+        let i = 0;
+        i < 10;
+        i++
+    ) {
 
-                dice.textContent =
-                    DICE_FACES[
-                        randomNumber(
-                            0,
-                            5
-                        )
-                    ];
-
-
-                count++;
+        dice.textContent =
+            randomItem(
+                DICE_FACES
+            );
 
 
-                if (
-                    count >= 10
-                ) {
+        await delay(70);
 
-                    clearInterval(
-                        animation
-                    );
+    }
 
 
-                    const value =
-                        randomNumber(
-                            1,
-                            6
-                        );
-
-
-                    gameState.diceValue =
-                        value;
-
-
-                    dice.textContent =
-                        DICE_FACES[
-                            value - 1
-                        ];
-
-
-                    calculateTargetCell(
-                        value
-                    );
-
-
-                    message.innerHTML = `
-
-                        Випало
-
-                        <strong>
-                            ${value}
-                        </strong>.
-
-                        <br>
-
-                        Перенеси свою фішку
-                        на підсвічену комірку.
-
-                    `;
-
-                }
-
-            },
-
-            70
+    const value =
+        randomNumber(
+            1,
+            6
         );
+
+
+    gameState.diceValue =
+        value;
+
+
+    dice.textContent =
+        DICE_FACES[
+            value - 1
+        ];
+
+
+    calculateTargetCell(
+        value
+    );
+
+
+    document
+        .getElementById(
+            "diceMessage"
+        )
+        .innerHTML = `
+
+            Випало
+            <strong>${value}</strong>.
+
+            <br>
+
+            Натисни на
+            підсвічену комірку
+            або перенеси туди фішку.
+
+        `;
+
+
+    showRaifikCurrentCardMessage(
+
+        `Випало ${value}! Тепер перенеси свою фішку на підсвічену комірку 😊`
+
+    );
 
 }
 
 
 /* =========================================================
-   34. РОЗРАХУНОК НАСТУПНОЇ ПОЗИЦІЇ
+   36. КУДИ ПЕРЕЙДЕ ГРАВЕЦЬ
 ========================================================= */
 
-function calculateNextPosition(
+function calculateDestination(
     participant,
     steps
 ) {
 
-    if (
-        participant.circle ===
-        "big"
-    ) {
-
-        const total =
-            participant.position +
-            steps;
-
-
-        if (
-            total <=
-            GAME_CONFIG.bigCircleCells
-        ) {
-
-            return {
-
-                circle:
-                    "big",
-
-                position:
-                    total
-
-            };
-
-        }
-
-
-        return {
-
-            circle:
-                "small",
-
-            position:
-                total -
-                GAME_CONFIG.bigCircleCells
-
-        };
-
-    }
-
+    /*
+       МАЛЕ КОЛО
+    */
 
     if (
         participant.circle ===
         "small"
     ) {
 
-        const total =
+        const target =
             participant.position +
             steps;
 
 
         if (
-            total <=
+            target <
             GAME_CONFIG.smallCircleCells
         ) {
 
             return {
-
-                circle:
-                    "small",
-
-                position:
-                    total
-
+                circle: "small",
+                position: target
             };
 
         }
 
 
+        /*
+           Якщо потрапили ТОЧНО
+           на 28 — спочатку стаємо на 28.
+        */
+
+        if (
+            target ===
+            GAME_CONFIG.smallCircleCells
+        ) {
+
+            return {
+                circle: "small",
+                position:
+                    GAME_CONFIG.smallCircleCells
+            };
+
+        }
+
+
+        /*
+           Якщо кроки переходять через 28 —
+           одразу виходимо на велике коло.
+        */
+
+        const overflow =
+            target -
+            GAME_CONFIG.smallCircleCells;
+
+
         return {
-
-            circle:
-                "dream",
-
+            circle: "big",
             position:
-                1
-
+                Math.max(
+                    1,
+                    overflow
+                )
         };
 
     }
 
 
+    /*
+       ВЕЛИКЕ КОЛО
+    */
+
+    let target =
+        participant.position +
+        steps;
+
+
+    while (
+        target >
+        GAME_CONFIG.bigCircleCells
+    ) {
+
+        target -=
+            GAME_CONFIG.bigCircleCells;
+
+    }
+
+
     return {
-
-        circle:
-            "dream",
-
-        position:
-            1
-
+        circle: "big",
+        position: target
     };
 
 }
 
 
 /* =========================================================
-   35. ПІДСВІЧЕННЯ ЦІЛЬОВОЇ КОМІРКИ
+   37. ПІДСВІЧЕННЯ ЦІЛІ
 ========================================================= */
 
 function calculateTargetCell(
@@ -4113,70 +4040,30 @@ function calculateTargetCell(
     clearTargetCells();
 
 
-    const target =
-        calculateNextPosition(
-
+    const destination =
+        calculateDestination(
             gameState.player,
-
             steps
-
         );
 
 
-    gameState.targetCircle =
-        target.circle;
-
-
-    gameState.targetPosition =
-        target.position;
-
-
-    if (
-        target.circle ===
-        "dream"
-    ) {
-
-        const dreamCenter =
-            document.getElementById(
-                "dreamCenter"
-            );
-
-
-        if (
-            dreamCenter
-        ) {
-
-            dreamCenter
-                .classList
-                .add(
-                    "target-cell"
-                );
-
-        }
-
-
-        return;
-
-    }
+    gameState.target =
+        destination;
 
 
     const targetCell =
         document.querySelector(
 
-            `.${target.circle}-cell[data-position="${target.position}"]`
+            `.${destination.circle}-cell[data-position="${destination.position}"]`
 
         );
 
 
-    if (
-        targetCell
-    ) {
+    if (targetCell) {
 
-        targetCell
-            .classList
-            .add(
-                "target-cell"
-            );
+        targetCell.classList.add(
+            "target-cell"
+        );
 
     }
 
@@ -4184,63 +4071,53 @@ function calculateTargetCell(
 
 
 /* =========================================================
-   36. РУХ ФІШКИ ГРАВЦЯ
+   38. РУХ ГРАВЦЯ
 ========================================================= */
 
-function tryMovePlayerToCell(
+async function tryMovePlayerToCell(
     cell
 ) {
 
-    if (
-        gameState.targetPosition ===
-        null
-    ) {
-
+    if (!gameState.target) {
         return;
-
     }
-
-
-    const cellPosition =
-        Number(
-            cell.dataset.position
-        );
 
 
     const circle =
         cell.dataset.circle;
 
 
+    const position =
+        Number(
+            cell.dataset.position
+        );
+
+
     if (
         circle !==
-        gameState.targetCircle
+        gameState.target.circle ||
+        position !==
+        gameState.target.position
     ) {
 
         return;
-
     }
 
 
-    if (
-        cellPosition !==
-        gameState.targetPosition
-    ) {
-
-        return;
-
-    }
+    const player =
+        gameState.player;
 
 
-    gameState.player.circle =
+    player.circle =
         circle;
 
 
-    gameState.player.position =
-        cellPosition;
+    player.position =
+        position;
 
 
     movePieceDOM(
-        "player",
+        player.id,
         cell
     );
 
@@ -4248,136 +4125,118 @@ function tryMovePlayerToCell(
     clearTargetCells();
 
 
-    gameState.targetPosition =
+    gameState.target =
         null;
 
 
-    gameState.targetCircle =
-        null;
-
-
-    const message =
-        document.getElementById(
+    document
+        .getElementById(
             "diceMessage"
-        );
-
-
-    if (
-        message
-    ) {
-
-        message.innerHTML = `
+        )
+        .innerHTML = `
 
             Чудово!
 
             <br>
 
             Ти на комірці
-
             <strong>
-                ${cellPosition}
+                ${position}
             </strong>.
 
         `;
 
-    }
-
-
-    showCurrentCellCard(
-        circle,
-        cellPosition
-    );
-
 
     addLog(
 
-        `${gameState.player.name} →
-        ${
-            circle === "big"
-                ? "велике"
-                : "мале"
-        } коло,
-        клітинка ${cellPosition}`
+        `${player.name} → ${circle === "small" ? "мале" : "велике"} коло, комірка ${position}`
 
     );
 
 
-    startAITurns();
-
-}
-
-
-/* =========================================================
-   37. ПЕРЕХІД ДО МРІЇ
-========================================================= */
-
-function tryMovePlayerToDream() {
+    /*
+       Якщо стали на 28 малого кола —
+       красиво переходимо на велике.
+    */
 
     if (
-        gameState.targetCircle !==
-        "dream"
+        circle === "small" &&
+        position ===
+        GAME_CONFIG.smallCircleCells
     ) {
+
+        await handleSmallToBigTransition(
+            player
+        );
 
         return;
-
     }
 
 
-    gameState.player.finished =
-        true;
-
-
-    const dreamCenter =
-        document.getElementById(
-            "dreamCenter"
-        );
-
-
-    movePieceDOM(
-        "player",
-        dreamCenter
-    );
-
-
-    clearTargetCells();
-
-
-    gameState.targetCircle =
-        null;
-
-
-    gameState.targetPosition =
-        null;
-
-
-    const message =
-        document.getElementById(
-            "diceMessage"
-        );
-
-
-    if (
-        message
-    ) {
-
-        message.innerHTML = `
-
-            ✨ Ти дістався до Мрії!
-
-        `;
-
-    }
+    await resolvePlayerCell();
 
 }
 
 
 /* =========================================================
-   38. ПЕРЕМІЩЕННЯ ФІШКИ В DOM
+   39. ПЕРЕХІД МАЛЕ → ВЕЛИКЕ
+========================================================= */
+
+async function handleSmallToBigTransition(
+    participant
+) {
+
+    showRaifikCurrentCardMessage(
+
+        "Ти пройшов перший етап! ✨ Переходимо на велике життєве коло."
+
+    );
+
+
+    await delay(1300);
+
+
+    participant.circle =
+        "big";
+
+
+    participant.position =
+        1;
+
+
+    const firstBigCell =
+        document.querySelector(
+            `.big-cell[data-position="1"]`
+        );
+
+
+    if (firstBigCell) {
+
+        movePieceDOM(
+            participant.id,
+            firstBigCell
+        );
+
+    }
+
+
+    addLog(
+        `${participant.name} перейшов(ла) на велике коло.`
+    );
+
+
+    await resolvePlayerCell();
+
+}
+
+
+/* =========================================================
+   40. ПЕРЕМІЩЕННЯ ФІШКИ В DOM
 ========================================================= */
 
 function movePieceDOM(
     participantId,
-    destination
+    cell
 ) {
 
     const piece =
@@ -4388,12 +4247,9 @@ function movePieceDOM(
         );
 
 
-    if (
-        piece &&
-        destination
-    ) {
+    if (piece) {
 
-        destination.appendChild(
+        cell.appendChild(
             piece
         );
 
@@ -4403,57 +4259,225 @@ function movePieceDOM(
 
 
 /* =========================================================
-   39. ПОТОЧНА КАРТКА / ПОДІЯ
+   41. ЩО ЗА КОМІРКА?
 ========================================================= */
 
-function showCurrentCellCard(
-    circleName,
-    position
+function getParticipantCellType(
+    participant
+) {
+
+    const boardData =
+        participant.circle ===
+        "small"
+
+        ? SMALL_BOARD
+
+        : BIG_BOARD;
+
+
+    return boardData[
+        participant.position - 1
+    ];
+
+}
+
+
+/* =========================================================
+   42. ОБРОБКА КОМІРКИ ГРАВЦЯ
+========================================================= */
+
+async function resolvePlayerCell() {
+
+    const typeId =
+        getParticipantCellType(
+            gameState.player
+        );
+
+
+    const type =
+        CELL_TYPES[typeId];
+
+
+    showRaifikCurrentCardMessage(
+
+        `${type.icon} Ти потрапив на «${type.name}».`
+
+    );
+
+
+    switch (typeId) {
+
+        case "income":
+
+            applyEffects(
+                gameState.player,
+                {
+                    money: 10000
+                }
+            );
+
+            showResultCard(
+                type,
+                "Отримання доходу",
+                "Ти отримуєш свій дохід.",
+                {
+                    money: 10000
+                }
+            );
+
+            await delay(1300);
+
+            startAITurns();
+
+            break;
+
+
+        case "event":
+
+            showThreeCardChoice(
+                "event"
+            );
+
+            break;
+
+
+        case "bank":
+
+            showThreeCardChoice(
+                "bank"
+            );
+
+            break;
+
+
+        case "life":
+
+            showLifeNumberChoice();
+
+            break;
+
+
+        case "fate":
+
+            await showRandomFateCard();
+
+            break;
+
+
+        case "lounge":
+
+            applyEffects(
+                gameState.player,
+                {
+                    energy: 15
+                }
+            );
+
+            showResultCard(
+                type,
+                "Lounge & Хобі",
+                "Ти відпочив і відновив сили.",
+                {
+                    energy: 15
+                }
+            );
+
+            await delay(1500);
+
+            startAITurns();
+
+            break;
+
+
+        case "academy":
+
+            applyEffects(
+                gameState.player,
+                {
+                    knowledge: 15,
+                    reputation: 5
+                }
+            );
+
+            showResultCard(
+                type,
+                "Академія & Soft Skills",
+                "Нові знання допомагають тобі рухатися вперед.",
+                {
+                    knowledge: 15,
+                    reputation: 5
+                }
+            );
+
+            await delay(1500);
+
+            startAITurns();
+
+            break;
+
+
+        case "dreamCheck":
+
+            showDreamProgress();
+
+            setTimeout(
+                startAITurns,
+                1600
+            );
+
+            break;
+
+
+        default:
+
+            startAITurns();
+
+    }
+
+}
+
+
+/* =========================================================
+   43. РАЙФИК У ПРАВІЙ ПАНЕЛІ
+========================================================= */
+
+function showRaifikCurrentCardMessage(
+    text
 ) {
 
     const panel =
         document.getElementById(
-            "eventCardPanel"
+            "currentCardPanel"
         );
 
 
-    if (
-        !panel
-    ) {
-
+    if (!panel) {
         return;
-
     }
-
-
-    const type =
-        getCellType(
-            circleName,
-            position
-        );
 
 
     panel.innerHTML = `
 
-        <span class="event-card-question">
+        <div class="raifik-board-message">
 
-            ${type.icon}
+            <img
+                src="assets/raifik.png"
+                alt="Райфик"
+            >
 
-        </span>
+            <div>
 
+                <strong>
+                    Райфик
+                </strong>
 
-        <strong>
+                <p>
+                    ${text}
+                </p>
 
-            ${type.name}
+            </div>
 
-        </strong>
-
-
-        <small>
-
-            ${type.description}
-
-        </small>
+        </div>
 
     `;
 
@@ -4461,155 +4485,911 @@ function showCurrentCellCard(
 
 
 /* =========================================================
-   40. AI-СУПЕРНИКИ
+   44. ВИБІР 1 ІЗ 3 КАРТОК
+
+   Подія / Банк.
 ========================================================= */
 
-function startAITurns() {
+function showThreeCardChoice(
+    deckName
+) {
+
+    const panel =
+        document.getElementById(
+            "currentCardPanel"
+        );
+
+
+    const deck =
+        CARD_DECKS[deckName];
+
+
+    const shuffled =
+        [...deck]
+            .sort(
+                () =>
+                    Math.random() -
+                    0.5
+            );
+
+
+    const choices =
+        shuffled.slice(
+            0,
+            3
+        );
+
+
+    const type =
+        CELL_TYPES[deckName];
+
+
+    panel.innerHTML = `
+
+        <div class="current-card-choice">
+
+            <div class="current-card-raifik-line">
+
+                <img
+                    src="assets/raifik.png"
+                    alt="Райфик"
+                >
+
+                <div>
+
+                    <strong>
+                        ${type.icon}
+                        ${type.name}
+                    </strong>
+
+                    <p>
+                        Обери одну з трьох карток.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="three-card-choice">
+
+                ${choices
+                    .map(
+                        (card, index) => `
+
+                            <button
+                                class="
+                                    hidden-game-card
+                                "
+                                data-choice="${index}"
+                            >
+
+                                <span>
+                                    ?
+                                </span>
+
+                            </button>
+
+                        `
+                    )
+                    .join("")
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+
+    document
+        .querySelectorAll(
+            ".hidden-game-card"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const card =
+                        choices[
+                            Number(
+                                button.dataset.choice
+                            )
+                        ];
+
+
+                    resolveChosenPlayerCard(
+                        deckName,
+                        card
+                    );
+
+                }
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   45. ЖИТТЯ — ЧИСЛО 1–20
+========================================================= */
+
+function showLifeNumberChoice() {
+
+    const panel =
+        document.getElementById(
+            "currentCardPanel"
+        );
+
+
+    panel.innerHTML = `
+
+        <div class="life-number-card">
+
+            <div class="current-card-raifik-line">
+
+                <img
+                    src="assets/raifik.png"
+                    alt="Райфик"
+                >
+
+                <div>
+
+                    <strong>
+                        ❤️ ЖИТТЯ
+                    </strong>
+
+                    <p>
+                        Загадай число
+                        від 1 до 20.
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <input
+                id="lifeNumberInput"
+                type="number"
+                min="1"
+                max="20"
+                placeholder="1–20"
+            >
+
+
+            <button
+                id="lifeNumberButton"
+                class="main-game-btn"
+            >
+                ВІДКРИТИ КАРТКУ
+            </button>
+
+
+            <div
+                id="lifeNumberError"
+                class="form-error"
+            ></div>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "lifeNumberButton"
+        )
+        .addEventListener(
+            "click",
+            resolveLifeNumber
+        );
+
+}
+
+
+/* =========================================================
+   46. ВИБІР КАРТКИ ЖИТТЯ ЗА ЧИСЛОМ
+========================================================= */
+
+function resolveLifeNumber() {
+
+    const input =
+        document.getElementById(
+            "lifeNumberInput"
+        );
+
+
+    const value =
+        Number(
+            input.value
+        );
+
+
+    if (
+        !value ||
+        value < 1 ||
+        value > 20
+    ) {
+
+        document
+            .getElementById(
+                "lifeNumberError"
+            )
+            .textContent =
+            "Введи число від 1 до 20 🙂";
+
+        return;
+    }
+
+
+    const deck =
+        CARD_DECKS.life;
+
+
+    /*
+       Поки карток 5.
+       Коли буде 20 —
+       номер буде напряму відповідати картці.
+    */
+
+    const index =
+        (value - 1) %
+        deck.length;
+
+
+    resolveChosenPlayerCard(
+        "life",
+        deck[index]
+    );
+
+}
+
+
+/* =========================================================
+   47. ДОЛЯ — РАНДОМНА КАРТКА
+========================================================= */
+
+async function showRandomFateCard() {
+
+    showRaifikCurrentCardMessage(
+
+        "⚡ Доля вирішить сама... Зараз відкриємо випадкову картку."
+
+    );
+
+
+    await delay(1100);
+
+
+    const card =
+        randomItem(
+            CARD_DECKS.fate
+        );
+
+
+    resolveChosenPlayerCard(
+        "fate",
+        card
+    );
+
+}
+
+
+/* =========================================================
+   48. РЕЗУЛЬТАТ КАРТКИ ГРАВЦЯ
+========================================================= */
+
+function resolveChosenPlayerCard(
+    deckName,
+    card
+) {
+
+    applyEffects(
+        gameState.player,
+        card.effects
+    );
+
+
+    showResultCard(
+        CELL_TYPES[deckName],
+        card.title,
+        card.text,
+        card.effects
+    );
+
+
+    addLog(
+        `${gameState.player.name}: ${card.title}`
+    );
+
+
+    setTimeout(
+        startAITurns,
+        1800
+    );
+
+}
+
+
+/* =========================================================
+   49. ЗАСТОСУВАННЯ ЕФЕКТІВ
+========================================================= */
+
+function applyEffects(
+    participant,
+    effects
+) {
+
+    Object
+        .entries(effects)
+        .forEach(
+            ([key, value]) => {
+
+                if (
+                    typeof participant[key]
+                    === "number"
+                ) {
+
+                    participant[key] +=
+                        value;
+
+                }
+
+            }
+        );
+
+
+    /*
+       Не даємо енергії піти нижче 0.
+    */
+
+    participant.energy =
+        Math.max(
+            0,
+            participant.energy
+        );
+
+
+    participant.reputation =
+        Math.max(
+            0,
+            participant.reputation
+        );
+
+
+    participant.knowledge =
+        Math.max(
+            0,
+            participant.knowledge
+        );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   50. ТЕКСТ ЕФЕКТІВ
+========================================================= */
+
+function effectsHTML(effects) {
+
+    const icons = {
+        money: "💰",
+        reputation: "⭐",
+        knowledge: "🧠",
+        energy: "⚡"
+    };
+
+
+    return Object
+        .entries(effects)
+        .map(
+            ([key, value]) => `
+
+                <span>
+
+                    ${icons[key] || ""}
+
+                    ${
+                        value > 0
+                        ? "+"
+                        : ""
+                    }${formatMoney(value)}
+
+                </span>
+
+            `
+        )
+        .join("");
+
+}
+
+
+/* =========================================================
+   51. ПОКАЗ ВІДКРИТОЇ КАРТКИ
+========================================================= */
+
+function showResultCard(
+    type,
+    title,
+    text,
+    effects
+) {
+
+    const panel =
+        document.getElementById(
+            "currentCardPanel"
+        );
+
+
+    if (!panel) {
+        return;
+    }
+
+
+    panel.innerHTML = `
+
+        <div class="revealed-current-card">
+
+            <div class="revealed-card-type">
+
+                ${type.icon}
+
+                ${type.name}
+
+            </div>
+
+
+            <h3>
+                ${title}
+            </h3>
+
+
+            <p>
+                ${text}
+            </p>
+
+
+            <div class="revealed-card-effects">
+
+                ${effectsHTML(effects)}
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   52. ОНОВЛЕННЯ ПОКАЗНИКІВ
+========================================================= */
+
+function updatePlayerStatsUI() {
+
+    const player =
+        gameState.player;
+
+
+    const money =
+        document.getElementById(
+            "moneyValue"
+        );
+
+
+    const reputation =
+        document.getElementById(
+            "reputationValue"
+        );
+
+
+    const knowledge =
+        document.getElementById(
+            "knowledgeValue"
+        );
+
+
+    const energy =
+        document.getElementById(
+            "energyValue"
+        );
+
+
+    if (money) {
+
+        money.textContent =
+            formatMoney(
+                player.money
+            );
+
+    }
+
+
+    if (reputation) {
+
+        reputation.textContent =
+            player.reputation;
+
+    }
+
+
+    if (knowledge) {
+
+        knowledge.textContent =
+            player.knowledge;
+
+    }
+
+
+    if (energy) {
+
+        energy.textContent =
+            player.energy;
+
+    }
+
+}
+
+
+/* =========================================================
+   53. КАР'ЄРНЕ ЗРОСТАННЯ
+
+   Поки перевіряємо за сталими показниками.
+========================================================= */
+
+function checkCareerProgress(
+    participant
+) {
+
+    if (
+        participant.careerLevel >=
+        CAREER_LEVEL_STATS.length - 1
+    ) {
+
+        return;
+    }
+
+
+    const nextLevelIndex =
+        participant.careerLevel + 1;
+
+
+    const required =
+        CAREER_LEVEL_STATS[
+            nextLevelIndex
+        ];
+
+
+    const ready =
+        participant.money >=
+            required.money &&
+
+        participant.reputation >=
+            required.reputation &&
+
+        participant.knowledge >=
+            required.knowledge &&
+
+        participant.energy >=
+            required.energy;
+
+
+    if (!ready) {
+        return;
+    }
+
+
+    participant.careerLevel =
+        nextLevelIndex;
+
+
+    const profession =
+        getProfessionName(
+            participant
+                .sector
+                .levels[
+                    participant.careerLevel
+                ],
+            participant.gender
+        );
+
+
+    addLog(
+        `Кар'єрне зростання: ${profession}`
+    );
+
+
+    showRaifikCurrentCardMessage(
+
+        `🎉 Вітаю! Ти піднявся на нову кар'єрну сходинку: ${profession}!`
+
+    );
+
+}
+
+
+/* =========================================================
+   54. AI — ПОЧАТОК ХОДІВ
+
+   НЕ МИТТЄВО.
+========================================================= */
+
+async function startAITurns() {
+
+    if (
+        gameState.currentTurn ===
+        "ai"
+    ) {
+        return;
+    }
+
 
     gameState.currentTurn =
         "ai";
 
 
-    const rollButton =
+    const button =
         document.getElementById(
             "rollDiceButton"
         );
 
 
-    if (
-        rollButton
+    if (button) {
+        button.disabled = true;
+    }
+
+
+    for (
+        const ai of gameState.opponents
     ) {
 
-        rollButton.disabled =
-            true;
+        await runAITurn(
+            ai
+        );
 
     }
 
 
-    let index =
-        0;
+    gameState.currentTurn =
+        "player";
 
 
-    function nextAI() {
-
-        if (
-            index >=
-            gameState.opponents.length
-        ) {
-
-            gameState.currentTurn =
-                "player";
+    if (button) {
+        button.disabled = false;
+    }
 
 
-            if (
-                rollButton
-            ) {
-
-                rollButton.disabled =
-                    false;
-
-            }
+    const diceTitle =
+        document.querySelector(
+            ".dice-title"
+        );
 
 
-            const message =
-                document.getElementById(
-                    "diceMessage"
+    if (diceTitle) {
+        diceTitle.textContent =
+            "Твій хід";
+    }
+
+
+    document
+        .getElementById(
+            "diceMessage"
+        )
+        .innerHTML = `
+
+            Твій хід!
+
+            <br>
+
+            Кидай кубик 🎲
+
+        `;
+
+
+    showRaifikCurrentCardMessage(
+
+        `${gameState.player.name}, тепер твій хід. Кидай кубик 🎲`
+
+    );
+
+}
+
+
+/* =========================================================
+   55. ОДИН ХІД AI
+========================================================= */
+
+async function runAITurn(ai) {
+
+    const diceTitle =
+        document.querySelector(
+            ".dice-title"
+        );
+
+
+    const diceElement =
+        document.getElementById(
+            "dice"
+        );
+
+
+    if (diceTitle) {
+
+        diceTitle.textContent =
+            `Хід: ${ai.name}`;
+
+    }
+
+
+    showRaifikCurrentCardMessage(
+
+        `Зараз ходить ${ai.name}. Подивимось, що випаде 🙂`
+
+    );
+
+
+    await delay(
+        GAME_CONFIG.aiThinkDelay
+    );
+
+
+    for (
+        let i = 0;
+        i < 7;
+        i++
+    ) {
+
+        if (diceElement) {
+
+            diceElement.textContent =
+                randomItem(
+                    DICE_FACES
                 );
-
-
-            if (
-                message
-            ) {
-
-                message.innerHTML = `
-
-                    Твій хід!
-
-                    <br>
-
-                    Кидай кубик 🎲
-
-                `;
-
-            }
-
-
-            return;
 
         }
 
 
-        const ai =
-            gameState.opponents[
-                index
+        await delay(80);
+
+    }
+
+
+    const dice =
+        randomNumber(
+            1,
+            6
+        );
+
+
+    if (diceElement) {
+
+        diceElement.textContent =
+            DICE_FACES[
+                dice - 1
             ];
 
+    }
+
+
+    addLog(
+
+        `${ai.name} кидає ${dice}`
+
+    );
+
+
+    await moveAIStepByStep(
+        ai,
+        dice
+    );
+
+
+    await resolveAICell(
+        ai
+    );
+
+
+    await delay(
+        GAME_CONFIG.aiResultDelay
+    );
+
+}
+
+
+/* =========================================================
+   56. AI РУХАЄТЬСЯ ПОСТУПОВО
+========================================================= */
+
+async function moveAIStepByStep(
+    ai,
+    steps
+) {
+
+    for (
+        let step = 0;
+        step < steps;
+        step++
+    ) {
+
+        /*
+           МАЛЕ КОЛО
+        */
 
         if (
-            ai.finished
+            ai.circle ===
+            "small"
         ) {
 
-            index++;
+            if (
+                ai.position <
+                GAME_CONFIG.smallCircleCells
+            ) {
 
-            nextAI();
+                ai.position++;
 
-            return;
+            } else {
+
+                ai.circle =
+                    "big";
+
+                ai.position =
+                    1;
+
+            }
 
         }
 
 
-        const dice =
-            randomNumber(
-                1,
-                6
-            );
+        /*
+           ВЕЛИКЕ КОЛО
+        */
 
-
-        const target =
-            calculateNextPosition(
-                ai,
-                dice
-            );
-
-
-        if (
-            target.circle ===
-            "dream"
-        ) {
-
-            ai.finished =
-                true;
-
-
-            const dreamCenter =
-                document.getElementById(
-                    "dreamCenter"
-                );
-
-
-            movePieceDOM(
-                ai.id,
-                dreamCenter
-            );
-
-        }
         else {
 
-            ai.circle =
-                target.circle;
+            ai.position++;
 
 
-            ai.position =
-                target.position;
+            if (
+                ai.position >
+                GAME_CONFIG.bigCircleCells
+            ) {
+
+                ai.position =
+                    1;
+
+            }
+
+        }
 
 
-            const cell =
-                document.querySelector(
+        const cell =
+            document.querySelector(
 
-                    `.${target.circle}-cell[data-position="${target.position}"]`
+                `.${ai.circle}-cell[data-position="${ai.position}"]`
 
-                );
+            );
 
+
+        if (cell) {
 
             movePieceDOM(
                 ai.id,
@@ -4619,35 +5399,274 @@ function startAITurns() {
         }
 
 
-        addLog(
-
-            `${ai.name} 🎲 ${dice} → ${
-                target.circle === "dream"
-                    ? "Мрія"
-                    : `клітинка ${target.position}`
-            }`
-
-        );
-
-
-        index++;
-
-
-        setTimeout(
-            nextAI,
-            650
+        await delay(
+            GAME_CONFIG.aiMoveStepDelay
         );
 
     }
 
 
-    nextAI();
+    /*
+       Якщо AI завершив мале коло
+       саме на 28.
+    */
+
+    if (
+        ai.circle === "small" &&
+        ai.position ===
+        GAME_CONFIG.smallCircleCells
+    ) {
+
+        await delay(500);
+
+
+        ai.circle =
+            "big";
+
+
+        ai.position =
+            1;
+
+
+        const firstBigCell =
+            document.querySelector(
+                `.big-cell[data-position="1"]`
+            );
+
+
+        if (firstBigCell) {
+
+            movePieceDOM(
+                ai.id,
+                firstBigCell
+            );
+
+        }
+
+
+        addLog(
+            `${ai.name} перейшов(ла) на велике коло.`
+        );
+
+    }
 
 }
 
 
 /* =========================================================
-   41. ІНФОРМАЦІЯ ПРО ТИП КОМІРКИ
+   57. AI — РЕЗУЛЬТАТ КОМІРКИ
+========================================================= */
+
+async function resolveAICell(ai) {
+
+    const typeId =
+        getParticipantCellType(
+            ai
+        );
+
+
+    const type =
+        CELL_TYPES[typeId];
+
+
+    showRaifikCurrentCardMessage(
+
+        `${ai.name} потрапив(ла) на ${type.icon} «${type.name}».`
+
+    );
+
+
+    await delay(700);
+
+
+    let card =
+        null;
+
+
+    switch (typeId) {
+
+        case "income":
+
+            applyEffects(
+                ai,
+                {
+                    money: 10000
+                }
+            );
+
+            showAIResult(
+                ai,
+                "Отримання доходу",
+                {
+                    money: 10000
+                }
+            );
+
+            break;
+
+
+        case "event":
+
+        case "bank":
+
+        case "life":
+
+        case "fate":
+
+            card =
+                randomItem(
+                    CARD_DECKS[
+                        typeId
+                    ]
+                );
+
+
+            applyEffects(
+                ai,
+                card.effects
+            );
+
+
+            showAIResult(
+                ai,
+                card.title,
+                card.effects
+            );
+
+            break;
+
+
+        case "lounge":
+
+            applyEffects(
+                ai,
+                {
+                    energy: 15
+                }
+            );
+
+            showAIResult(
+                ai,
+                "Lounge & Хобі",
+                {
+                    energy: 15
+                }
+            );
+
+            break;
+
+
+        case "academy":
+
+            applyEffects(
+                ai,
+                {
+                    knowledge: 15,
+                    reputation: 5
+                }
+            );
+
+            showAIResult(
+                ai,
+                "Академія & Soft Skills",
+                {
+                    knowledge: 15,
+                    reputation: 5
+                }
+            );
+
+            break;
+
+
+        case "dreamCheck":
+
+            showAIResult(
+                ai,
+                "Перевірка Мрії",
+                {}
+            );
+
+            break;
+
+    }
+
+
+    addLog(
+
+        `${ai.name}: ${type.name}, комірка ${ai.position}`
+
+    );
+
+}
+
+
+/* =========================================================
+   58. РЕЗУЛЬТАТ AI
+========================================================= */
+
+function showAIResult(
+    ai,
+    title,
+    effects
+) {
+
+    const panel =
+        document.getElementById(
+            "currentCardPanel"
+        );
+
+
+    if (!panel) {
+        return;
+    }
+
+
+    panel.innerHTML = `
+
+        <div class="ai-turn-result">
+
+            <img
+                src="${ai.token.image}"
+                alt="${ai.name}"
+            >
+
+            <div>
+
+                <strong>
+                    ${ai.name}
+                </strong>
+
+                <h4>
+                    ${title}
+                </h4>
+
+                ${
+                    Object.keys(effects).length
+
+                    ? `
+                        <div
+                            class="
+                                revealed-card-effects
+                            "
+                        >
+                            ${effectsHTML(effects)}
+                        </div>
+                      `
+
+                    : ""
+                }
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   59. ІНФОРМАЦІЯ ПРО ТИП КОМІРКИ
 ========================================================= */
 
 function showCellTypeInfo(
@@ -4660,12 +5679,8 @@ function showCellTypeInfo(
         ];
 
 
-    if (
-        !type
-    ) {
-
+    if (!type) {
         return;
-
     }
 
 
@@ -4673,27 +5688,17 @@ function showCellTypeInfo(
 
         <div class="cell-info-popup">
 
-
             <div class="cell-info-icon">
-
                 ${type.icon}
-
             </div>
 
-
             <h3>
-
                 ${type.name}
-
             </h3>
 
-
             <p>
-
                 ${type.description}
-
             </p>
-
 
         </div>
 
@@ -4703,63 +5708,7 @@ function showCellTypeInfo(
 
 
 /* =========================================================
-   42. ІНФОРМАЦІЯ ПРО КОНКРЕТНУ КОМІРКУ
-========================================================= */
-
-function showCellInfo(
-    circleName,
-    position
-) {
-
-    const type =
-        getCellType(
-            circleName,
-            position
-        );
-
-
-    openGameInfoModal(`
-
-        <div class="cell-info-popup">
-
-
-            <div class="cell-info-icon">
-
-                ${type.icon}
-
-            </div>
-
-
-            <h3>
-
-                Комірка ${position}
-
-            </h3>
-
-
-            <strong>
-
-                ${type.name}
-
-            </strong>
-
-
-            <p>
-
-                ${type.description}
-
-            </p>
-
-
-        </div>
-
-    `);
-
-}
-
-
-/* =========================================================
-   43. ІНФОРМАЦІЯ ПРО ІНШОГО ГРАВЦЯ
+   60. ІНФОРМАЦІЯ ПРО ІНШОГО ГРАВЦЯ
 ========================================================= */
 
 function showParticipantInfo(
@@ -4767,8 +5716,7 @@ function showParticipantInfo(
 ) {
 
     const participant =
-        gameState
-            .opponents
+        gameState.opponents
             .find(
                 item =>
                     item.id ===
@@ -4776,19 +5724,28 @@ function showParticipantInfo(
             );
 
 
-    if (
-        !participant
-    ) {
-
+    if (!participant) {
         return;
-
     }
+
+
+    const profession =
+        getProfessionName(
+
+            participant
+                .sector
+                .levels[
+                    participant.careerLevel
+                ],
+
+            participant.gender
+
+        );
 
 
     openGameInfoModal(`
 
         <div class="participant-info-popup">
-
 
             <img
                 src="${participant.token.image}"
@@ -4798,68 +5755,39 @@ function showParticipantInfo(
 
 
             <h3>
-
                 ${participant.name}
-
             </h3>
 
 
             <p>
-
                 ${participant.sector.icon}
-
-                ${getParticipantProfession(participant)}
-
+                ${profession}
             </p>
-
-
-            <div class="participant-popup-career">
-
-                Кар'єрний рівень:
-
-                <strong>
-
-                    ${participant.careerLevel + 1}
-
-                </strong>
-
-            </div>
 
 
             <div class="participant-popup-stats">
 
-
                 <span>
-
                     💰
-                    ${participant.money.toLocaleString("uk-UA")}
-
+                    ${formatMoney(
+                        participant.money
+                    )}
                 </span>
 
-
                 <span>
-
                     ⭐
                     ${participant.reputation}
-
                 </span>
 
-
                 <span>
-
                     🧠
                     ${participant.knowledge}
-
                 </span>
-
 
                 <span>
-
                     ⚡
                     ${participant.energy}
-
                 </span>
-
 
             </div>
 
@@ -4869,13 +5797,25 @@ function showParticipantInfo(
                 ✨ Мрія:
 
                 <strong>
-
                     ${participant.dream.name}
-
                 </strong>
 
             </div>
 
+
+            <div class="participant-popup-position">
+
+                ${
+                    participant.circle === "small"
+                    ? "Мале коло"
+                    : "Велике коло"
+                }
+
+                · комірка
+
+                ${participant.position}
+
+            </div>
 
         </div>
 
@@ -4885,12 +5825,144 @@ function showParticipantInfo(
 
 
 /* =========================================================
-   44. МОДАЛКА ІНФОРМАЦІЇ
+   61. ПРОГРЕС МРІЇ
 ========================================================= */
 
-function openGameInfoModal(
-    html
+function showDreamProgress() {
+
+    const player =
+        gameState.player;
+
+
+    const dream =
+        player.dream;
+
+
+    const req =
+        dream.requirements;
+
+
+    openGameInfoModal(`
+
+        <div class="dream-progress-popup">
+
+            <div class="dream-confirmed-icon">
+                ${dream.icon}
+            </div>
+
+            <h3>
+                ${dream.name}
+            </h3>
+
+
+            <p>
+                Твій поточний прогрес:
+            </p>
+
+
+            ${createDreamProgressRow(
+                "💰",
+                "Гроші",
+                player.money,
+                req.money
+            )}
+
+
+            ${createDreamProgressRow(
+                "⭐",
+                "Репутація",
+                player.reputation,
+                req.reputation
+            )}
+
+
+            ${createDreamProgressRow(
+                "🧠",
+                "Знання",
+                player.knowledge,
+                req.knowledge
+            )}
+
+
+            ${createDreamProgressRow(
+                "⚡",
+                "Енергія",
+                player.energy,
+                req.energy
+            )}
+
+        </div>
+
+    `);
+
+}
+
+
+/* =========================================================
+   62. РЯДОК ПРОГРЕСУ МРІЇ
+========================================================= */
+
+function createDreamProgressRow(
+    icon,
+    label,
+    current,
+    required
 ) {
+
+    const percent =
+        Math.min(
+            100,
+            Math.round(
+                current /
+                required *
+                100
+            )
+        );
+
+
+    return `
+
+        <div class="dream-progress-row">
+
+            <div class="dream-progress-title">
+
+                <span>
+                    ${icon}
+                    ${label}
+                </span>
+
+                <strong>
+
+                    ${formatMoney(current)}
+                    /
+                    ${formatMoney(required)}
+
+                </strong>
+
+            </div>
+
+
+            <div class="dream-progress-bar">
+
+                <div
+                    class="dream-progress-fill"
+                    style="width:${percent}%"
+                ></div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   63. МОДАЛКА
+========================================================= */
+
+function openGameInfoModal(html) {
 
     const modal =
         document.getElementById(
@@ -4900,7 +5972,7 @@ function openGameInfoModal(
 
     const content =
         document.getElementById(
-            "gameInfoModalContent"
+            "gameInfoContent"
         );
 
 
@@ -4908,9 +5980,7 @@ function openGameInfoModal(
         !modal ||
         !content
     ) {
-
         return;
-
     }
 
 
@@ -4932,9 +6002,7 @@ function closeGameInfoModal() {
         );
 
 
-    if (
-        modal
-    ) {
+    if (modal) {
 
         modal.hidden =
             true;
@@ -4945,7 +6013,7 @@ function closeGameInfoModal() {
 
 
 /* =========================================================
-   45. ОЧИЩЕННЯ ПІДСВІЧЕНОЇ КОМІРКИ
+   64. ПІДСВІЧУВАННЯ
 ========================================================= */
 
 function clearTargetCells() {
@@ -4956,18 +6024,16 @@ function clearTargetCells() {
         )
         .forEach(
             cell =>
-                cell
-                    .classList
-                    .remove(
-                        "target-cell"
-                    )
+                cell.classList.remove(
+                    "target-cell"
+                )
         );
 
 }
 
 
 /* =========================================================
-   46. ЖУРНАЛ ГРИ
+   65. ЖУРНАЛ ГРИ
 ========================================================= */
 
 function addLog(text) {
@@ -4978,12 +6044,8 @@ function addLog(text) {
         );
 
 
-    if (
-        !log
-    ) {
-
+    if (!log) {
         return;
-
     }
 
 
@@ -5009,7 +6071,7 @@ function addLog(text) {
 
 
 /* =========================================================
-   ЗАПУСК ГРИ
+   66. ЗАПУСК
 ========================================================= */
 
 showStartScreen();
