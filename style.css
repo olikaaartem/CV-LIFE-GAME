@@ -1355,6 +1355,9 @@ button {
 /* =========================================================
    18. ГОЛОВНИЙ ЕКРАН ГРИ
 ========================================================= */
+/* =========================================================
+   ГОЛОВНИЙ ЕКРАН — КОМПАКТНІШИЙ
+========================================================= */
 
 .main-board-screen {
     position: relative;
@@ -1362,36 +1365,36 @@ button {
     width: 100%;
     height: 100vh;
 
-    min-height: 700px;
-
     display: grid;
 
     grid-template-columns:
-        175px
-        minmax(0,1fr)
-        190px;
+        165px
+        minmax(0, 1fr)
+        180px;
 
     gap: 10px;
 
-    align-items: stretch;
+    align-items: center;
 
-    padding:
-        76px
-        10px
-        10px;
+    padding: 12px;
 
     background:
         url("assets/bg-game.png")
-        center center /
-        cover
+        center center / cover
         no-repeat;
 
     overflow: hidden;
 }
 
 
+
+
 /* =========================================================
    19. ЛІВА / ПРАВА ПАНЕЛЬ
+========================================================= */
+
+/* =========================================================
+   БОКОВІ ПАНЕЛІ
 ========================================================= */
 
 .game-info-panel,
@@ -1400,52 +1403,50 @@ button {
 
     z-index: 40;
 
-    height: calc(100vh - 86px);
+    height: calc(100vh - 24px);
 
-    min-height: 610px;
+    max-height: 760px;
 
     padding: 12px 10px;
 
-    border-radius: 17px;
+    border-radius: 18px;
 
-    background:
-        rgba(255,255,255,0.91);
+    background: rgba(255,255,255,0.92);
 
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 
     box-shadow:
-        0 12px 32px
-        rgba(0,0,0,0.16);
+        0 12px 30px rgba(0,0,0,0.15);
 
     overflow-y: auto;
+
+    align-self: center;
 }
 
 
 /* =========================================================
    20. ВЕЛИКЕ ЛОГО ЗЛІВА
 ========================================================= */
+/* =========================================================
+   ЛОГО — ВСЕРЕДИНІ ЛІВОЇ ПАНЕЛІ
+========================================================= */
 
 .board-logo-large {
     display: block;
 
-    width: 145px;
+    width: 150px;
+    height: auto;
 
-    max-height: 65px;
+    max-height: 78px;
 
     object-fit: contain;
 
-    margin:
-        0 auto
-        8px;
+    margin: 0 auto 10px;
 
-    filter:
-        drop-shadow(
-            0 4px 8px
-            rgba(0,0,0,0.12)
-        );
+    position: static !important;
+
+    transform: none !important;
 }
-
 
 /* =========================================================
    21. ПРОФІЛЬ
@@ -3088,4 +3089,127 @@ button {
         font-size: 14px;
     }
 
+}
+/* =========================================================
+   ЦЕНТРАЛЬНА ЗОНА ПОЛЯ
+========================================================= */
+
+.square-game-board {
+    position: relative;
+
+    width: 100%;
+    height: calc(100vh - 30px);
+
+    max-height: 780px;
+
+    min-height: 560px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   ЗОВНІШНІЙ КВАДРАТ
+   ТЕПЕР РОЗМІР ЗАЛЕЖИТЬ ВІД ВИСОТИ ЕКРАНА
+========================================================= */
+
+.outer-square-board {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: min(64vw, 72vh, 720px);
+    height: min(64vw, 72vh, 720px);
+
+    transform: translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   ВНУТРІШНІЙ КВАДРАТ
+========================================================= */
+
+.inner-square-board {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: min(34vw, 39vh, 390px);
+    height: min(34vw, 39vh, 390px);
+
+    transform: translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   КОМІРКИ ТРОХИ МЕНШІ
+========================================================= */
+
+.board-cell {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 8px;
+}
+
+.special-board-cell {
+    width: 38px;
+    height: 38px;
+}
+
+.cell-number {
+    font-size: 7px;
+}
+
+.cell-icon {
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ФІШКИ — ЗАЛИШАЄМО ПОМІТНИМИ
+========================================================= */
+
+.player-piece {
+    width: 58px;
+    height: 58px;
+
+    transform: translate(-50%, -74%);
+
+    z-index: 50;
+}
+
+.ai-piece {
+    width: 46px;
+    height: 46px;
+
+    transform: translate(-50%, -65%);
+
+    z-index: 45;
+}
+
+
+/* =========================================================
+   МРІЯ В ЦЕНТРІ
+========================================================= */
+
+.dream-center {
+    width: 105px;
+    height: 105px;
+
+    border-radius: 21px;
+}
+
+.dream-center span {
+    font-size: 25px;
+}
+
+.dream-center strong {
+    font-size: 15px;
 }
