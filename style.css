@@ -1,13 +1,7 @@
 /* =========================================================
    CV ЖИТТЯ — ЛЮБИ. МРІЙ. ДІЙ.
    STYLE.CSS
-
-   ОНОВЛЕНА ВЕРСІЯ
-   - квадратне поле
-   - компактний екран гри
-   - лого всередині лівої панелі
-   - велика права картка
-   - ручне рішення по картках
+   ВЕРСІЯ ПІД КВАДРАТНЕ ПОЛЕ
 ========================================================= */
 
 
@@ -33,9 +27,7 @@ html {
 
 body {
     font-family: Arial, sans-serif;
-
     background: #111;
-
     color: #1c1c1c;
 
     overflow-x: hidden;
@@ -51,10 +43,6 @@ button {
     -webkit-tap-highlight-color: transparent;
 }
 
-img {
-    max-width: 100%;
-}
-
 
 /* =========================================================
    2. APP
@@ -67,7 +55,7 @@ img {
 
 
 /* =========================================================
-   3. ОСНОВНА КНОПКА
+   3. ОСНОВНА ЖОВТА КНОПКА
 ========================================================= */
 
 .main-game-btn {
@@ -96,12 +84,11 @@ img {
 
     box-shadow:
         0 10px 24px
-        rgba(0, 0, 0, 0.18);
+        rgba(0,0,0,0.18);
 
     transition:
         transform 0.2s ease,
-        box-shadow 0.2s ease,
-        opacity 0.2s ease;
+        box-shadow 0.2s ease;
 }
 
 .main-game-btn:hover {
@@ -109,7 +96,7 @@ img {
 
     box-shadow:
         0 14px 30px
-        rgba(0, 0, 0, 0.23);
+        rgba(0,0,0,0.23);
 }
 
 .main-game-btn:active {
@@ -118,9 +105,7 @@ img {
 
 .main-game-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.45;
-
-    transform: none;
+    opacity: 0.5;
 }
 
 
@@ -141,7 +126,8 @@ img {
     border: none;
     border-radius: 14px;
 
-    background: rgba(255, 255, 255, 0.94);
+    background:
+        rgba(255,255,255,0.94);
 
     color: #222;
 
@@ -152,7 +138,7 @@ img {
 
     box-shadow:
         0 8px 20px
-        rgba(0, 0, 0, 0.14);
+        rgba(0,0,0,0.14);
 }
 
 .screen-back-button:hover {
@@ -172,8 +158,8 @@ img {
 
     background-image:
         linear-gradient(
-            rgba(0, 0, 0, 0.08),
-            rgba(0, 0, 0, 0.16)
+            rgba(0,0,0,0.08),
+            rgba(0,0,0,0.16)
         ),
         url("assets/bg-start.png");
 
@@ -184,7 +170,6 @@ img {
 
 .start-overlay {
     position: absolute;
-
     inset: 0;
 
     display: flex;
@@ -208,7 +193,7 @@ img {
     filter:
         drop-shadow(
             0 10px 24px
-            rgba(0, 0, 0, 0.25)
+            rgba(0,0,0,0.25)
         );
 }
 
@@ -224,7 +209,6 @@ img {
     min-height: 100vh;
 
     display: flex;
-
     align-items: center;
     justify-content: center;
 
@@ -232,8 +216,8 @@ img {
 
     background-image:
         linear-gradient(
-            rgba(255, 255, 255, 0.04),
-            rgba(255, 255, 255, 0.04)
+            rgba(255,255,255,0.04),
+            rgba(255,255,255,0.04)
         ),
         url("assets/bg-start.png");
 
@@ -268,8 +252,8 @@ img {
 .mode-screen {
     background-image:
         linear-gradient(
-            rgba(10, 10, 10, 0.22),
-            rgba(10, 10, 10, 0.22)
+            rgba(10,10,10,0.22),
+            rgba(10,10,10,0.22)
         ),
         url("assets/bg-start.png");
 }
@@ -284,11 +268,11 @@ img {
     border-radius: 28px;
 
     background:
-        rgba(255, 255, 255, 0.96);
+        rgba(255,255,255,0.96);
 
     box-shadow:
         0 24px 68px
-        rgba(0, 0, 0, 0.25);
+        rgba(0,0,0,0.25);
 
     text-align: center;
 }
@@ -296,13 +280,7 @@ img {
 .mode-modal h2 {
     margin-bottom: 10px;
 
-    font-size:
-        clamp(
-            28px,
-            3vw,
-            42px
-        );
-
+    font-size: clamp(28px, 3vw, 42px);
     font-weight: 900;
 }
 
@@ -327,7 +305,7 @@ img {
     border-radius: 50%;
 
     background:
-        rgba(0, 0, 0, 0.07);
+        rgba(0,0,0,0.07);
 
     font-size: 27px;
 
@@ -338,10 +316,7 @@ img {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            2,
-            minmax(0, 1fr)
-        );
+        repeat(2, minmax(0,1fr));
 
     gap: 18px;
 }
@@ -361,12 +336,12 @@ img {
 
     border:
         2px solid
-        rgba(0, 0, 0, 0.06);
+        rgba(0,0,0,0.06);
 
     border-radius: 22px;
 
     background:
-        rgba(255, 255, 255, 0.92);
+        rgba(255,255,255,0.92);
 
     cursor: pointer;
 
@@ -374,14 +349,13 @@ img {
 }
 
 .mode-option:hover {
-    transform:
-        translateY(-4px);
+    transform: translateY(-4px);
 
     border-color: #f0cb00;
 
     box-shadow:
         0 12px 26px
-        rgba(0, 0, 0, 0.11);
+        rgba(0,0,0,0.11);
 }
 
 .mode-icon {
@@ -394,35 +368,28 @@ img {
 
 .mode-option small {
     color: #707070;
-
     line-height: 1.35;
 }
 
 
 /* =========================================================
-   9. УНІВЕРСАЛЬНИЙ SETUP
+   9. УНІВЕРСАЛЬНА КАРТКА SETUP
 ========================================================= */
 
 .temporary-game-card {
-    width:
-        min(
-            1180px,
-            94vw
-        );
+    width: min(1180px, 94vw);
 
     display: grid;
 
     grid-template-columns:
         minmax(220px, 34%)
-        minmax(0, 66%);
+        minmax(0,66%);
 
     gap: 40px;
 
     align-items: center;
 
-    padding:
-        30px
-        36px;
+    padding: 30px 36px;
 
     background: transparent;
 
@@ -437,26 +404,19 @@ img {
 .name-screen-content,
 .token-selection-content,
 .dream-selection-content {
-    padding:
-        28px
-        32px;
+    padding: 28px 32px;
 
     border-radius: 28px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.90
-        );
+        rgba(255,255,255,0.90);
 
     backdrop-filter: blur(9px);
     -webkit-backdrop-filter: blur(9px);
 
     box-shadow:
         0 18px 42px
-        rgba(0, 0, 0, 0.14);
+        rgba(0,0,0,0.14);
 }
 
 .name-screen-content h2,
@@ -464,12 +424,7 @@ img {
 .dream-selection-content h2 {
     margin-bottom: 12px;
 
-    font-size:
-        clamp(
-            30px,
-            3vw,
-            46px
-        );
+    font-size: clamp(30px, 3vw, 46px);
 
     font-weight: 900;
 }
@@ -477,7 +432,7 @@ img {
 .raifik-intro-text,
 .name-question,
 .gender-title {
-    color: #252525 !important;
+    color: #2b2b2b !important;
 
     font-weight: 900 !important;
 
@@ -489,30 +444,18 @@ img {
 .player-name-input {
     width: 100%;
 
-    padding:
-        16px
-        18px;
+    padding: 16px 18px;
 
     margin-bottom: 18px;
 
     border:
         2px solid
-        rgba(
-            210,
-            180,
-            0,
-            0.65
-        );
+        rgba(210,180,0,0.65);
 
     border-radius: 15px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.97
-        );
+        rgba(255,255,255,0.97);
 
     font-size: 17px;
 
@@ -524,12 +467,7 @@ img {
 
     box-shadow:
         0 0 0 4px
-        rgba(
-            242,
-            205,
-            0,
-            0.16
-        );
+        rgba(242,205,0,0.16);
 }
 
 
@@ -538,10 +476,7 @@ img {
 ========================================================= */
 
 .gender-section {
-    margin:
-        4px
-        0
-        20px;
+    margin: 4px 0 20px;
 }
 
 .gender-options {
@@ -552,7 +487,6 @@ img {
 
 .gender-button {
     width: 150px;
-
     min-height: 112px;
 
     display: flex;
@@ -565,17 +499,12 @@ img {
 
     border:
         2px solid
-        rgba(0, 0, 0, 0.06);
+        rgba(0,0,0,0.06);
 
     border-radius: 18px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.90
-        );
+        rgba(255,255,255,0.9);
 
     cursor: pointer;
 
@@ -596,12 +525,11 @@ img {
 
     background: #fff7c4;
 
-    transform:
-        translateY(-2px);
+    transform: translateY(-2px);
 
     box-shadow:
         0 10px 22px
-        rgba(0, 0, 0, 0.10);
+        rgba(0,0,0,0.10);
 }
 
 .form-error {
@@ -615,23 +543,18 @@ img {
 
 
 /* =========================================================
-   12. ВИБІР ФІШКИ
+   12. ФІШКИ
 ========================================================= */
 
 .token-selection-card {
-    width:
-        min(
-            1250px,
-            95vw
-        );
+    width: min(1250px, 95vw);
 
     grid-template-columns:
         minmax(190px, 28%)
-        minmax(0, 72%);
+        minmax(0,72%);
 }
 
-.token-selection-card
-.small-game-logo {
+.token-selection-card .small-game-logo {
     width: 225px;
 }
 
@@ -641,10 +564,7 @@ img {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            4,
-            minmax(0, 1fr)
-        );
+        repeat(4, minmax(0,1fr));
 
     gap: 12px;
 
@@ -666,22 +586,12 @@ img {
 
     border:
         2px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.06
-        );
+        rgba(0,0,0,0.06);
 
     border-radius: 18px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.90
-        );
+        rgba(255,255,255,0.90);
 
     cursor: pointer;
 
@@ -699,14 +609,12 @@ img {
 
 .token-option span {
     font-size: 13px;
-
     font-weight: 900;
 }
 
 .token-option:hover,
 .token-option.selected {
-    transform:
-        translateY(-3px);
+    transform: translateY(-3px);
 
     border-color: #e3bd00;
 
@@ -714,12 +622,7 @@ img {
 
     box-shadow:
         0 11px 24px
-        rgba(
-            0,
-            0,
-            0,
-            0.11
-        );
+        rgba(0,0,0,0.11);
 }
 
 
@@ -728,47 +631,26 @@ img {
 ========================================================= */
 
 .career-random-card {
-    width:
-        min(
-            1100px,
-            94vw
-        );
+    width: min(1100px, 94vw);
 
-    padding:
-        34px
-        38px;
+    padding: 34px 38px;
 
     border-radius: 28px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.92);
 
     backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 45px
-        rgba(
-            0,
-            0,
-            0,
-            0.16
-        );
+        rgba(0,0,0,0.16);
 
     text-align: center;
 }
 
 .career-random-card > h2 {
-    font-size:
-        clamp(
-            28px,
-            3vw,
-            45px
-        );
+    font-size: clamp(28px,3vw,45px);
 
     font-weight: 900;
 
@@ -776,25 +658,18 @@ img {
 }
 
 .career-random-card > p {
-    color: #4f4f4f;
-
-    font-weight: 700;
+    color: #5f5f5f;
 
     margin-bottom: 18px;
 }
 
 .career-random-box {
-    width:
-        min(
-            600px,
-            100%
-        );
+    width: min(600px,100%);
 
     min-height: 130px;
 
     margin:
-        0
-        auto
+        0 auto
         16px;
 
     padding: 20px;
@@ -809,22 +684,12 @@ img {
 
     border:
         2px solid
-        rgba(
-            235,
-            198,
-            0,
-            0.35
-        );
+        rgba(235,198,0,0.35);
 
     border-radius: 20px;
 
     background:
-        rgba(
-            255,
-            245,
-            158,
-            0.42
-        );
+        rgba(255,245,158,0.42);
 }
 
 .career-random-dice {
@@ -833,16 +698,13 @@ img {
 
 .career-random-box > strong {
     font-size: 20px;
-
     font-weight: 900;
 }
 
 .career-random-box > span {
-    color: #555;
+    color: #666;
 
     font-size: 14px;
-
-    font-weight: 700;
 }
 
 .career-random-grid {
@@ -851,10 +713,7 @@ img {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            5,
-            minmax(0, 1fr)
-        );
+        repeat(5,minmax(0,1fr));
 
     gap: 9px;
 }
@@ -874,22 +733,12 @@ img {
 
     border:
         1px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.06
-        );
+        rgba(0,0,0,0.06);
 
     border-radius: 15px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.75
-        );
+        rgba(255,255,255,0.75);
 }
 
 .career-random-icon {
@@ -918,7 +767,6 @@ img {
 
 .career-result-label {
     font-size: 14px;
-
     font-weight: 900;
 
     color: #786300;
@@ -931,55 +779,41 @@ img {
 }
 
 .career-result-profession {
-    font-size:
-        clamp(
-            22px,
-            2.5vw,
-            34px
-        );
+    font-size: clamp(22px,2.5vw,34px);
 
     font-weight: 900;
 }
 
 .career-result-sector {
-    padding:
-        5px
-        12px;
+    padding: 5px 12px;
 
     border-radius: 999px;
 
     background: #fff1a8;
 
     font-size: 13px;
-
     font-weight: 900;
 }
 
 .career-result-text {
     margin-top: 4px;
 
-    color: #444;
+    color: #555;
 
     font-size: 14px;
-
-    font-weight: 700;
 }
 
 
 /* =========================================================
-   15. КАР'ЄРНИЙ ШЛЯХ
+   15. КАР'ЄРНА ДРАБИНА
 ========================================================= */
 
 .career-screen-card {
-    width:
-        min(
-            1280px,
-            96vw
-        );
+    width: min(1280px,96vw);
 
     grid-template-columns:
-        minmax(200px, 26%)
-        minmax(0, 74%);
+        minmax(200px,26%)
+        minmax(0,74%);
 
     gap: 32px;
 }
@@ -994,51 +828,27 @@ img {
     gap: 16px;
 }
 
-.career-raifik-side
-.small-game-logo {
+.career-raifik-side .small-game-logo {
     width: 220px;
 }
 
 .raifik-career-message {
     width: 100%;
 
-    padding:
-        16px
-        18px;
+    padding: 16px 18px;
 
     border-radius: 18px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.94
-        );
-
-    border:
-        2px solid
-        rgba(
-            238,
-            200,
-            0,
-            0.38
-        );
+        rgba(255,255,255,0.92);
 
     box-shadow:
         0 10px 24px
-        rgba(
-            0,
-            0,
-            0,
-            0.11
-        );
+        rgba(0,0,0,0.11);
 
     text-align: left;
 
-    line-height: 1.45;
-
-    font-weight: 700;
+    line-height: 1.4;
 }
 
 .raifik-career-message strong {
@@ -1046,30 +856,18 @@ img {
 }
 
 .career-content {
-    padding:
-        25px
-        28px;
+    padding: 25px 28px;
 
     border-radius: 26px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.90);
 
     backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 42px
-        rgba(
-            0,
-            0,
-            0,
-            0.13
-        );
+        rgba(0,0,0,0.13);
 }
 
 .career-sector-badge {
@@ -1079,9 +877,7 @@ img {
 
     gap: 8px;
 
-    padding:
-        8px
-        14px;
+    padding: 8px 14px;
 
     margin-bottom: 12px;
 
@@ -1093,12 +889,7 @@ img {
 }
 
 .career-content h2 {
-    font-size:
-        clamp(
-            31px,
-            3vw,
-            46px
-        );
+    font-size: clamp(31px,3vw,46px);
 
     font-weight: 900;
 
@@ -1106,7 +897,7 @@ img {
 }
 
 .career-description {
-    color: #333 !important;
+    color: #3e3e3e !important;
 
     font-weight: 800;
 
@@ -1121,37 +912,26 @@ img {
 
     gap: 7px;
 
-    margin:
-        15px
-        0
-        18px;
+    margin: 15px 0 18px;
 }
 
 .career-goal-label,
 .career-start-label {
     align-self: center;
 
-    padding:
-        7px
-        14px;
+    padding: 7px 14px;
 
     border-radius: 999px;
 
     background: #fff0a1;
 
     font-size: 13px;
-
     font-weight: 900;
 }
 
 .career-start-label {
     background:
-        rgba(
-            123,
-            93,
-            255,
-            0.10
-        );
+        rgba(123,93,255,0.10);
 
     color: #5c43ad;
 }
@@ -1170,49 +950,27 @@ img {
 
     min-height: 72px;
 
-    padding:
-        12px
-        15px;
+    padding: 12px 15px;
 
     border:
         2px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
+        rgba(0,0,0,0.05);
 
     border-radius: 16px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.80
-        );
+        rgba(255,255,255,0.78);
 }
 
 .career-current {
     border-color: #dfba00;
 
     background:
-        rgba(
-            255,
-            239,
-            137,
-            0.52
-        );
+        rgba(255,239,137,0.48);
 
     box-shadow:
         0 8px 20px
-        rgba(
-            0,
-            0,
-            0,
-            0.08
-        );
+        rgba(0,0,0,0.08);
 }
 
 .career-level-top {
@@ -1242,22 +1000,18 @@ img {
 }
 
 .career-current-label {
-    padding:
-        3px
-        7px;
+    padding: 3px 7px;
 
     border-radius: 999px;
 
     background: #f4cc00;
 
     font-size: 10px;
-
     font-weight: 900;
 }
 
 .career-up-label {
     font-size: 18px;
-
     font-weight: 900;
 
     color: #777;
@@ -1265,7 +1019,6 @@ img {
 
 .career-job-name {
     font-size: 16px;
-
     font-weight: 900;
 }
 
@@ -1279,13 +1032,12 @@ img {
     gap: 10px;
 
     font-size: 12px;
-
     font-weight: 800;
 }
 
 
 /* =========================================================
-   16. МРІЇ
+   16. МРІЇ — 20
 ========================================================= */
 
 .dream-scroll-screen {
@@ -1298,23 +1050,18 @@ img {
 }
 
 .dream-selection-card {
-    width:
-        min(
-            1320px,
-            96vw
-        );
+    width: min(1320px,96vw);
 
     grid-template-columns:
         195px
-        minmax(0, 1fr);
+        minmax(0,1fr);
 
     align-items: flex-start;
 
     gap: 24px;
 }
 
-.dream-selection-card
-.small-game-logo {
+.dream-selection-card .small-game-logo {
     width: 170px;
 
     position: sticky;
@@ -1327,9 +1074,9 @@ img {
 }
 
 .dream-selection-content > p {
-    color: #444;
+    color: #555;
 
-    font-weight: 700;
+    font-weight: 600;
 
     margin-bottom: 18px;
 }
@@ -1338,10 +1085,7 @@ img {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            4,
-            minmax(0, 1fr)
-        );
+        repeat(4,minmax(0,1fr));
 
     gap: 13px;
 
@@ -1351,9 +1095,7 @@ img {
 .dream-option {
     min-height: 145px;
 
-    padding:
-        14px
-        12px;
+    padding: 14px 12px;
 
     display: flex;
     flex-direction: column;
@@ -1365,22 +1107,12 @@ img {
 
     border:
         2px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.06
-        );
+        rgba(0,0,0,0.06);
 
     border-radius: 18px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.92);
 
     cursor: pointer;
 
@@ -1388,17 +1120,11 @@ img {
 }
 
 .dream-option:hover {
-    transform:
-        translateY(-3px);
+    transform: translateY(-3px);
 
     box-shadow:
         0 11px 22px
-        rgba(
-            0,
-            0,
-            0,
-            0.09
-        );
+        rgba(0,0,0,0.09);
 }
 
 .dream-option.selected {
@@ -1408,12 +1134,7 @@ img {
 
     box-shadow:
         0 0 0 3px
-        rgba(
-            238,
-            201,
-            0,
-            0.15
-        );
+        rgba(238,201,0,0.15);
 }
 
 .dream-icon {
@@ -1431,7 +1152,6 @@ img {
     text-align: center;
 
     font-size: 14px;
-
     font-weight: 900;
 
     line-height: 1.25;
@@ -1446,28 +1166,16 @@ img {
 }
 
 .dream-details-card {
-    padding:
-        20px
-        22px;
+    padding: 20px 22px;
 
     border-radius: 20px;
 
     background:
-        rgba(
-            255,
-            248,
-            198,
-            0.92
-        );
+        rgba(255,248,198,0.90);
 
     border:
         1px solid
-        rgba(
-            224,
-            186,
-            0,
-            0.35
-        );
+        rgba(224,186,0,0.35);
 }
 
 .dream-details-card h3 {
@@ -1479,9 +1187,7 @@ img {
 .dream-details-card p {
     margin-bottom: 13px;
 
-    color: #444;
-
-    font-weight: 700;
+    color: #555;
 }
 
 .dream-requirements {
@@ -1495,80 +1201,49 @@ img {
 }
 
 .dream-requirements span {
-    padding:
-        8px
-        11px;
+    padding: 8px 11px;
 
     border-radius: 12px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.90);
 
     font-size: 13px;
-
     font-weight: 800;
 }
 
 
 /* =========================================================
-   17. ПЕРЕД СТАРТОМ
+   17. ЕКРАН ПЕРЕД СТАРТОМ
 ========================================================= */
 
 .before-game-content {
-    width:
-        min(
-            1050px,
-            94vw
-        );
+    width: min(1050px,94vw);
 
-    padding:
-        30px
-        34px;
+    padding: 30px 34px;
 
     border-radius: 28px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.90);
 
     backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 42px
-        rgba(
-            0,
-            0,
-            0,
-            0.15
-        );
+        rgba(0,0,0,0.15);
 
     text-align: center;
 }
 
 .before-game-content h2 {
-    font-size:
-        clamp(
-            28px,
-            3vw,
-            44px
-        );
+    font-size: clamp(28px,3vw,44px);
 
     margin-bottom: 8px;
 }
 
 .before-game-content > p {
-    color: #444;
-
-    font-weight: 700;
+    color: #555;
 
     margin-bottom: 20px;
 }
@@ -1577,10 +1252,7 @@ img {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            3,
-            minmax(0, 1fr)
-        );
+        repeat(3,minmax(0,1fr));
 
     gap: 18px;
 
@@ -1592,9 +1264,7 @@ img {
 
     min-height: 300px;
 
-    padding:
-        18px
-        16px;
+    padding: 18px 16px;
 
     display: flex;
     flex-direction: column;
@@ -1605,22 +1275,12 @@ img {
 
     border:
         2px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
+        rgba(0,0,0,0.05);
 
     border-radius: 20px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+        rgba(255,255,255,0.92);
 }
 
 .participant-is-player {
@@ -1635,16 +1295,13 @@ img {
     top: 10px;
     left: 10px;
 
-    padding:
-        4px
-        8px;
+    padding: 4px 8px;
 
     border-radius: 999px;
 
     background: #f1cc00;
 
     font-size: 10px;
-
     font-weight: 900;
 }
 
@@ -1657,36 +1314,27 @@ img {
 
 .participant-preview-name {
     font-size: 18px;
-
     font-weight: 900;
 }
 
 .participant-preview-profession {
     min-height: 38px;
 
-    color: #444;
+    color: #555;
 
     font-size: 13px;
-
     font-weight: 700;
 }
 
 .participant-preview-dream {
     width: 100%;
 
-    padding:
-        9px
-        10px;
+    padding: 9px 10px;
 
     border-radius: 12px;
 
     background:
-        rgba(
-            255,
-            236,
-            110,
-            0.30
-        );
+        rgba(255,236,110,0.30);
 
     display: flex;
     flex-direction: column;
@@ -1696,7 +1344,6 @@ img {
 
 .participant-preview-dream span {
     font-size: 11px;
-
     color: #777;
 }
 
@@ -1706,7 +1353,10 @@ img {
 
 
 /* =========================================================
-   18. ОСНОВНИЙ ЕКРАН ГРИ
+   18. ГОЛОВНИЙ ЕКРАН ГРИ
+========================================================= */
+/* =========================================================
+   ГОЛОВНИЙ ЕКРАН — КОМПАКТНІШИЙ
 ========================================================= */
 
 .main-board-screen {
@@ -1718,28 +1368,33 @@ img {
     display: grid;
 
     grid-template-columns:
-        168px
+        165px
         minmax(0, 1fr)
-        220px;
+        180px;
 
     gap: 10px;
 
     align-items: center;
 
-    padding: 10px;
+    padding: 12px;
 
     background:
         url("assets/bg-game.png")
-        center center /
-        cover
+        center center / cover
         no-repeat;
 
     overflow: hidden;
 }
 
 
+
+
 /* =========================================================
-   19. БОКОВІ ПАНЕЛІ
+   19. ЛІВА / ПРАВА ПАНЕЛЬ
+========================================================= */
+
+/* =========================================================
+   БОКОВІ ПАНЕЛІ
 ========================================================= */
 
 .game-info-panel,
@@ -1748,40 +1403,20 @@ img {
 
     z-index: 40;
 
-    height:
-        calc(
-            100vh - 20px
-        );
+    height: calc(100vh - 24px);
 
-    max-height: 790px;
+    max-height: 760px;
 
-    min-height: 560px;
-
-    padding:
-        11px
-        10px;
+    padding: 12px 10px;
 
     border-radius: 18px;
 
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.92
-        );
+    background: rgba(255,255,255,0.92);
 
     backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
 
     box-shadow:
-        0 12px 30px
-        rgba(
-            0,
-            0,
-            0,
-            0.15
-        );
+        0 12px 30px rgba(0,0,0,0.15);
 
     overflow-y: auto;
 
@@ -1790,28 +1425,28 @@ img {
 
 
 /* =========================================================
-   20. ЛОГО В ЛІВІЙ ПАНЕЛІ
+   20. ВЕЛИКЕ ЛОГО ЗЛІВА
+========================================================= */
+/* =========================================================
+   ЛОГО — ВСЕРЕДИНІ ЛІВОЇ ПАНЕЛІ
 ========================================================= */
 
 .board-logo-large {
     display: block;
 
     width: 150px;
+    height: auto;
 
-    height: 82px;
+    max-height: 78px;
 
     object-fit: contain;
 
-    margin:
-        0
-        auto
-        6px;
+    margin: 0 auto 10px;
 
     position: static !important;
 
     transform: none !important;
 }
-
 
 /* =========================================================
    21. ПРОФІЛЬ
@@ -1825,25 +1460,18 @@ img {
     gap: 8px;
 
     padding:
-        7px
+        8px
         3px
-        9px;
+        10px;
 
     border-bottom:
         1px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.08
-        );
+        rgba(0,0,0,0.08);
 }
 
 .player-token-preview {
     width: 58px;
     height: 58px;
-
-    flex-shrink: 0;
 
     object-fit: contain;
 }
@@ -1856,7 +1484,6 @@ img {
     display: block;
 
     font-size: 15px;
-
     font-weight: 900;
 }
 
@@ -1867,11 +1494,9 @@ img {
 
     font-size: 10px;
 
-    color: #555;
+    color: #666;
 
     line-height: 1.22;
-
-    font-weight: 700;
 }
 
 
@@ -1897,22 +1522,14 @@ img {
 
     min-height: 31px;
 
-    padding:
-        6px
-        8px;
+    padding: 6px 8px;
 
     border-radius: 10px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.78
-        );
+        rgba(255,255,255,0.74);
 
     font-size: 11px;
-
     font-weight: 900;
 }
 
@@ -1926,9 +1543,7 @@ img {
 
     margin-top: 8px;
 
-    padding:
-        9px
-        9px;
+    padding: 9px 9px;
 
     display: flex;
     flex-direction: column;
@@ -1936,16 +1551,10 @@ img {
     gap: 3px;
 
     border: none;
-
     border-radius: 11px;
 
     background:
-        rgba(
-            255,
-            226,
-            50,
-            0.30
-        );
+        rgba(255,226,50,0.28);
 
     text-align: left;
 
@@ -1954,18 +1563,13 @@ img {
 
 .dream-mini:hover {
     background:
-        rgba(
-            255,
-            226,
-            50,
-            0.46
-        );
+        rgba(255,226,50,0.42);
 }
 
 .dream-mini span {
     font-size: 9px;
 
-    color: #666;
+    color: #777;
 
     font-weight: 800;
 }
@@ -1991,11 +1595,9 @@ img {
 
     font-size: 9px;
 
-    color: #555;
+    color: #6a6a6a;
 
-    font-weight: 900;
-
-    letter-spacing: 0.5px;
+    letter-spacing: 0.4px;
 }
 
 .cell-type-list {
@@ -2007,7 +1609,7 @@ img {
 }
 
 .cell-type-info-button {
-    min-height: 30px;
+    min-height: 29px;
 
     display: flex;
 
@@ -2015,28 +1617,16 @@ img {
 
     gap: 6px;
 
-    padding:
-        4px
-        6px;
+    padding: 4px 6px;
 
     border:
         1px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
+        rgba(0,0,0,0.05);
 
     border-radius: 8px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.74
-        );
+        rgba(255,255,255,0.72);
 
     cursor: pointer;
 
@@ -2057,27 +1647,16 @@ img {
 
 
 /* =========================================================
-   25. ЦЕНТРАЛЬНА ЗОНА ПОЛЯ
+   25. ЦЕНТРАЛЬНЕ КВАДРАТНЕ ПОЛЕ
 ========================================================= */
 
 .square-game-board {
     position: relative;
 
     width: 100%;
+    height: calc(100vh - 86px);
 
-    height:
-        calc(
-            100vh - 20px
-        );
-
-    max-height: 800px;
-
-    min-height: 560px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
+    min-height: 610px;
 
     overflow: visible;
 }
@@ -2095,23 +1674,18 @@ img {
 
     width:
         min(
-            61vw,
-            73vh,
-            720px
+            72vw,
+            820px
         );
 
     height:
         min(
-            61vw,
-            73vh,
-            720px
+            72vw,
+            820px
         );
 
     transform:
-        translate(
-            -50%,
-            -50%
-        );
+        translate(-50%,-50%);
 }
 
 
@@ -2127,23 +1701,18 @@ img {
 
     width:
         min(
-            32vw,
-            39vh,
-            385px
+            40vw,
+            460px
         );
 
     height:
         min(
-            32vw,
-            39vh,
-            385px
+            40vw,
+            460px
         );
 
     transform:
-        translate(
-            -50%,
-            -50%
-        );
+        translate(-50%,-50%);
 }
 
 
@@ -2154,8 +1723,8 @@ img {
 .board-cell {
     position: absolute;
 
-    width: 34px;
-    height: 34px;
+    width: 40px;
+    height: 40px;
 
     display: flex;
     flex-direction: column;
@@ -2164,38 +1733,20 @@ img {
     justify-content: center;
 
     transform:
-        translate(
-            -50%,
-            -50%
-        );
+        translate(-50%,-50%);
 
     border:
         2px solid
-        rgba(
-            170,
-            145,
-            0,
-            0.32
-        );
+        rgba(170,145,0,0.32);
 
-    border-radius: 8px;
+    border-radius: 9px;
 
     background:
-        rgba(
-            255,
-            253,
-            235,
-            0.97
-        );
+        rgba(255,253,235,0.97);
 
     box-shadow:
         0 3px 8px
-        rgba(
-            0,
-            0,
-            0,
-            0.15
-        );
+        rgba(0,0,0,0.15);
 
     cursor: pointer;
 
@@ -2208,24 +1759,19 @@ img {
 }
 
 .board-cell:hover {
-    z-index: 18;
+    z-index: 15;
 
     box-shadow:
         0 7px 16px
-        rgba(
-            0,
-            0,
-            0,
-            0.22
-        );
+        rgba(0,0,0,0.22);
 }
 
 .cell-number {
-    font-size: 7px;
+    font-size: 8px;
 
     font-weight: 900;
 
-    color: #3f3f3f;
+    color: #4a4a4a;
 
     line-height: 1;
 }
@@ -2233,7 +1779,7 @@ img {
 .cell-icon {
     margin-top: 1px;
 
-    font-size: 14px;
+    font-size: 17px;
 
     line-height: 1;
 }
@@ -2244,8 +1790,8 @@ img {
 ========================================================= */
 
 .special-board-cell {
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
 
     background:
         linear-gradient(
@@ -2255,21 +1801,11 @@ img {
         );
 
     border-color:
-        rgba(
-            144,
-            113,
-            0,
-            0.60
-        );
+        rgba(144,113,0,0.60);
 
     box-shadow:
         0 5px 12px
-        rgba(
-            0,
-            0,
-            0,
-            0.16
-        );
+        rgba(0,0,0,0.16);
 }
 
 
@@ -2284,19 +1820,9 @@ img {
 
     box-shadow:
         0 0 0 4px
-        rgba(
-            255,
-            214,
-            0,
-            0.42
-        ),
+        rgba(255,214,0,0.42),
         0 0 24px
-        rgba(
-            255,
-            217,
-            0,
-            0.95
-        );
+        rgba(255,217,0,0.95);
 
     animation:
         targetPulse
@@ -2318,7 +1844,7 @@ img {
 
 
 /* =========================================================
-   31. МРІЯ В ЦЕНТРІ
+   31. ЦЕНТР МРІЇ
 ========================================================= */
 
 .dream-center {
@@ -2328,13 +1854,10 @@ img {
     top: 50%;
 
     transform:
-        translate(
-            -50%,
-            -50%
-        );
+        translate(-50%,-50%);
 
-    width: 105px;
-    height: 105px;
+    width: 125px;
+    height: 125px;
 
     display: flex;
     flex-direction: column;
@@ -2346,14 +1869,9 @@ img {
 
     border:
         3px solid
-        rgba(
-            255,
-            255,
-            255,
-            0.90
-        );
+        rgba(255,255,255,0.9);
 
-    border-radius: 21px;
+    border-radius: 24px;
 
     background:
         linear-gradient(
@@ -2364,36 +1882,25 @@ img {
 
     box-shadow:
         0 12px 30px
-        rgba(
-            0,
-            0,
-            0,
-            0.22
-        );
+        rgba(0,0,0,0.22);
 
     cursor: pointer;
 
     z-index: 8;
-
-    transition: 0.2s ease;
 }
 
 .dream-center:hover {
     transform:
-        translate(
-            -50%,
-            -50%
-        )
+        translate(-50%,-50%)
         scale(1.04);
 }
 
 .dream-center span {
-    font-size: 25px;
+    font-size: 30px;
 }
 
 .dream-center strong {
-    font-size: 15px;
-
+    font-size: 18px;
     font-weight: 900;
 }
 
@@ -2417,42 +1924,28 @@ img {
     filter:
         drop-shadow(
             0 5px 7px
-            rgba(
-                0,
-                0,
-                0,
-                0.42
-            )
+            rgba(0,0,0,0.40)
         );
 }
 
 .player-piece {
-    width: 60px;
-    height: 60px;
+    width: 68px;
+    height: 68px;
 
     transform:
-        translate(
-            -50%,
-            -76%
-        );
+        translate(-50%,-76%);
 
-    z-index: 55;
+    z-index: 50;
 
     cursor: grab;
 
     filter:
         drop-shadow(
-            0 0 4px
-            #fff
+            0 0 3px #fff
         )
         drop-shadow(
-            0 7px 9px
-            rgba(
-                0,
-                0,
-                0,
-                0.55
-            )
+            0 6px 8px
+            rgba(0,0,0,0.50)
         );
 }
 
@@ -2461,34 +1954,28 @@ img {
 }
 
 .ai-piece {
-    width: 47px;
-    height: 47px;
+    width: 53px;
+    height: 53px;
 
     transform:
-        translate(
-            -50%,
-            -63%
-        );
+        translate(-50%,-62%);
 
     z-index: 45;
 }
 
+
+/* коли на комірці кілька фішок */
+
 .board-cell
 .board-piece:nth-of-type(2) {
     transform:
-        translate(
-            -75%,
-            -72%
-        );
+        translate(-74%,-70%);
 }
 
 .board-cell
 .board-piece:nth-of-type(3) {
     transform:
-        translate(
-            -25%,
-            -72%
-        );
+        translate(-26%,-70%);
 }
 
 
@@ -2514,17 +2001,14 @@ img {
     text-align: center;
 
     font-size: 15px;
-
     font-weight: 900;
 }
 
 .dice {
-    width: 62px;
-    height: 62px;
+    width: 64px;
+    height: 64px;
 
-    margin:
-        0
-        auto;
+    margin: 0 auto;
 
     display: flex;
 
@@ -2534,32 +2018,17 @@ img {
     border-radius: 13px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.97
-        );
+        rgba(255,255,255,0.97);
 
     border:
         2px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.10
-        );
+        rgba(0,0,0,0.10);
 
-    font-size: 45px;
+    font-size: 47px;
 
     box-shadow:
         0 8px 18px
-        rgba(
-            0,
-            0,
-            0,
-            0.12
-        );
+        rgba(0,0,0,0.12);
 }
 
 .dice-panel
@@ -2568,9 +2037,7 @@ img {
 
     width: 100%;
 
-    padding:
-        10px
-        7px;
+    padding: 10px 6px;
 
     font-size: 11px;
 
@@ -2578,22 +2045,14 @@ img {
 }
 
 .dice-message {
-    padding:
-        7px
-        8px;
+    padding: 7px 8px;
 
     border-radius: 10px;
 
     background:
-        rgba(
-            255,
-            239,
-            133,
-            0.46
-        );
+        rgba(255,239,133,0.42);
 
     font-size: 9px;
-
     font-weight: 800;
 
     line-height: 1.35;
@@ -2601,53 +2060,30 @@ img {
 
 
 /* =========================================================
-   34. ПОТОЧНА КАРТКА
+   34. ПОТОЧНА КАРТКА СПРАВА
 ========================================================= */
 
 .current-card-panel {
     width: 100%;
 
-    min-height: 280px;
-
-    flex: 1;
+    min-height: 225px;
 
     margin-top: 3px;
 
-    border-radius: 15px;
+    border-radius: 14px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.82
-        );
+        rgba(255,255,255,0.74);
 
     border:
         1px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.06
-        );
+        rgba(0,0,0,0.06);
 
-    box-shadow:
-        inset
-        0 0 0 1px
-        rgba(
-            255,
-            255,
-            255,
-            0.5
-        );
-
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 .current-card-empty {
-    min-height: 280px;
+    min-height: 225px;
 
     display: flex;
     flex-direction: column;
@@ -2655,67 +2091,62 @@ img {
     align-items: center;
     justify-content: center;
 
-    gap: 7px;
+    gap: 6px;
 
-    padding: 14px;
+    padding: 12px;
 
     text-align: center;
 }
 
 .current-card-empty > span {
-    width: 58px;
-    height: 58px;
+    width: 54px;
+    height: 54px;
 
     display: flex;
 
     align-items: center;
     justify-content: center;
 
-    border-radius: 13px;
+    border-radius: 12px;
 
     background: #303030;
 
     color: #fff4a7;
 
-    font-size: 30px;
-
+    font-size: 28px;
     font-weight: 900;
 }
 
 .current-card-empty strong {
-    font-size: 11px;
+    font-size: 10px;
 }
 
 .current-card-empty small {
-    color: #666;
+    color: #777;
 
-    font-size: 9px;
+    font-size: 8px;
 }
 
 
 /* =========================================================
-   35. РАЙФИК У ПРАВІЙ КАРТЦІ
+   35. РАЙФИК У ПОТОЧНІЙ КАРТЦІ
 ========================================================= */
 
 .raifik-board-message {
-    min-height: 280px;
+    min-height: 225px;
 
-    padding:
-        14px
-        11px;
+    padding: 12px 9px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 }
 
 .raifik-board-message img {
-    width: 72px;
-    height: 130px;
-
-    flex-shrink: 0;
+    width: 64px;
+    height: 110px;
 
     object-fit: contain;
 }
@@ -2725,21 +2156,18 @@ img {
 }
 
 .raifik-board-message strong {
-    font-size: 13px;
-
+    font-size: 11px;
     font-weight: 900;
 }
 
 .raifik-board-message p {
-    margin-top: 6px;
+    margin-top: 5px;
 
-    font-size: 10px;
+    font-size: 9px;
 
-    line-height: 1.45;
+    line-height: 1.35;
 
-    color: #404040;
-
-    font-weight: 700;
+    color: #555;
 }
 
 
@@ -2749,9 +2177,7 @@ img {
 
 .current-card-choice,
 .life-number-card {
-    padding:
-        12px
-        10px;
+    padding: 9px;
 }
 
 .current-card-raifik-line {
@@ -2759,52 +2185,44 @@ img {
 
     align-items: center;
 
-    gap: 8px;
+    gap: 7px;
 
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .current-card-raifik-line img {
-    width: 52px;
-    height: 78px;
-
-    flex-shrink: 0;
+    width: 48px;
+    height: 72px;
 
     object-fit: contain;
 }
 
 .current-card-raifik-line strong {
-    font-size: 11px;
-
+    font-size: 10px;
     font-weight: 900;
 }
 
 .current-card-raifik-line p {
     margin-top: 4px;
 
-    font-size: 9px;
+    font-size: 8px;
 
-    color: #4d4d4d;
+    color: #666;
 
-    font-weight: 700;
-
-    line-height: 1.35;
+    line-height: 1.3;
 }
 
 .three-card-choice {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            3,
-            minmax(0, 1fr)
-        );
+        repeat(3,minmax(0,1fr));
 
-    gap: 6px;
+    gap: 5px;
 }
 
 .hidden-game-card {
-    height: 95px;
+    height: 76px;
 
     display: flex;
 
@@ -2812,10 +2230,10 @@ img {
     justify-content: center;
 
     border:
-        2px solid
+        1px solid
         #b79800;
 
-    border-radius: 10px;
+    border-radius: 9px;
 
     background:
         linear-gradient(
@@ -2826,29 +2244,20 @@ img {
 
     color: #ffe234;
 
-    font-size: 29px;
-
+    font-size: 24px;
     font-weight: 900;
 
     cursor: pointer;
 
-    transition:
-        0.18s ease;
+    transition: 0.18s ease;
 }
 
 .hidden-game-card:hover {
-    transform:
-        translateY(-4px)
-        scale(1.03);
+    transform: translateY(-3px);
 
     box-shadow:
-        0 8px 16px
-        rgba(
-            0,
-            0,
-            0,
-            0.20
-        );
+        0 7px 14px
+        rgba(0,0,0,0.18);
 }
 
 
@@ -2859,40 +2268,24 @@ img {
 .life-number-card input {
     width: 100%;
 
-    padding:
-        11px
-        8px;
+    padding: 10px 8px;
 
-    margin:
-        6px
-        0
-        9px;
+    margin: 5px 0 8px;
 
     border:
         2px solid
-        rgba(
-            215,
-            180,
-            0,
-            0.50
-        );
+        rgba(215,180,0,0.50);
 
     border-radius: 10px;
 
     text-align: center;
 
     font-size: 15px;
-
-    outline: none;
-}
-
-.life-number-card input:focus {
-    border-color: #e2bd00;
 }
 
 .life-number-card
 .main-game-btn {
-    font-size: 10px;
+    font-size: 9px;
 }
 
 
@@ -2901,66 +2294,37 @@ img {
 ========================================================= */
 
 .revealed-current-card {
-    min-height: 280px;
+    min-height: 225px;
 
-    padding:
-        16px
-        13px;
+    padding: 13px 11px;
 
     display: flex;
     flex-direction: column;
 
     justify-content: center;
 
-    gap: 10px;
+    gap: 8px;
 }
 
 .revealed-card-type {
-    display: inline-flex;
-
-    align-items: center;
-
-    gap: 4px;
-
-    align-self: flex-start;
-
-    padding:
-        4px
-        8px;
-
-    border-radius: 999px;
-
-    background:
-        rgba(
-            255,
-            225,
-            46,
-            0.25
-        );
-
-    font-size: 10px;
-
+    font-size: 9px;
     font-weight: 900;
 
-    color: #705c00;
+    color: #796200;
 }
 
 .revealed-current-card h3 {
-    font-size: 17px;
+    font-size: 14px;
 
-    line-height: 1.2;
-
-    font-weight: 900;
+    line-height: 1.15;
 }
 
 .revealed-current-card p {
-    font-size: 10px;
+    font-size: 8px;
 
-    line-height: 1.45;
+    line-height: 1.35;
 
-    color: #3f3f3f;
-
-    font-weight: 700;
+    color: #555;
 }
 
 .revealed-card-effects {
@@ -2972,256 +2336,36 @@ img {
 }
 
 .revealed-card-effects span {
-    padding:
-        5px
-        7px;
+    padding: 4px 6px;
 
-    border-radius: 8px;
+    border-radius: 7px;
 
     background: #fff2a4;
 
-    font-size: 9px;
-
+    font-size: 8px;
     font-weight: 900;
 }
 
 
 /* =========================================================
-   39. КАРТКА РІШЕННЯ
-========================================================= */
-
-.decision-card {
-    justify-content: flex-start;
-}
-
-.decision-card-text {
-    padding:
-        8px
-        9px;
-
-    border-radius: 10px;
-
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.78
-        );
-}
-
-.card-effect-title {
-    margin-top: 1px;
-
-    font-size: 9px;
-
-    color: #5a5a5a;
-
-    font-weight: 900;
-
-    text-transform: uppercase;
-
-    letter-spacing: 0.25px;
-}
-
-.card-question {
-    margin-top: 3px;
-
-    font-size: 11px;
-
-    font-weight: 900;
-
-    text-align: center;
-}
-
-
-/* =========================================================
-   40. БЕРУ / ЧАСТКОВО / НЕ БЕРУ
-========================================================= */
-
-.card-decision-buttons {
-    display: grid;
-
-    grid-template-columns:
-        1fr;
-
-    gap: 6px;
-
-    margin-top: 2px;
-}
-
-.card-action-btn {
-    width: 100%;
-
-    min-height: 37px;
-
-    padding:
-        8px
-        8px;
-
-    border: none;
-
-    border-radius: 10px;
-
-    font-size: 10px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.18s ease,
-        box-shadow 0.18s ease,
-        background 0.18s ease;
-}
-
-.card-action-btn:hover {
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 6px 12px
-        rgba(
-            0,
-            0,
-            0,
-            0.12
-        );
-}
-
-.accept-card-btn {
-    background:
-        linear-gradient(
-            135deg,
-            #ffe75c,
-            #f1c900
-        );
-
-    color: #151515;
-}
-
-.partial-card-btn {
-    background:
-        rgba(
-            255,
-            255,
-            255,
-            0.96
-        );
-
-    border:
-        2px solid
-        #d8b800;
-
-    color: #3b3300;
-}
-
-.decline-card-btn {
-    background:
-        rgba(
-            35,
-            35,
-            35,
-            0.95
-        );
-
-    color: #fff;
-}
-
-
-/* =========================================================
-   41. РЕЗУЛЬТАТ РІШЕННЯ
-========================================================= */
-
-.card-result-card {
-    justify-content: flex-start;
-}
-
-.decision-result-text {
-    padding:
-        8px
-        9px;
-
-    border-radius: 10px;
-
-    background:
-        rgba(
-            255,
-            245,
-            181,
-            0.48
-        );
-}
-
-.no-card-effect {
-    padding:
-        8px
-        9px;
-
-    border-radius: 10px;
-
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
-
-    font-size: 9px;
-
-    font-weight: 800;
-
-    color: #555;
-}
-
-.finish-turn-btn {
-    width: 100% !important;
-
-    min-width: 0 !important;
-
-    margin-top: auto;
-
-    padding:
-        10px
-        8px !important;
-
-    font-size: 10px !important;
-}
-
-
-/* =========================================================
-   42. АВТОМАТИЧНИЙ РЕЗУЛЬТАТ
-========================================================= */
-
-.automatic-result-card {
-    justify-content: flex-start;
-}
-
-
-/* =========================================================
-   43. AI RESULT
+   39. AI RESULT
 ========================================================= */
 
 .ai-turn-result {
-    min-height: 280px;
+    min-height: 225px;
 
-    padding:
-        14px
-        10px;
+    padding: 12px 9px;
 
     display: flex;
 
     align-items: center;
 
-    gap: 10px;
+    gap: 8px;
 }
 
 .ai-turn-result img {
-    width: 74px;
-    height: 120px;
-
-    flex-shrink: 0;
+    width: 67px;
+    height: 105px;
 
     object-fit: contain;
 }
@@ -3229,25 +2373,18 @@ img {
 .ai-turn-result strong {
     display: block;
 
-    font-size: 13px;
-
-    font-weight: 900;
+    font-size: 11px;
 }
 
 .ai-turn-result h4 {
-    margin:
-        5px
-        0
-        8px;
+    margin: 4px 0;
 
-    font-size: 11px;
-
-    line-height: 1.25;
+    font-size: 10px;
 }
 
 
 /* =========================================================
-   44. ГРАВЦІ СПРАВА
+   40. ГРАВЦІ СПРАВА
 ========================================================= */
 
 .other-players-block {
@@ -3270,28 +2407,16 @@ img {
 
     gap: 6px;
 
-    padding:
-        5px
-        6px;
+    padding: 5px 6px;
 
     border:
         1px solid
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
+        rgba(0,0,0,0.05);
 
     border-radius: 8px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.78
-        );
+        rgba(255,255,255,0.75);
 
     cursor: pointer;
 }
@@ -3309,13 +2434,12 @@ img {
 
 .mini-opponent-button span {
     font-size: 9px;
-
     font-weight: 900;
 }
 
 
 /* =========================================================
-   45. ЖУРНАЛ
+   41. ЖУРНАЛ
 ========================================================= */
 
 .game-log {
@@ -3326,27 +2450,20 @@ img {
 
     margin-top: auto;
 
-    max-height: 52px;
+    max-height: 65px;
 
     overflow-y: auto;
 }
 
 .game-log-item {
-    padding:
-        4px
-        5px;
+    padding: 4px 5px;
 
     border-radius: 6px;
 
     background:
-        rgba(
-            0,
-            0,
-            0,
-            0.04
-        );
+        rgba(0,0,0,0.04);
 
-    color: #555;
+    color: #666;
 
     font-size: 7px;
 
@@ -3355,7 +2472,7 @@ img {
 
 
 /* =========================================================
-   46. МОДАЛКА
+   42. МОДАЛКА
 ========================================================= */
 
 .game-info-modal[hidden] {
@@ -3364,7 +2481,6 @@ img {
 
 .game-info-modal {
     position: fixed;
-
     inset: 0;
 
     z-index: 5000;
@@ -3377,12 +2493,7 @@ img {
     padding: 20px;
 
     background:
-        rgba(
-            10,
-            15,
-            20,
-            0.50
-        );
+        rgba(10,15,20,0.50);
 
     backdrop-filter: blur(7px);
 }
@@ -3390,38 +2501,22 @@ img {
 .game-info-modal-card {
     position: relative;
 
-    width:
-        min(
-            520px,
-            92vw
-        );
+    width: min(520px,92vw);
 
     max-height: 82vh;
 
     overflow-y: auto;
 
-    padding:
-        30px
-        28px;
+    padding: 30px 28px;
 
     border-radius: 24px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.97
-        );
+        rgba(255,255,255,0.97);
 
     box-shadow:
         0 25px 65px
-        rgba(
-            0,
-            0,
-            0,
-            0.30
-        );
+        rgba(0,0,0,0.30);
 }
 
 .game-info-close {
@@ -3434,16 +2529,10 @@ img {
     height: 36px;
 
     border: none;
-
     border-radius: 50%;
 
     background:
-        rgba(
-            0,
-            0,
-            0,
-            0.06
-        );
+        rgba(0,0,0,0.06);
 
     font-size: 23px;
 
@@ -3452,7 +2541,7 @@ img {
 
 
 /* =========================================================
-   47. ІНФО ПРО КОМІРКУ
+   43. ІНФО ПРО КОМІРКУ
 ========================================================= */
 
 .cell-info-popup {
@@ -3472,16 +2561,14 @@ img {
 }
 
 .cell-info-popup p {
-    color: #444;
-
-    font-weight: 700;
+    color: #555;
 
     line-height: 1.45;
 }
 
 
 /* =========================================================
-   48. ІНФО ПРО ГРАВЦЯ
+   44. ІНФО ПРО ГРАВЦЯ
 ========================================================= */
 
 .participant-info-popup {
@@ -3500,24 +2587,16 @@ img {
 }
 
 .participant-info-popup > p {
-    margin:
-        5px
-        0
-        14px;
+    margin: 5px 0 14px;
 
-    color: #444;
-
-    font-weight: 700;
+    color: #555;
 }
 
 .participant-popup-stats {
     display: grid;
 
     grid-template-columns:
-        repeat(
-            2,
-            1fr
-        );
+        repeat(2,1fr);
 
     gap: 8px;
 
@@ -3545,16 +2624,14 @@ img {
 .participant-popup-position {
     margin-top: 10px;
 
-    color: #555;
+    color: #666;
 
     font-size: 13px;
-
-    font-weight: 700;
 }
 
 
 /* =========================================================
-   49. ПРОГРЕС МРІЇ
+   45. ПРОГРЕС МРІЇ
 ========================================================= */
 
 .dream-progress-popup {
@@ -3576,48 +2653,7 @@ img {
 .dream-progress-popup > p {
     margin-bottom: 15px;
 
-    color: #555;
-
-    font-weight: 700;
-}
-
-.dream-check-message {
-    margin:
-        10px
-        0
-        14px;
-
-    padding:
-        10px
-        12px;
-
-    border-radius: 12px;
-
-    font-size: 13px;
-
-    font-weight: 900;
-
-    line-height: 1.35;
-}
-
-.dream-ready {
-    background:
-        rgba(
-            255,
-            224,
-            39,
-            0.35
-        );
-}
-
-.dream-not-ready {
-    background:
-        rgba(
-            0,
-            0,
-            0,
-            0.05
-        );
+    color: #666;
 }
 
 .dream-progress-row {
@@ -3648,12 +2684,7 @@ img {
     border-radius: 999px;
 
     background:
-        rgba(
-            0,
-            0,
-            0,
-            0.08
-        );
+        rgba(0,0,0,0.08);
 
     overflow: hidden;
 }
@@ -3671,45 +2702,26 @@ img {
         );
 }
 
-.dream-progress-popup
-.main-game-btn {
-    margin-top: 10px;
-}
-
 
 /* =========================================================
-   50. ПРОСТА ІНФО-КАРТКА
+   46. ПРОСТА ІНФО-КАРТКА
 ========================================================= */
 
 .simple-info-card {
-    width:
-        min(
-            520px,
-            92vw
-        );
+    width: min(520px,92vw);
 
     padding: 35px;
 
     border-radius: 26px;
 
     background:
-        rgba(
-            255,
-            255,
-            255,
-            0.94
-        );
+        rgba(255,255,255,0.94);
 
     text-align: center;
 
     box-shadow:
         0 18px 40px
-        rgba(
-            0,
-            0,
-            0,
-            0.16
-        );
+        rgba(0,0,0,0.16);
 }
 
 .simple-info-card h2 {
@@ -3719,232 +2731,167 @@ img {
 .simple-info-card p {
     margin-bottom: 20px;
 
-    color: #555;
-
-    font-weight: 700;
+    color: #666;
 }
 
 
 /* =========================================================
-   51. НОУТБУК 1366–1450
+   47. НОУТБУКИ 1366 / 1440
 ========================================================= */
 
 @media (max-width: 1450px) {
 
     .main-board-screen {
         grid-template-columns:
-            155px
-            minmax(0, 1fr)
-            205px;
+            165px
+            minmax(0,1fr)
+            180px;
 
-        gap: 8px;
-
-        padding: 8px;
+        padding-top: 70px;
     }
-
 
     .game-info-panel,
     .dice-panel {
         height:
-            calc(
-                100vh - 16px
-            );
-
-        padding:
-            9px
-            8px;
+            calc(100vh - 80px);
     }
-
-
-    .board-logo-large {
-        width: 138px;
-
-        height: 70px;
-    }
-
 
     .square-game-board {
         height:
-            calc(
-                100vh - 16px
-            );
+            calc(100vh - 80px);
     }
-
 
     .outer-square-board {
         width:
             min(
-                59vw,
-                71vh,
-                680px
+                69vw,
+                760px
             );
 
         height:
             min(
-                59vw,
-                71vh,
-                680px
+                69vw,
+                760px
             );
     }
-
 
     .inner-square-board {
         width:
             min(
-                31vw,
-                37vh,
-                350px
+                38vw,
+                420px
             );
 
         height:
             min(
-                31vw,
-                37vh,
-                350px
+                38vw,
+                420px
             );
     }
 
-
     .board-cell {
-        width: 32px;
-        height: 32px;
+        width: 37px;
+        height: 37px;
     }
-
 
     .special-board-cell {
-        width: 36px;
-        height: 36px;
+        width: 41px;
+        height: 41px;
     }
-
 
     .player-piece {
-        width: 56px;
-        height: 56px;
+        width: 63px;
+        height: 63px;
     }
-
 
     .ai-piece {
-        width: 44px;
-        height: 44px;
+        width: 49px;
+        height: 49px;
     }
 
-
-    .current-card-panel {
-        min-height: 260px;
-    }
-
-
-    .current-card-empty,
-    .raifik-board-message,
-    .revealed-current-card,
-    .ai-turn-result {
-        min-height: 260px;
+    .board-logo-large {
+        width: 135px;
     }
 
 }
 
 
 /* =========================================================
-   52. МЕНШИЙ НОУТБУК
+   48. МЕНШИЙ НОУТБУК
 ========================================================= */
 
 @media (max-width: 1200px) {
 
     .main-board-screen {
         grid-template-columns:
-            145px
-            minmax(0, 1fr)
-            190px;
+            150px
+            minmax(0,1fr)
+            165px;
 
-        gap: 6px;
+        gap: 7px;
     }
-
-
-    .board-logo-large {
-        width: 128px;
-    }
-
 
     .outer-square-board {
         width:
             min(
-                56vw,
-                68vh,
-                620px
+                66vw,
+                690px
             );
 
         height:
             min(
-                56vw,
-                68vh,
-                620px
+                66vw,
+                690px
             );
     }
-
 
     .inner-square-board {
         width:
             min(
-                29vw,
-                35vh,
-                320px
+                36vw,
+                375px
             );
 
         height:
             min(
-                29vw,
-                35vh,
-                320px
+                36vw,
+                375px
             );
     }
 
-
     .board-cell {
-        width: 30px;
-        height: 30px;
-    }
-
-
-    .special-board-cell {
         width: 34px;
         height: 34px;
     }
 
+    .special-board-cell {
+        width: 38px;
+        height: 38px;
+    }
 
     .cell-icon {
-        font-size: 12px;
+        font-size: 14px;
     }
-
 
     .player-piece {
-        width: 52px;
-        height: 52px;
+        width: 57px;
+        height: 57px;
     }
-
 
     .ai-piece {
-        width: 41px;
-        height: 41px;
+        width: 45px;
+        height: 45px;
     }
 
-
-    .current-card-panel {
-        min-height: 245px;
-    }
-
-
-    .current-card-empty,
-    .raifik-board-message,
-    .revealed-current-card,
-    .ai-turn-result {
-        min-height: 245px;
+    .board-logo-large {
+        width: 125px;
     }
 
 }
 
 
 /* =========================================================
-   53. ПЛАНШЕТ
+   49. ПЛАНШЕТ
 ========================================================= */
 
 @media (max-width: 900px) {
@@ -3958,7 +2905,6 @@ img {
             35px;
     }
 
-
     .temporary-game-card,
     .token-selection-card,
     .career-screen-card,
@@ -3966,6 +2912,7 @@ img {
         width: 96vw;
 
         display: flex;
+
         flex-direction: column;
 
         gap: 16px;
@@ -3973,21 +2920,15 @@ img {
         padding: 0;
     }
 
-
     .small-game-logo,
-    .career-raifik-side
-    .small-game-logo,
-    .dream-selection-card
-    .small-game-logo {
+    .career-raifik-side .small-game-logo,
+    .dream-selection-card .small-game-logo {
         position: static;
 
         width: 155px;
 
-        margin:
-            0
-            auto;
+        margin: 0 auto;
     }
-
 
     .name-screen-content,
     .token-selection-content,
@@ -3995,39 +2936,26 @@ img {
     .dream-selection-content {
         width: 100%;
 
-        padding:
-            23px
-            18px;
+        padding: 23px 18px;
     }
-
 
     .token-grid,
     .dream-grid {
         grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
+            repeat(2,minmax(0,1fr));
     }
-
 
     .career-random-grid {
         grid-template-columns:
-            repeat(
-                2,
-                minmax(0, 1fr)
-            );
+            repeat(2,minmax(0,1fr));
     }
-
 
     .participants-preview-grid {
         grid-template-columns: 1fr;
     }
 
-
     .main-board-screen {
         height: auto;
-
         min-height: 100vh;
 
         grid-template-columns: 1fr;
@@ -4040,70 +2968,41 @@ img {
         overflow-y: auto;
     }
 
+    .game-info-panel,
+    .dice-panel {
+        width: 100%;
+
+        height: auto;
+        min-height: 0;
+
+        overflow: visible;
+    }
 
     .square-game-board {
         order: -1;
 
         width: 100%;
 
-        height: 86vw;
+        height: 88vw;
 
         min-height: 570px;
     }
 
-
     .outer-square-board {
-        width: 80vw;
-        height: 80vw;
+        width: 82vw;
+        height: 82vw;
     }
-
 
     .inner-square-board {
-        width: 44vw;
-        height: 44vw;
-    }
-
-
-    .game-info-panel,
-    .dice-panel {
-        width: 100%;
-
-        height: auto;
-
-        max-height: none;
-
-        min-height: 0;
-
-        overflow: visible;
-    }
-
-
-    .current-card-panel {
-        min-height: 300px;
-    }
-
-
-    .current-card-empty,
-    .raifik-board-message,
-    .revealed-current-card,
-    .ai-turn-result {
-        min-height: 300px;
-    }
-
-
-    .card-decision-buttons {
-        grid-template-columns:
-            repeat(
-                3,
-                1fr
-            );
+        width: 46vw;
+        height: 46vw;
     }
 
 }
 
 
 /* =========================================================
-   54. МОБІЛЬНИЙ
+   50. МОБІЛЬНИЙ
 ========================================================= */
 
 @media (max-width: 600px) {
@@ -4113,34 +3012,28 @@ img {
         left: 12px;
     }
 
-
     .mode-options {
         grid-template-columns: 1fr;
     }
-
 
     .gender-options {
         flex-direction: column;
     }
 
-
     .gender-button {
         width: 100%;
     }
-
 
     .token-grid,
     .dream-grid {
         grid-template-columns: 1fr;
     }
 
-
     .career-path-card {
         grid-template-columns:
             55px
             1fr;
     }
-
 
     .career-level-stats {
         grid-column:
@@ -4149,66 +3042,176 @@ img {
         justify-content: flex-start;
     }
 
-
     .square-game-board {
         min-height: 520px;
     }
 
-
     .board-cell {
-        width: 28px;
-        height: 28px;
+        width: 29px;
+        height: 29px;
 
         border-radius: 7px;
     }
 
-
     .special-board-cell {
-        width: 31px;
-        height: 31px;
+        width: 32px;
+        height: 32px;
     }
-
 
     .cell-icon {
-        font-size: 11px;
+        font-size: 12px;
     }
-
 
     .cell-number {
         font-size: 6px;
     }
-
 
     .player-piece {
         width: 46px;
         height: 46px;
     }
 
-
     .ai-piece {
-        width: 36px;
-        height: 36px;
+        width: 37px;
+        height: 37px;
     }
-
 
     .dream-center {
         width: 88px;
         height: 88px;
     }
 
-
     .dream-center span {
         font-size: 23px;
     }
-
 
     .dream-center strong {
         font-size: 14px;
     }
 
-
-    .card-decision-buttons {
-        grid-template-columns: 1fr;
-    }
-
 }
+/* =========================================================
+   ЦЕНТРАЛЬНА ЗОНА ПОЛЯ
+========================================================= */
+
+.square-game-board {
+    position: relative;
+
+    width: 100%;
+    height: calc(100vh - 30px);
+
+    max-height: 780px;
+
+    min-height: 560px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    overflow: visible;
+}
+
+
+/* =========================================================
+   ЗОВНІШНІЙ КВАДРАТ
+   ТЕПЕР РОЗМІР ЗАЛЕЖИТЬ ВІД ВИСОТИ ЕКРАНА
+========================================================= */
+
+.outer-square-board {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: min(64vw, 72vh, 720px);
+    height: min(64vw, 72vh, 720px);
+
+    transform: translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   ВНУТРІШНІЙ КВАДРАТ
+========================================================= */
+
+.inner-square-board {
+    position: absolute;
+
+    left: 50%;
+    top: 50%;
+
+    width: min(34vw, 39vh, 390px);
+    height: min(34vw, 39vh, 390px);
+
+    transform: translate(-50%, -50%);
+}
+
+
+/* =========================================================
+   КОМІРКИ ТРОХИ МЕНШІ
+========================================================= */
+
+.board-cell {
+    width: 34px;
+    height: 34px;
+
+    border-radius: 8px;
+}
+
+.special-board-cell {
+    width: 38px;
+    height: 38px;
+}
+
+.cell-number {
+    font-size: 7px;
+}
+
+.cell-icon {
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   ФІШКИ — ЗАЛИШАЄМО ПОМІТНИМИ
+========================================================= */
+
+.player-piece {
+    width: 58px;
+    height: 58px;
+
+    transform: translate(-50%, -74%);
+
+    z-index: 50;
+}
+
+.ai-piece {
+    width: 46px;
+    height: 46px;
+
+    transform: translate(-50%, -65%);
+
+    z-index: 45;
+}
+
+
+/* =========================================================
+   МРІЯ В ЦЕНТРІ
+========================================================= */
+
+.dream-center {
+    width: 105px;
+    height: 105px;
+
+    border-radius: 21px;
+}
+
+.dream-center span {
+    font-size: 25px;
+}
+
+.dream-center strong {
+    font-size: 15px;
+}
+
+
