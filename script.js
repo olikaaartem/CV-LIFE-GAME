@@ -2971,6 +2971,122 @@ function showBeforeGameScreen() {
    - поточна картка
    - гравці
 ========================================================= */
+/* =========================================================
+   29. БАНК — ПРОДУКТИ
+
+   ПОКИ ЗАКЛАДАЄМО АРХІТЕКТУРУ.
+
+   Гравець може обрати продукти,
+   якими хоче користуватися у грі.
+
+   Реальний фінансовий вплив продуктів
+   підключимо окремо.
+========================================================= */
+
+const BANK_PRODUCTS = [
+
+    {
+        id: "deposit",
+        icon: "💰",
+        name: "Депозит",
+        description:
+            "Розміщуй частину коштів та отримуй додатковий дохід."
+    },
+
+    {
+        id: "savings",
+        icon: "🐷",
+        name: "Накопичення",
+        description:
+            "Відкладай гроші для великих покупок та своєї Мрії."
+    },
+
+    {
+        id: "credit",
+        icon: "💳",
+        name: "Кредит",
+        description:
+            "Отримуй додаткові кошти для важливих цілей."
+    },
+
+    {
+        id: "insurance",
+        icon: "🛡️",
+        name: "Страхування",
+        description:
+            "Зменшуй вплив окремих непередбачених життєвих подій."
+    },
+
+    {
+        id: "cashback",
+        icon: "🪙",
+        name: "Кешбек",
+        description:
+            "Повертай частину коштів після певних витрат."
+    },
+
+    {
+        id: "investment",
+        icon: "📈",
+        name: "Інвестиції",
+        description:
+            "Використовуй гроші для потенційного зростання капіталу."
+    },
+
+    {
+        id: "currency",
+        icon: "💱",
+        name: "Обмін валют",
+        description:
+            "Користуйся валютними операціями у відповідних ситуаціях."
+    },
+
+    {
+        id: "card",
+        icon: "💳",
+        name: "Банківська картка",
+        description:
+            "Отримуй доступ до додаткових банківських можливостей."
+    }
+
+];
+
+
+/* =========================================================
+   30. СТАН БАНКУ ГРАВЦЯ
+========================================================= */
+
+function ensurePlayerBankState() {
+
+    if (!gameState.player.bank) {
+
+        gameState.player.bank = {
+
+            products: []
+
+        };
+
+    }
+
+}
+
+
+/* =========================================================
+   31. ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
+
+   КОМПОЗИЦІЯ:
+
+   - великий ігровий фон
+   - зовнішній маршрут 56
+   - внутрішній маршрут 28
+   - CV ЖИТТЯ у лівому верхньому кутку
+   - нижній HUD
+   - професія
+   - показники
+   - Мрія
+   - Банк
+   - панель ходу справа
+========================================================= */
 
 function showGameBoard() {
 
@@ -2980,6 +3096,13 @@ function showGameBoard() {
 
     gameState.currentTurn =
         "player";
+
+
+    gameState.target =
+        null;
+
+
+    ensurePlayerBankState();
 
 
     const player =
@@ -3022,203 +3145,265 @@ function showGameBoard() {
             .join("");
 
 
-    const cellTypesHTML = [
-
-        CELL_TYPES.income,
-        CELL_TYPES.bank,
-        CELL_TYPES.event,
-        CELL_TYPES.life,
-        CELL_TYPES.fate
-
-    ]
-        .map(type => `
-
-            <button
-                class="cell-type-info-button"
-                data-cell-type="${type.id}"
-            >
-
-                <span>
-                    ${type.icon}
-                </span>
-
-                <strong>
-                    ${type.name}
-                </strong>
-
-            </button>
-
-        `)
-        .join("");
-
-
     setScreen(`
 
         <section class="main-board-screen">
 
 
-            <!-- ======================================
-                 ЛІВА ПАНЕЛЬ
-            ======================================= -->
-
-            <aside class="game-info-panel">
-
-
-                <img
-                    src="assets/logo.png"
-                    class="board-logo-large"
-                    alt="CV Життя"
-                >
-
-
-                <div class="player-profile">
-
-                    <img
-                        src="${player.token.image}"
-                        class="player-token-preview"
-                        alt="${player.token.name}"
-                    >
-
-
-                    <div>
-
-                        <strong>
-                            ${player.name}
-                        </strong>
-
-                        <small>
-                            ${profession}
-                        </small>
-
-                    </div>
-
-                </div>
-
-
-                <div class="player-stats">
-
-                    <div>
-                        💰
-                        <span id="moneyValue">
-                            ${formatMoney(player.money)}
-                        </span>
-                    </div>
-
-                    <div>
-                        ⭐
-                        <span id="reputationValue">
-                            ${player.reputation}
-                        </span>
-                    </div>
-
-                    <div>
-                        🧠
-                        <span id="knowledgeValue">
-                            ${player.knowledge}
-                        </span>
-                    </div>
-
-                    <div>
-                        ⚡
-                        <span id="energyValue">
-                            ${player.energy}
-                        </span>
-                    </div>
-
-                </div>
-
-
-                <button
-                    id="myDreamButton"
-                    class="dream-mini"
-                >
-
-                    <span>
-                        ✨ МОЯ МРІЯ
-                    </span>
-
-                    <strong>
-
-                        ${player.dream.icon}
-                        ${player.dream.name}
-
-                    </strong>
-
-                </button>
-
-
-                <div class="board-help-block">
-
-                    <h3>
-                        ТИПИ КОМІРОК
-                    </h3>
-
-
-                    <div class="cell-type-list">
-
-                        ${cellTypesHTML}
-
-                    </div>
-
-                </div>
-
-            </aside>
-
-
-            <!-- ======================================
-                 КВАДРАТНЕ ПОЛЕ
-            ======================================= -->
+            <!-- =====================================
+                 ІГРОВЕ ПОЛЕ
+            ====================================== -->
 
             <main
                 id="board"
-                class="game-board square-game-board"
+                class="game-board rectangle-game-board"
             >
 
 
+                <!-- ЗОВНІШНІЙ ШЛЯХ -->
+
                 <div
                     id="outerBoard"
-                    class="square-board outer-square-board"
+                    class="rectangle-board outer-rectangle-board"
                 ></div>
 
+
+                <!-- ВНУТРІШНІЙ ШЛЯХ -->
 
                 <div
                     id="innerBoard"
-                    class="square-board inner-square-board"
+                    class="rectangle-board inner-rectangle-board"
                 ></div>
 
 
-                <button
-                    id="dreamCenter"
-                    class="dream-center"
-                >
+                <!-- CV ЖИТТЯ — ЛІВИЙ ВЕРХ -->
 
-                    <span>
-                        ✨
-                    </span>
+                <div class="board-corner-brand">
 
-                    <strong>
-                        МРІЯ
-                    </strong>
+                    <img
+                        src="assets/logo.png"
+                        class="board-corner-logo"
+                        alt="CV Життя"
+                    >
 
-                </button>
+                </div>
+
+
+                <!-- =====================================
+                     НИЖНІЙ HUD
+                ====================================== -->
+
+                <div class="player-bottom-hud">
+
+
+                    <!-- ПРОФЕСІЯ -->
+
+                    <button
+                        id="careerHudButton"
+                        class="player-career-hud"
+                    >
+
+                        <img
+                            src="${player.token.image}"
+                            class="hud-token-image"
+                            alt="${player.token.name}"
+                        >
+
+
+                        <div class="hud-career-text">
+
+                            <span class="hud-player-name">
+                                ${player.name}
+                            </span>
+
+                            <span class="hud-player-profession">
+                                ${profession}
+                            </span>
+
+                            <small>
+                                Кар'єрний шлях →
+                            </small>
+
+                        </div>
+
+                    </button>
+
+
+                    <!-- ПОКАЗНИКИ -->
+
+                    <div class="hud-player-stats">
+
+
+                        <div class="hud-stat-item">
+
+                            <span class="hud-stat-icon">
+                                💰
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    ГРОШІ
+                                </small>
+
+                                <strong id="moneyValue">
+                                    ${formatMoney(player.money)}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="hud-stat-item">
+
+                            <span class="hud-stat-icon">
+                                ⭐
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    РЕПУТАЦІЯ
+                                </small>
+
+                                <strong id="reputationValue">
+                                    ${player.reputation}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="hud-stat-item">
+
+                            <span class="hud-stat-icon">
+                                🧠
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    ЗНАННЯ
+                                </small>
+
+                                <strong id="knowledgeValue">
+                                    ${player.knowledge}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="hud-stat-item">
+
+                            <span class="hud-stat-icon">
+                                ⚡
+                            </span>
+
+                            <div>
+
+                                <small>
+                                    ЕНЕРГІЯ
+                                </small>
+
+                                <strong id="energyValue">
+                                    ${player.energy}
+                                </strong>
+
+                            </div>
+
+                        </div>
+
+
+                    </div>
+
+
+                    <!-- МРІЯ -->
+
+                    <button
+                        id="dreamHudButton"
+                        class="
+                            hud-feature-button
+                            hud-dream-button
+                        "
+                    >
+
+                        <span class="hud-feature-icon">
+
+                            ${player.dream.icon}
+
+                        </span>
+
+
+                        <div>
+
+                            <small>
+                                МОЯ МРІЯ
+                            </small>
+
+                            <strong>
+                                ${player.dream.name}
+                            </strong>
+
+                        </div>
+
+                    </button>
+
+
+                    <!-- БАНК -->
+
+                    <button
+                        id="bankHudButton"
+                        class="
+                            hud-feature-button
+                            hud-bank-button
+                        "
+                    >
+
+                        <span class="hud-feature-icon">
+                            🏦
+                        </span>
+
+
+                        <div>
+
+                            <small>
+                                БАНК
+                            </small>
+
+                            <strong>
+                                Фінансові можливості
+                            </strong>
+
+                        </div>
+
+                    </button>
+
+
+                </div>
+
 
             </main>
 
 
-            <!-- ======================================
-                 ПРАВА ПАНЕЛЬ
-            ======================================= -->
+            <!-- =====================================
+                 ПРАВА РОБОЧА ПАНЕЛЬ
+            ====================================== -->
 
-            <aside class="dice-panel">
+            <aside class="game-work-panel">
 
 
                 <div class="dice-section">
+
 
                     <div
                         id="diceTitle"
                         class="dice-title"
                     >
-                        Твій хід
+                        ТВІЙ ХІД
                     </div>
 
 
@@ -3242,32 +3427,52 @@ function showGameBoard() {
                         id="diceMessage"
                         class="dice-message"
                     >
-                        Райфик: кидай кубик 🎲
+
+                        Починаємо зі START.
+
+                        <br>
+
+                        Кидай кубик 🎲
+
                     </div>
+
 
                 </div>
 
 
-                <!-- ПОТОЧНА КАРТКА -->
+                <!-- РАЙФИК / ПОТОЧНА КАРТКА -->
 
                 <div
                     id="currentCardPanel"
                     class="current-card-panel"
                 >
 
-                    <div class="current-card-empty">
+                    <div class="raifik-board-message">
 
-                        <span>
-                            ?
-                        </span>
+                        <img
+                            src="assets/raifik.png"
+                            alt="Райфик"
+                        >
 
-                        <strong>
-                            ПОТОЧНА КАРТКА
-                        </strong>
 
-                        <small>
-                            Тут з'явиться твоя подія
-                        </small>
+                        <div>
+
+                            <strong>
+                                Райфик
+                            </strong>
+
+                            <p>
+
+                                Починаємо зі START.
+
+                                <br><br>
+
+                                Кидай кубик
+                                і починай свій шлях!
+
+                            </p>
+
+                        </div>
 
                     </div>
 
@@ -3292,15 +3497,32 @@ function showGameBoard() {
                 </div>
 
 
-                <div
-                    id="gameLog"
-                    class="game-log"
-                ></div>
+                <!-- ЯК ГРАТИ -->
+
+                <div class="work-panel-actions">
+
+                    <button
+                        id="cellInfoButton"
+                        class="work-panel-button"
+                    >
+                        <span>
+                            ℹ️ Типи полів
+                        </span>
+
+                        <span>
+                            →
+                        </span>
+                    </button>
+
+                </div>
+
 
             </aside>
 
 
-            <!-- МОДАЛКА -->
+            <!-- =====================================
+                 МОДАЛЬНЕ ВІКНО
+            ====================================== -->
 
             <div
                 id="gameInfoModal"
@@ -3318,9 +3540,7 @@ function showGameBoard() {
                     </button>
 
 
-                    <div
-                        id="gameInfoContent"
-                    ></div>
+                    <div id="gameInfoContent"></div>
 
                 </div>
 
@@ -3332,6 +3552,10 @@ function showGameBoard() {
     `);
 
 
+    /* ================================================
+       СТВОРЮЄМО ПОЛЕ
+    ================================================= */
+
     createBoard();
 
 
@@ -3340,6 +3564,10 @@ function showGameBoard() {
 
     updatePlayerStatsUI();
 
+
+    /* ================================================
+       КУБИК
+    ================================================= */
 
     document
         .getElementById(
@@ -3351,9 +3579,27 @@ function showGameBoard() {
         );
 
 
+    /* ================================================
+       ПРОФЕСІЯ
+    ================================================= */
+
     document
         .getElementById(
-            "dreamCenter"
+            "careerHudButton"
+        )
+        .addEventListener(
+            "click",
+            showCareerProgressModal
+        );
+
+
+    /* ================================================
+       МРІЯ
+    ================================================= */
+
+    document
+        .getElementById(
+            "dreamHudButton"
         )
         .addEventListener(
             "click",
@@ -3361,32 +3607,23 @@ function showGameBoard() {
         );
 
 
+    /* ================================================
+       БАНК
+    ================================================= */
+
     document
         .getElementById(
-            "myDreamButton"
+            "bankHudButton"
         )
         .addEventListener(
             "click",
-            showDreamProgress
+            showBankHub
         );
 
 
-    document
-        .querySelectorAll(
-            ".cell-type-info-button"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () =>
-                    showCellTypeInfo(
-                        button.dataset.cellType
-                    )
-            );
-
-        });
-
+    /* ================================================
+       AI
+    ================================================= */
 
     document
         .querySelectorAll(
@@ -3396,14 +3633,35 @@ function showGameBoard() {
 
             button.addEventListener(
                 "click",
-                () =>
+                () => {
+
                     showParticipantInfo(
                         button.dataset.playerId
-                    )
+                    );
+
+                }
             );
 
         });
 
+
+    /* ================================================
+       ТИПИ ПОЛІВ
+    ================================================= */
+
+    document
+        .getElementById(
+            "cellInfoButton"
+        )
+        .addEventListener(
+            "click",
+            showAllCellTypes
+        );
+
+
+    /* ================================================
+       CLOSE MODAL
+    ================================================= */
 
     document
         .getElementById(
@@ -3417,7 +3675,7 @@ function showGameBoard() {
 
     showRaifikCurrentCardMessage(
 
-        "Починаємо з внутрішнього поля. Кидай кубик 🎲"
+        "Починаємо зі START. Кидай кубик 🎲"
 
     );
 
@@ -3425,42 +3683,50 @@ function showGameBoard() {
 
 
 /* =========================================================
-   30. СТВОРЕННЯ КВАДРАТНОГО ПОЛЯ
+   32. СТВОРЕННЯ ПОЛЯ
 ========================================================= */
 
 function createBoard() {
 
-    createSquareBoard(
+    createRectangleBoard(
+
         document.getElementById(
             "outerBoard"
         ),
+
         OUTER_BOARD,
+
         "outer"
+
     );
 
 
-    createSquareBoard(
+    createRectangleBoard(
+
         document.getElementById(
             "innerBoard"
         ),
+
         INNER_BOARD,
+
         "inner"
+
     );
 
 }
 
 
 /* =========================================================
-   31. КООРДИНАТИ КВАДРАТНОЇ ДОРОЖКИ
+   32.1 КООРДИНАТИ ПРЯМОКУТНОГО МАРШРУТУ
 
-   Повертає координати у %.
+   ОБИДВА МАРШРУТИ СТАРТУЮТЬ
+   З ВЕРХНЬОЇ ЧАСТИНИ.
 
-   Кількість комірок може бути будь-яка,
-   тому позиції рівномірно розподіляються
-   по периметру квадрату.
+   INNER — за годинниковою
+   OUTER — проти годинникової
 ========================================================= */
 
-function getSquarePosition(
+function getRectanglePosition(
     index,
     amount,
     direction = "clockwise"
@@ -3482,105 +3748,141 @@ function getSquarePosition(
     }
 
 
+    const width =
+        1.72;
+
+
+    const height =
+        1;
+
+
+    const perimeter =
+        width * 2 +
+        height * 2;
+
+
     /*
-       Периметр = 4 сторони.
+       Початок маршруту —
+       середина верхньої сторони.
     */
 
-    const progress =
-        normalized * 4;
+    let distance =
+        normalized *
+        perimeter +
+        width / 2;
+
+
+    while (
+        distance >=
+        perimeter
+    ) {
+
+        distance -=
+            perimeter;
+
+    }
 
 
     let x = 0;
     let y = 0;
 
 
-    /*
-       ПОЧИНАЄМО ЗВЕРХУ ПО ЦЕНТРУ.
-    */
-
     if (
-        progress < 0.5
+        distance <=
+        width
     ) {
 
         /*
-           верх:
-           центр → правий верхній кут
+           ВЕРХ
         */
 
         x =
-            50 +
-            progress *
+            (
+                distance /
+                width
+            ) *
             100;
-
-        y = 0;
-
-    }
-
-    else if (
-        progress < 1.5
-    ) {
-
-        /*
-           права сторона:
-           верх → низ
-        */
-
-        x = 100;
 
         y =
-            (progress - 0.5) *
+            0;
+
+    }
+
+
+    else if (
+        distance <=
+        width +
+        height
+    ) {
+
+        /*
+           ПРАВА СТОРОНА
+        */
+
+        x =
+            100;
+
+        y =
+            (
+                (
+                    distance -
+                    width
+                ) /
+                height
+            ) *
             100;
 
     }
 
+
     else if (
-        progress < 2.5
+        distance <=
+        width * 2 +
+        height
     ) {
 
         /*
-           низ:
-           справа → зліва
+           НИЗ
         */
 
         x =
             100 -
-            (progress - 1.5) *
+            (
+                (
+                    distance -
+                    width -
+                    height
+                ) /
+                width
+            ) *
             100;
-
-        y = 100;
-
-    }
-
-    else if (
-        progress < 3.5
-    ) {
-
-        /*
-           ліва сторона:
-           низ → верх
-        */
-
-        x = 0;
 
         y =
-            100 -
-            (progress - 2.5) *
             100;
 
     }
+
 
     else {
 
         /*
-           верх:
-           зліва → центр
+           ЛІВА СТОРОНА
         */
 
         x =
-            (progress - 3.5) *
-            100;
+            0;
 
-        y = 0;
+        y =
+            100 -
+            (
+                (
+                    distance -
+                    width * 2 -
+                    height
+                ) /
+                height
+            ) *
+            100;
 
     }
 
@@ -3594,22 +3896,30 @@ function getSquarePosition(
 
 
 /* =========================================================
-   32. СТВОРЕННЯ ОДНОГО КВАДРАТУ
+   32.2 СТВОРЕННЯ ОДНОГО МАРШРУТУ
 ========================================================= */
 
-function createSquareBoard(
+function createRectangleBoard(
     container,
     boardData,
     boardName
 ) {
+
+    if (!container) {
+        return;
+    }
+
 
     const amount =
         boardData.length;
 
 
     const direction =
-        boardName === "inner"
+        boardName ===
+        "inner"
+
         ? "clockwise"
+
         : "counterclockwise";
 
 
@@ -3637,6 +3947,11 @@ function createSquareBoard(
             );
 
 
+        const isStart =
+            boardName === "inner" &&
+            i === 1;
+
+
         cell.className =
             `board-cell ${boardName}-cell`;
 
@@ -3653,6 +3968,23 @@ function createSquareBoard(
             typeId;
 
 
+        /* ================================================
+           START
+        ================================================= */
+
+        if (isStart) {
+
+            cell.classList.add(
+                "start-board-cell"
+            );
+
+        }
+
+
+        /* ================================================
+           СПЕЦІАЛЬНІ ПОЛЯ
+        ================================================= */
+
         if (
             [
                 "income",
@@ -3660,7 +3992,9 @@ function createSquareBoard(
                 "academy",
                 "transition",
                 "dreamCheck"
-            ].includes(typeId)
+            ].includes(
+                typeId
+            )
         ) {
 
             cell.classList.add(
@@ -3670,11 +4004,27 @@ function createSquareBoard(
         }
 
 
+        if (
+            typeId ===
+            "transition"
+        ) {
+
+            cell.classList.add(
+                "transition-board-cell"
+            );
+
+        }
+
+
         const coordinates =
-            getSquarePosition(
+            getRectanglePosition(
+
                 i - 1,
+
                 amount,
+
                 direction
+
             );
 
 
@@ -3692,26 +4042,60 @@ function createSquareBoard(
                 ${i}
             </span>
 
+
             <span class="cell-icon">
                 ${type.icon}
             </span>
+
+
+            ${
+                isStart
+
+                ? `
+                    <span class="cell-special-label">
+                        START
+                    </span>
+                  `
+
+                : ""
+            }
+
+
+            ${
+                typeId ===
+                "transition"
+
+                ? `
+                    <span class="cell-special-label">
+                        ПЕРЕХІД
+                    </span>
+                  `
+
+                : ""
+            }
 
         `;
 
 
         cell.addEventListener(
             "click",
-            () =>
+            () => {
+
                 handleBoardCellClick(
                     cell
-                )
+                );
+
+            }
         );
 
 
         cell.addEventListener(
             "dragover",
-            event =>
-                event.preventDefault()
+            event => {
+
+                event.preventDefault();
+
+            }
         );
 
 
@@ -3720,6 +4104,7 @@ function createSquareBoard(
             event => {
 
                 event.preventDefault();
+
 
                 tryMovePlayerToCell(
                     cell
@@ -3734,6 +4119,426 @@ function createSquareBoard(
         );
 
     }
+
+}
+
+
+/* =========================================================
+   32.3 БАНК — ГОЛОВНЕ МОДАЛЬНЕ ВІКНО
+========================================================= */
+
+function showBankHub() {
+
+    ensurePlayerBankState();
+
+
+    const selectedProducts =
+        gameState.player.bank.products;
+
+
+    const productsHTML =
+        BANK_PRODUCTS
+            .map(product => {
+
+                const selected =
+                    selectedProducts.includes(
+                        product.id
+                    );
+
+
+                return `
+
+                    <button
+                        class="
+                            bank-product-card
+                            ${
+                                selected
+                                ? "bank-product-selected"
+                                : ""
+                            }
+                        "
+                        data-bank-product="${product.id}"
+                    >
+
+                        <span class="bank-product-icon">
+                            ${product.icon}
+                        </span>
+
+
+                        <div class="bank-product-text">
+
+                            <strong>
+                                ${product.name}
+                            </strong>
+
+                            <small>
+                                ${product.description}
+                            </small>
+
+                        </div>
+
+
+                        <span class="bank-product-status">
+
+                            ${
+                                selected
+                                ? "✓ ВИКОРИСТОВУЄТЬСЯ"
+                                : "+ ДОДАТИ"
+                            }
+
+                        </span>
+
+                    </button>
+
+                `;
+
+            })
+            .join("");
+
+
+    openGameInfoModal(`
+
+        <div class="bank-hub-popup">
+
+
+            <div class="bank-hub-header">
+
+                <div class="bank-hub-main-icon">
+                    🏦
+                </div>
+
+
+                <div>
+
+                    <span class="bank-hub-label">
+                        CV ЖИТТЯ
+                    </span>
+
+                    <h2>
+                        БАНК
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <p class="bank-hub-description">
+
+                Обирай банківські продукти,
+                якими хочеш користуватися
+                протягом гри.
+
+            </p>
+
+
+            <div class="bank-products-grid">
+
+                ${productsHTML}
+
+            </div>
+
+
+            <div class="bank-hub-note">
+
+                💡 Зараз ми формуємо набір продуктів.
+
+                Пізніше кожному продукту
+                підключимо власну фінансову механіку
+                та вплив на гру.
+
+            </div>
+
+        </div>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            ".bank-product-card"
+        )
+        .forEach(button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    toggleBankProduct(
+                        button.dataset.bankProduct
+                    );
+
+                }
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   32.4 ДОДАТИ / ПРИБРАТИ ПРОДУКТ
+========================================================= */
+
+function toggleBankProduct(
+    productId
+) {
+
+    ensurePlayerBankState();
+
+
+    const products =
+        gameState.player.bank.products;
+
+
+    const index =
+        products.indexOf(
+            productId
+        );
+
+
+    if (
+        index === -1
+    ) {
+
+        products.push(
+            productId
+        );
+
+    }
+
+    else {
+
+        products.splice(
+            index,
+            1
+        );
+
+    }
+
+
+    showBankHub();
+
+}
+
+
+/* =========================================================
+   32.5 КАР'ЄРНИЙ ПРОГРЕС У МОДАЛЦІ
+========================================================= */
+
+function showCareerProgressModal() {
+
+    const player =
+        gameState.player;
+
+
+    const currentProfession =
+        getProfessionName(
+
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ]
+
+        );
+
+
+    const nextLevel =
+        player.careerLevel + 1;
+
+
+    let nextHTML = `
+
+        <div class="career-max-level">
+            🏆 Ти вже на найвищій кар'єрній сходинці.
+        </div>
+
+    `;
+
+
+    if (
+        nextLevel <
+        player.sector.levels.length
+    ) {
+
+        const nextProfession =
+            getProfessionName(
+
+                player
+                    .sector
+                    .levels[
+                        nextLevel
+                    ]
+
+            );
+
+
+        const required =
+            CAREER_LEVEL_STATS[
+                nextLevel
+            ];
+
+
+        nextHTML = `
+
+            <div class="next-career-level">
+
+                <span>
+                    НАСТУПНА СХОДИНКА
+                </span>
+
+                <strong>
+                    ${nextProfession}
+                </strong>
+
+            </div>
+
+
+            <div class="participant-popup-stats">
+
+                <span>
+                    💰 ${formatMoney(required.money)}
+                </span>
+
+                <span>
+                    ⭐ ${required.reputation}
+                </span>
+
+                <span>
+                    🧠 ${required.knowledge}
+                </span>
+
+                <span>
+                    ⚡ ${required.energy}
+                </span>
+
+            </div>
+
+        `;
+
+    }
+
+
+    openGameInfoModal(`
+
+        <div class="career-progress-popup">
+
+
+            <div class="career-popup-profile">
+
+                <img
+                    src="${player.token.image}"
+                    class="career-popup-token"
+                    alt="${player.name}"
+                >
+
+
+                <div>
+
+                    <h2>
+                        ${player.name}
+                    </h2>
+
+                    <p>
+                        ${player.sector.icon}
+                        ${currentProfession}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            ${nextHTML}
+
+
+            <p class="progress-help-text">
+
+                Розвивай фінанси,
+                репутацію,
+                знання та енергію,
+                щоб рухатися кар'єрним шляхом.
+
+            </p>
+
+
+        </div>
+
+    `);
+
+}
+
+
+/* =========================================================
+   32.6 УСІ ТИПИ ПОЛІВ
+========================================================= */
+
+function showAllCellTypes() {
+
+    const types = [
+
+        CELL_TYPES.income,
+        CELL_TYPES.bank,
+        CELL_TYPES.event,
+        CELL_TYPES.life,
+        CELL_TYPES.fate,
+        CELL_TYPES.lounge,
+        CELL_TYPES.academy,
+        CELL_TYPES.transition,
+        CELL_TYPES.dreamCheck
+
+    ];
+
+
+    const rows =
+        types
+            .map(type => `
+
+                <div class="all-cell-type-row">
+
+                    <span>
+                        ${type.icon}
+                    </span>
+
+                    <div>
+
+                        <strong>
+                            ${type.name}
+                        </strong>
+
+                        <small>
+                            ${type.description}
+                        </small>
+
+                    </div>
+
+                </div>
+
+            `)
+            .join("");
+
+
+    openGameInfoModal(`
+
+        <div class="all-cell-types-popup">
+
+            <h2>
+                Поля гри
+            </h2>
+
+            <p>
+                Кожен тип поля запускає
+                окрему життєву або фінансову ситуацію.
+            </p>
+
+            <div class="all-cell-types-list">
+                ${rows}
+            </div>
+
+        </div>
+
+    `);
 
 }
 
