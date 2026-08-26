@@ -6521,3 +6521,739 @@ button {
     }
 
 }
+
+/* =========================================================
+   FIX — ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
+   вставити В САМИЙ КІНЕЦЬ style.css
+========================================================= */
+
+.main-board-screen {
+    position: relative !important;
+
+    width: 100vw !important;
+    height: 100vh !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+        minmax(0, 1fr)
+        250px !important;
+
+    gap: 14px !important;
+
+    padding:
+        16px
+        16px
+        105px
+        16px !important;
+
+    background-image:
+        linear-gradient(
+            rgba(0, 0, 0, 0.02),
+            rgba(0, 0, 0, 0.02)
+        ),
+        url("assets/bg-game.png") !important;
+
+    background-size: cover !important;
+    background-position: center center !important;
+    background-repeat: no-repeat !important;
+
+    overflow: hidden !important;
+}
+
+
+/* =========================================================
+   ОСНОВНА ЗОНА ПОЛЯ
+========================================================= */
+
+.rectangle-game-board,
+.expanded-game-board {
+    position: relative !important;
+
+    width: 100% !important;
+    height: calc(100vh - 135px) !important;
+
+    min-height: 560px !important;
+
+    overflow: visible !important;
+
+    background: transparent !important;
+}
+
+
+/* =========================================================
+   ЗОВНІШНІЙ МАРШРУТ
+========================================================= */
+
+.outer-rectangle-board {
+    position: absolute !important;
+
+    left: 50% !important;
+    top: 49% !important;
+
+    width: min(76vw, 1050px) !important;
+    height: min(65vh, 610px) !important;
+
+    transform:
+        translate(-50%, -50%) !important;
+}
+
+
+/* =========================================================
+   ВНУТРІШНІЙ МАРШРУТ
+========================================================= */
+
+.inner-rectangle-board {
+    position: absolute !important;
+
+    left: 50% !important;
+    top: 49% !important;
+
+    width: min(48vw, 650px) !important;
+    height: min(36vh, 340px) !important;
+
+    transform:
+        translate(-50%, -50%) !important;
+}
+
+
+/* =========================================================
+   КОМІРКИ
+========================================================= */
+
+.board-cell {
+    width: 42px !important;
+    height: 42px !important;
+
+    transform:
+        translate(-50%, -50%) !important;
+
+    border-radius: 10px !important;
+
+    background:
+        rgba(255, 255, 255, 0.96) !important;
+
+    border:
+        2px solid
+        rgba(155, 125, 0, 0.30) !important;
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.22) !important;
+
+    z-index: 10 !important;
+}
+
+
+.special-board-cell,
+.start-board-cell,
+.transition-board-cell {
+    width: 47px !important;
+    height: 47px !important;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffec64,
+            #efc900
+        ) !important;
+
+    z-index: 12 !important;
+}
+
+
+.cell-number {
+    font-size: 8px !important;
+    font-weight: 900 !important;
+}
+
+
+.cell-icon {
+    font-size: 19px !important;
+}
+
+
+/* =========================================================
+   START / ПЕРЕХІД ПІДПИС
+========================================================= */
+
+.cell-special-label {
+    position: absolute !important;
+
+    bottom: -13px !important;
+
+    padding: 2px 5px !important;
+
+    border-radius: 5px !important;
+
+    background:
+        rgba(25, 25, 25, 0.90) !important;
+
+    color: white !important;
+
+    font-size: 6px !important;
+    font-weight: 900 !important;
+
+    white-space: nowrap !important;
+}
+
+
+/* =========================================================
+   ФІШКИ
+========================================================= */
+
+.player-piece {
+    width: 70px !important;
+    height: 70px !important;
+
+    transform:
+        translate(-50%, -76%) !important;
+
+    z-index: 60 !important;
+}
+
+
+.ai-piece {
+    width: 56px !important;
+    height: 56px !important;
+
+    transform:
+        translate(-50%, -65%) !important;
+
+    z-index: 55 !important;
+}
+
+
+/* =========================================================
+   ЛОГО — ЛІВИЙ ВЕРХНІЙ КУТОК
+========================================================= */
+
+.board-center-brand {
+    position: absolute !important;
+
+    left: 24px !important;
+    top: 18px !important;
+
+    width: 170px !important;
+
+    z-index: 5 !important;
+
+    pointer-events: none !important;
+}
+
+
+.board-center-logo {
+    width: 170px !important;
+    height: auto !important;
+
+    object-fit: contain !important;
+
+    filter:
+        drop-shadow(
+            0 6px 12px
+            rgba(0, 0, 0, 0.20)
+        ) !important;
+}
+
+
+/* =========================================================
+   ПРАВА РОБОЧА ПАНЕЛЬ
+========================================================= */
+
+.game-work-panel {
+    position: relative !important;
+
+    width: 250px !important;
+    height: calc(100vh - 125px) !important;
+
+    padding: 15px !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    gap: 12px !important;
+
+    border-radius: 22px !important;
+
+    background:
+        rgba(255, 255, 255, 0.93) !important;
+
+    backdrop-filter:
+        blur(10px) !important;
+
+    box-shadow:
+        0 14px 35px
+        rgba(0, 0, 0, 0.18) !important;
+
+    overflow-y: auto !important;
+
+    z-index: 100 !important;
+}
+
+
+/* =========================================================
+   КУБИК
+========================================================= */
+
+.game-work-panel .dice-title {
+    font-size: 18px !important;
+    font-weight: 900 !important;
+}
+
+
+.game-work-panel .dice {
+    width: 76px !important;
+    height: 76px !important;
+
+    font-size: 55px !important;
+}
+
+
+.game-work-panel .main-game-btn {
+    width: 100% !important;
+
+    min-width: 0 !important;
+
+    padding: 13px 8px !important;
+
+    font-size: 13px !important;
+}
+
+
+.game-work-panel .dice-message {
+    padding: 10px 11px !important;
+
+    font-size: 12px !important;
+    font-weight: 800 !important;
+
+    line-height: 1.4 !important;
+}
+
+
+/* =========================================================
+   РАЙФИК / ПОТОЧНА КАРТКА
+========================================================= */
+
+.current-card-panel {
+    width: 100% !important;
+
+    min-height: 220px !important;
+
+    border-radius: 16px !important;
+
+    background:
+        rgba(255, 255, 255, 0.72) !important;
+
+    overflow: hidden !important;
+}
+
+
+.raifik-board-message {
+    min-height: 220px !important;
+
+    padding: 14px !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 12px !important;
+}
+
+
+.raifik-board-message img {
+    width: 78px !important;
+    height: 135px !important;
+
+    object-fit: contain !important;
+}
+
+
+.raifik-board-message strong {
+    font-size: 14px !important;
+    font-weight: 900 !important;
+}
+
+
+.raifik-board-message p {
+    margin-top: 7px !important;
+
+    font-size: 12px !important;
+
+    line-height: 1.45 !important;
+
+    color: #444 !important;
+}
+
+
+/* =========================================================
+   ГРАВЦІ
+========================================================= */
+
+.other-players-block h3 {
+    font-size: 11px !important;
+
+    margin-bottom: 7px !important;
+}
+
+
+.mini-opponent-button {
+    padding: 7px 8px !important;
+}
+
+
+.mini-opponent-button img {
+    width: 38px !important;
+    height: 38px !important;
+}
+
+
+.mini-opponent-button span {
+    font-size: 11px !important;
+}
+
+
+/* =========================================================
+   КНОПКИ НИЗУ ПРАВОЇ ПАНЕЛІ
+========================================================= */
+
+.work-panel-actions {
+    display: flex !important;
+    flex-direction: column !important;
+
+    gap: 7px !important;
+
+    margin-top: auto !important;
+}
+
+
+.work-panel-button {
+    width: 100% !important;
+
+    padding: 9px 10px !important;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.08) !important;
+
+    border-radius: 10px !important;
+
+    background:
+        rgba(255, 255, 255, 0.85) !important;
+
+    font-size: 10px !important;
+    font-weight: 800 !important;
+
+    cursor: pointer !important;
+}
+
+
+/* =========================================================
+   НИЖНІЙ HUD
+========================================================= */
+
+.player-bottom-hud {
+    position: fixed !important;
+
+    left: 16px !important;
+    right: 280px !important;
+    bottom: 12px !important;
+
+    min-height: 82px !important;
+
+    display: grid !important;
+
+    grid-template-columns:
+        230px
+        minmax(350px, 1fr)
+        210px
+        190px !important;
+
+    gap: 9px !important;
+
+    padding: 9px !important;
+
+    border-radius: 18px !important;
+
+    background:
+        rgba(255, 255, 255, 0.94) !important;
+
+    backdrop-filter:
+        blur(10px) !important;
+
+    box-shadow:
+        0 10px 30px
+        rgba(0, 0, 0, 0.20) !important;
+
+    z-index: 150 !important;
+}
+
+
+/* =========================================================
+   ПРОФІЛЬ У HUD
+========================================================= */
+
+.player-career-hud {
+    width: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 8px !important;
+
+    padding: 7px 9px !important;
+
+    border: none !important;
+
+    border-radius: 13px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #ffe744,
+            #f0c700
+        ) !important;
+
+    text-align: left !important;
+
+    cursor: pointer !important;
+}
+
+
+.hud-token-image {
+    width: 58px !important;
+    height: 58px !important;
+
+    object-fit: contain !important;
+}
+
+
+.hud-career-text {
+    min-width: 0 !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+
+.hud-player-name {
+    font-size: 14px !important;
+    font-weight: 900 !important;
+}
+
+
+.hud-player-profession {
+    margin-top: 2px !important;
+
+    font-size: 11px !important;
+    font-weight: 800 !important;
+}
+
+
+.hud-career-text small {
+    margin-top: 3px !important;
+
+    font-size: 8px !important;
+}
+
+
+/* =========================================================
+   ПОКАЗНИКИ
+========================================================= */
+
+.hud-player-stats {
+    display: grid !important;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr)) !important;
+
+    gap: 6px !important;
+}
+
+
+.hud-stat-item {
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 7px !important;
+
+    padding: 7px 9px !important;
+
+    border-radius: 12px !important;
+
+    background:
+        rgba(255, 255, 255, 0.84) !important;
+}
+
+
+.hud-stat-icon {
+    font-size: 22px !important;
+}
+
+
+.hud-stat-item small {
+    display: block !important;
+
+    font-size: 7px !important;
+    font-weight: 800 !important;
+
+    color: #777 !important;
+}
+
+
+.hud-stat-item strong {
+    display: block !important;
+
+    margin-top: 2px !important;
+
+    font-size: 12px !important;
+}
+
+
+/* =========================================================
+   МРІЯ / БАНК
+========================================================= */
+
+.hud-feature-button {
+    width: 100% !important;
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 8px !important;
+
+    padding: 8px 10px !important;
+
+    border: none !important;
+
+    border-radius: 13px !important;
+
+    cursor: pointer !important;
+
+    text-align: left !important;
+}
+
+
+.hud-dream-button {
+    background:
+        rgba(255, 228, 59, 0.82) !important;
+}
+
+
+.hud-bank-button {
+    background:
+        rgba(255, 255, 255, 0.88) !important;
+
+    border:
+        2px solid
+        rgba(238, 200, 0, 0.45) !important;
+}
+
+
+.hud-feature-icon {
+    font-size: 28px !important;
+}
+
+
+.hud-feature-button small {
+    display: block !important;
+
+    font-size: 8px !important;
+
+    color: #666 !important;
+}
+
+
+.hud-feature-button strong {
+    display: block !important;
+
+    margin-top: 2px !important;
+
+    font-size: 10px !important;
+
+    line-height: 1.2 !important;
+}
+
+
+/* =========================================================
+   ХОВАЄМО СТАРІ КВАДРАТНІ БЛОКИ,
+   ЯКЩО ВОНИ ЩЕ ДЕСЬ ПЕРЕКРИВАЮТЬСЯ
+========================================================= */
+
+.square-game-board,
+.outer-square-board,
+.inner-square-board,
+.dream-center,
+.game-info-panel,
+.dice-panel {
+    /* не display:none,
+       бо старі екрани можуть їх використовувати */
+}
+
+
+/* =========================================================
+   НОУТБУК 1366 / 1440
+========================================================= */
+
+@media (max-width: 1450px) {
+
+    .main-board-screen {
+        grid-template-columns:
+            minmax(0, 1fr)
+            225px !important;
+    }
+
+    .game-work-panel {
+        width: 225px !important;
+    }
+
+    .player-bottom-hud {
+        right: 250px !important;
+
+        grid-template-columns:
+            205px
+            minmax(300px, 1fr)
+            180px
+            170px !important;
+    }
+
+    .outer-rectangle-board {
+        width: min(74vw, 930px) !important;
+        height: min(62vh, 550px) !important;
+    }
+
+    .inner-rectangle-board {
+        width: min(45vw, 575px) !important;
+        height: min(33vh, 300px) !important;
+    }
+
+    .board-cell {
+        width: 38px !important;
+        height: 38px !important;
+    }
+
+    .special-board-cell,
+    .start-board-cell,
+    .transition-board-cell {
+        width: 43px !important;
+        height: 43px !important;
+    }
+
+    .cell-icon {
+        font-size: 17px !important;
+    }
+
+    .player-piece {
+        width: 64px !important;
+        height: 64px !important;
+    }
+
+    .ai-piece {
+        width: 51px !important;
+        height: 51px !important;
+    }
+}
+
