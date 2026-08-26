@@ -3498,27 +3498,51 @@ function showGameBoard() {
 
 
                 <!-- ЯК ГРАТИ -->
+                
+<div class="work-panel-actions">
 
-                <div class="work-panel-actions">
+    <button
+        id="cellInfoButton"
+        class="work-panel-button"
+    >
+        <span>
+            ℹ️ Типи полів
+        </span>
 
-                    <button
-                        id="cellInfoButton"
-                        class="work-panel-button"
-                    >
-                        <span>
-                            ℹ️ Типи полів
-                        </span>
-
-                        <span>
-                            →
-                        </span>
-                    </button>
-
-                </div>
+        <span>
+            →
+        </span>
+    </button>
 
 
-            </aside>
+    <button
+        id="journalButton"
+        class="work-panel-button"
+    >
+        <span>
+            📜 Журнал ходів
+        </span>
 
+        <span id="journalCount">
+            ${gameState.history ? gameState.history.length : 0}
+        </span>
+    </button>
+
+
+    <button
+        id="finishGameButton"
+        class="work-panel-button finish-game-button"
+    >
+        <span>
+            ⏹ Завершити гру
+        </span>
+
+        <span>
+            →
+        </span>
+    </button>
+
+</div>
 
             <!-- =====================================
                  МОДАЛЬНЕ ВІКНО
