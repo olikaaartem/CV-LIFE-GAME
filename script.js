@@ -6510,7 +6510,6 @@ function addLog(
             "div"
         );
 
-
     item.className =
         "game-log-item";
 
