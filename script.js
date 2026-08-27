@@ -120,7 +120,7 @@ function clamp(
 function getApp() {
 
     return document.getElementById(
-        "app"
+        "financeGameApp"
     );
 
 }
@@ -133,18 +133,17 @@ function setScreen(html) {
 
 
     if (!app) {
-
         console.error(
-            'Не знайдено контейнер з id="app".'
+            'Не знайдено контейнер з id="financeGameApp.'
         );
-
         return;
-
     }
-
-
     app.innerHTML =
         html;
+    window.scrollTo({
+       top: 0,
+       behavior: "instant"
+   });
 
 }
 
