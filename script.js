@@ -127,24 +127,20 @@ function getApp() {
 
 
 function setScreen(html) {
-
-    const app =
-        getApp();
-
-
-    if (!app) {
-        console.error(
-            'Не знайдено контейнер з id="financeGameApp.'
-        );
-        return;
-    }
-    app.innerHTML =
-        html;
-    window.scrollTo({
+   const app =
+       getApp();
+   if (!app) {
+       console.error(
+           'Не знайдено контейнер з id="financeGameApp".'
+       );
+       return;
+   }
+   app.innerHTML =
+       html;
+   window.scrollTo({
        top: 0,
        behavior: "instant"
    });
-
 }
 
 
