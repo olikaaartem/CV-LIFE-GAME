@@ -1,7 +1,18 @@
 /* =========================================================
    CV ЖИТТЯ — ЛЮБИ. МРІЙ. ДІЙ.
    STYLE.CSS
-   ВЕРСІЯ ПІД КВАДРАТНЕ ПОЛЕ
+
+   ЧАСТИНА 1
+   - базові стилі
+   - старт
+   - вибір режиму
+   - ім'я / стать
+   - фішки
+   - професія
+   - кар'єрний шлях
+   - мрії
+   - екран перед грою
+   - основа головного ігрового поля
 ========================================================= */
 
 
@@ -27,11 +38,11 @@ html {
 
 body {
     font-family: Arial, sans-serif;
+
     background: #111;
     color: #1c1c1c;
 
     overflow-x: hidden;
-    overflow-y: auto;
 }
 
 button,
@@ -55,7 +66,7 @@ button {
 
 
 /* =========================================================
-   3. ОСНОВНА ЖОВТА КНОПКА
+   3. ГОЛОВНА ЖОВТА КНОПКА
 ========================================================= */
 
 .main-game-btn {
@@ -87,8 +98,9 @@ button {
         rgba(0,0,0,0.18);
 
     transition:
-        transform 0.2s ease,
-        box-shadow 0.2s ease;
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        opacity 0.18s ease;
 }
 
 .main-game-btn:hover {
@@ -105,7 +117,7 @@ button {
 
 .main-game-btn:disabled {
     cursor: not-allowed;
-    opacity: 0.5;
+    opacity: 0.48;
 }
 
 
@@ -148,6 +160,7 @@ button {
 
 /* =========================================================
    5. СТАРТОВИЙ ЕКРАН
+   ФОН ЗАЛИШАЄМО
 ========================================================= */
 
 .start-screen {
@@ -170,6 +183,7 @@ button {
 
 .start-overlay {
     position: absolute;
+
     inset: 0;
 
     display: flex;
@@ -199,7 +213,8 @@ button {
 
 
 /* =========================================================
-   6. ЗВИЧАЙНІ ЕКРАНИ
+   6. ЗАГАЛЬНІ SETUP-ЕКРАНИ
+   ФОН ЗАЛИШАЄМО
 ========================================================= */
 
 .game-screen {
@@ -209,6 +224,7 @@ button {
     min-height: 100vh;
 
     display: flex;
+
     align-items: center;
     justify-content: center;
 
@@ -228,7 +244,7 @@ button {
 
 
 /* =========================================================
-   7. РАЙФИК
+   7. РАЙФИК НА SETUP-ЕКРАНАХ
 ========================================================= */
 
 .small-game-logo {
@@ -241,7 +257,7 @@ button {
 
     object-fit: contain;
 
-    background: transparent !important;
+    background: transparent;
 }
 
 
@@ -263,7 +279,10 @@ button {
 
     width: min(760px, 92vw);
 
-    padding: 42px 42px 36px;
+    padding:
+        42px
+        42px
+        36px;
 
     border-radius: 28px;
 
@@ -280,7 +299,13 @@ button {
 .mode-modal h2 {
     margin-bottom: 10px;
 
-    font-size: clamp(28px, 3vw, 42px);
+    font-size:
+        clamp(
+            28px,
+            3vw,
+            42px
+        );
+
     font-weight: 900;
 }
 
@@ -345,7 +370,10 @@ button {
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .mode-option:hover {
@@ -368,12 +396,13 @@ button {
 
 .mode-option small {
     color: #707070;
+
     line-height: 1.35;
 }
 
 
 /* =========================================================
-   9. УНІВЕРСАЛЬНА КАРТКА SETUP
+   9. УНІВЕРСАЛЬНА SETUP-КАРТКА
 ========================================================= */
 
 .temporary-game-card {
@@ -383,7 +412,7 @@ button {
 
     grid-template-columns:
         minmax(220px, 34%)
-        minmax(0,66%);
+        minmax(0, 66%);
 
     gap: 40px;
 
@@ -424,7 +453,12 @@ button {
 .dream-selection-content h2 {
     margin-bottom: 12px;
 
-    font-size: clamp(30px, 3vw, 46px);
+    font-size:
+        clamp(
+            30px,
+            3vw,
+            46px
+        );
 
     font-weight: 900;
 }
@@ -432,13 +466,13 @@ button {
 .raifik-intro-text,
 .name-question,
 .gender-title {
-    color: #2b2b2b !important;
+    margin-bottom: 14px;
 
-    font-weight: 900 !important;
+    color: #2b2b2b;
+
+    font-weight: 900;
 
     line-height: 1.45;
-
-    margin-bottom: 14px !important;
 }
 
 .player-name-input {
@@ -483,6 +517,8 @@ button {
     display: flex;
 
     gap: 14px;
+
+    flex-wrap: wrap;
 }
 
 .gender-button {
@@ -504,11 +540,15 @@ button {
     border-radius: 18px;
 
     background:
-        rgba(255,255,255,0.9);
+        rgba(255,255,255,0.90);
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease,
+        box-shadow 0.18s ease;
 }
 
 .gender-button span {
@@ -543,7 +583,7 @@ button {
 
 
 /* =========================================================
-   12. ФІШКИ
+   12. ВИБІР ФІШКИ
 ========================================================= */
 
 .token-selection-card {
@@ -597,7 +637,11 @@ button {
 
     overflow: hidden;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.18s ease,
+        border-color 0.18s ease,
+        box-shadow 0.18s ease,
+        background 0.18s ease;
 }
 
 .token-option img {
@@ -627,7 +671,7 @@ button {
 
 
 /* =========================================================
-   13. ПРОФЕСІЙНА ІСТОРІЯ
+   13. ВИПАДКОВА ПРОФЕСІЯ
 ========================================================= */
 
 .career-random-card {
@@ -641,6 +685,7 @@ button {
         rgba(255,255,255,0.92);
 
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 45px
@@ -650,17 +695,22 @@ button {
 }
 
 .career-random-card > h2 {
-    font-size: clamp(28px,3vw,45px);
+    margin-bottom: 8px;
+
+    font-size:
+        clamp(
+            28px,
+            3vw,
+            45px
+        );
 
     font-weight: 900;
-
-    margin-bottom: 8px;
 }
 
 .career-random-card > p {
-    color: #5f5f5f;
-
     margin-bottom: 18px;
+
+    color: #5f5f5f;
 }
 
 .career-random-box {
@@ -766,10 +816,10 @@ button {
 }
 
 .career-result-label {
+    color: #786300;
+
     font-size: 14px;
     font-weight: 900;
-
-    color: #786300;
 
     letter-spacing: 0.5px;
 }
@@ -779,7 +829,12 @@ button {
 }
 
 .career-result-profession {
-    font-size: clamp(22px,2.5vw,34px);
+    font-size:
+        clamp(
+            22px,
+            2.5vw,
+            34px
+        );
 
     font-weight: 900;
 }
@@ -805,7 +860,7 @@ button {
 
 
 /* =========================================================
-   15. КАР'ЄРНА ДРАБИНА
+   15. КАР'ЄРНИЙ ШЛЯХ
 ========================================================= */
 
 .career-screen-card {
@@ -864,6 +919,7 @@ button {
         rgba(255,255,255,0.90);
 
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 42px
@@ -889,21 +945,26 @@ button {
 }
 
 .career-content h2 {
-    font-size: clamp(31px,3vw,46px);
+    margin-bottom: 10px;
+
+    font-size:
+        clamp(
+            31px,
+            3vw,
+            46px
+        );
 
     font-weight: 900;
-
-    margin-bottom: 10px;
 }
 
 .career-description {
-    color: #3e3e3e !important;
+    margin-bottom: 15px;
+
+    color: #3e3e3e;
 
     font-weight: 800;
 
     line-height: 1.45;
-
-    margin-bottom: 15px !important;
 }
 
 .career-ladder {
@@ -1011,10 +1072,10 @@ button {
 }
 
 .career-up-label {
+    color: #777;
+
     font-size: 18px;
     font-weight: 900;
-
-    color: #777;
 }
 
 .career-job-name {
@@ -1037,7 +1098,7 @@ button {
 
 
 /* =========================================================
-   16. МРІЇ — 20
+   16. ВИБІР МРІЇ
 ========================================================= */
 
 .dream-scroll-screen {
@@ -1062,11 +1123,11 @@ button {
 }
 
 .dream-selection-card .small-game-logo {
-    width: 170px;
-
     position: sticky;
 
     top: 95px;
+
+    width: 170px;
 }
 
 .dream-selection-content {
@@ -1074,22 +1135,22 @@ button {
 }
 
 .dream-selection-content > p {
+    margin-bottom: 18px;
+
     color: #555;
 
     font-weight: 600;
-
-    margin-bottom: 18px;
 }
 
 .dream-grid {
+    width: 100%;
+
     display: grid;
 
     grid-template-columns:
         repeat(4,minmax(0,1fr));
 
     gap: 13px;
-
-    width: 100%;
 }
 
 .dream-option {
@@ -1116,7 +1177,11 @@ button {
 
     cursor: pointer;
 
-    transition: 0.2s ease;
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease,
+        border-color 0.18s ease,
+        background 0.18s ease;
 }
 
 .dream-option:hover {
@@ -1168,14 +1233,14 @@ button {
 .dream-details-card {
     padding: 20px 22px;
 
+    border:
+        1px solid
+        rgba(224,186,0,0.35);
+
     border-radius: 20px;
 
     background:
         rgba(255,248,198,0.90);
-
-    border:
-        1px solid
-        rgba(224,186,0,0.35);
 }
 
 .dream-details-card h3 {
@@ -1214,7 +1279,7 @@ button {
 
 
 /* =========================================================
-   17. ЕКРАН ПЕРЕД СТАРТОМ
+   17. ЕКРАН ПЕРЕД СТАРТОМ ГРИ
 ========================================================= */
 
 .before-game-content {
@@ -1228,6 +1293,7 @@ button {
         rgba(255,255,255,0.90);
 
     backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 
     box-shadow:
         0 18px 42px
@@ -1237,15 +1303,20 @@ button {
 }
 
 .before-game-content h2 {
-    font-size: clamp(28px,3vw,44px);
-
     margin-bottom: 8px;
+
+    font-size:
+        clamp(
+            28px,
+            3vw,
+            44px
+        );
 }
 
 .before-game-content > p {
-    color: #555;
-
     margin-bottom: 20px;
+
+    color: #555;
 }
 
 .participants-preview-grid {
@@ -1331,20 +1402,21 @@ button {
 
     padding: 9px 10px;
 
-    border-radius: 12px;
-
-    background:
-        rgba(255,236,110,0.30);
-
     display: flex;
     flex-direction: column;
 
     gap: 3px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(255,236,110,0.30);
 }
 
 .participant-preview-dream span {
-    font-size: 11px;
     color: #777;
+
+    font-size: 11px;
 }
 
 .participant-preview-dream strong {
@@ -1353,40 +1425,39 @@ button {
 
 
 /* =========================================================
-   18. ГОЛОВНИЙ ЕКРАН ГРИ
-========================================================= */
-/* =========================================================
    18. ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
 
-   НОВА ВЕРСІЯ:
-   - фон bg-game.png
-   - велике прямокутне поле
-   - одна панель справа
-   - HUD унизу
-   - лого у центрі
-   - Мрія та Банк унизу
+   ФОН bg-game.png ЗАЛИШАЄМО.
+
+   ВАЖЛИВО:
+   - поле займає максимум доступного місця;
+   - права панель окрема;
+   - HUD унизу;
+   - комірки великі;
+   - картки НЕ будуть відкриватися тут збоку —
+     їх стилі модального вікна будуть у ЧАСТИНІ 2.
 ========================================================= */
 
 .main-board-screen {
     position: relative;
 
-    width: 100%;
+    width: 100vw;
     height: 100vh;
 
     display: grid;
 
     grid-template-columns:
-        minmax(0, 1fr)
-        245px;
+        minmax(0,1fr)
+        250px;
 
-    gap: 14px;
+    gap: 12px;
 
-    padding: 14px;
+    padding: 10px;
 
     background-image:
         linear-gradient(
-            rgba(0,0,0,0.02),
-            rgba(0,0,0,0.02)
+            rgba(0,0,0,0.015),
+            rgba(0,0,0,0.015)
         ),
         url("assets/bg-game.png");
 
@@ -1407,28 +1478,31 @@ button {
     position: relative;
 
     width: 100%;
-    height: calc(100vh - 28px);
+    height: calc(100vh - 20px);
 
     min-width: 0;
     min-height: 0;
 
-    border-radius: 24px;
+    border-radius: 22px;
 
     overflow: hidden;
+
+    background: transparent;
 }
 
 
 /* =========================================================
-   20. ПРЯМОКУТНІ МАРШРУТИ
+   20. МАРШРУТИ
 ========================================================= */
 
 .rectangle-board {
     position: absolute;
 
     left: 50%;
+    top: 43%;
 
     transform:
-        translateX(-50%);
+        translate(-50%, -50%);
 
     pointer-events: none;
 }
@@ -1439,10 +1513,13 @@ button {
 ========================================================= */
 
 .outer-rectangle-board {
-    top: 7%;
-
     width: 91%;
-    height: 66%;
+
+    height:
+        min(
+            64vh,
+            610px
+        );
 
     z-index: 5;
 }
@@ -1450,30 +1527,39 @@ button {
 
 /* =========================================================
    22. ВНУТРІШНІЙ ШЛЯХ — 28
+
+   Робимо його достатньо великим,
+   щоб усередині залишилось місце під логотип.
 ========================================================= */
 
 .inner-rectangle-board {
-    top: 24%;
+    width: 57%;
 
-    width: 56%;
-    height: 36%;
+    height:
+        min(
+            35vh,
+            335px
+        );
 
     z-index: 8;
 }
 
 
 /* =========================================================
-   23. КОМІРКИ
+   23. КОМІРКИ — ЗБІЛЬШЕНІ
 
-   Іконки спеціально більші,
-   бо на фоні вони губилися.
+   Було приблизно 34–44 px.
+   Тепер робимо 50 px.
+
+   Іконка поля повинна добре читатися
+   навіть на насиченому фоні.
 ========================================================= */
 
 .board-cell {
     position: absolute;
 
-    width: 43px;
-    height: 43px;
+    width: 50px;
+    height: 50px;
 
     display: flex;
     flex-direction: column;
@@ -1486,16 +1572,16 @@ button {
 
     border:
         2px solid
-        rgba(110,90,0,0.30);
+        rgba(120,95,0,0.36);
 
-    border-radius: 10px;
+    border-radius: 12px;
 
     background:
-        rgba(255,255,255,0.96);
+        rgba(255,255,255,0.97);
 
     box-shadow:
-        0 4px 10px
-        rgba(0,0,0,0.22);
+        0 5px 13px
+        rgba(0,0,0,0.24);
 
     cursor: pointer;
 
@@ -1510,6591 +1596,4215 @@ button {
 }
 
 .board-cell:hover {
-    z-index: 40;
+    z-index: 80;
 
     transform:
         translate(-50%, -50%)
-        scale(1.11);
+        scale(1.10);
 
     box-shadow:
-        0 8px 18px
+        0 9px 20px
         rgba(0,0,0,0.30);
 }
 
 
 /* =========================================================
-   24. НОМЕР + ІКОНКА
+   24. НОМЕР КОМІРКИ
 ========================================================= */
 
 .cell-number {
     position: absolute;
 
-    top: 3px;
-    left: 4px;
-
-    font-size: 7px;
-    line-height: 1;
-
-    font-weight: 900;
+    top: 4px;
+    left: 5px;
 
     color: #555;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    line-height: 1;
 }
+
+
+/* =========================================================
+   25. ІКОНКА КОМІРКИ
+========================================================= */
 
 .cell-icon {
     display: block;
 
     margin-top: 4px;
 
-    font-size: 22px;
+    font-size: 24px;
+
     line-height: 1;
 }
 
 
 /* =========================================================
-   25. СПЕЦІАЛЬНІ КОМІРКИ
+   26. СПЕЦІАЛЬНІ КОМІРКИ
 ========================================================= */
 
 .special-board-cell {
-    width: 49px;
-    height: 49px;
+    width: 57px;
+    height: 57px;
 
-    border-color:
-        rgba(143,112,0,0.55);
+    border:
+        2px solid
+        rgba(112,88,0,0.50);
 
     background:
         linear-gradient(
             145deg,
-            #fff27a,
-            #f1c900
+            #fff27b,
+            #efc700
         );
 
     box-shadow:
-        0 6px 15px
-        rgba(0,0,0,0.22);
+        0 7px 17px
+        rgba(0,0,0,0.25);
+
+    z-index: 22;
 }
 
 .special-board-cell .cell-icon {
-    font-size: 25px;
+    font-size: 28px;
 }
 
 
 /* =========================================================
-   26. START
+   27. START
 ========================================================= */
 
 .start-board-cell {
-    width: 58px;
-    height: 58px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #ffe935,
-            #e8b900
-        );
+    width: 64px;
+    height: 64px;
 
     border:
         3px solid
-        rgba(85,68,0,0.52);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(255,224,0,0.20),
-        0 7px 18px
-        rgba(0,0,0,0.26);
-
-    z-index: 25;
-}
-
-.start-board-cell .cell-icon {
-    font-size: 24px;
-}
-
-
-/* =========================================================
-   27. ПЕРЕХІД
-========================================================= */
-
-.transition-board-cell {
-    width: 61px;
-    height: 61px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff075,
-            #edc000
-        );
-
-    border:
-        3px solid
-        rgba(104,82,0,0.55);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(255,224,0,0.18),
-        0 7px 18px
-        rgba(0,0,0,0.24);
-
-    z-index: 25;
-}
-
-.transition-board-cell .cell-icon {
-    font-size: 25px;
-}
-
-
-/* =========================================================
-   28. START / ПЕРЕХІД — ПІДПИС
-========================================================= */
-
-.cell-special-label {
-    position: absolute;
-
-    bottom: -16px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    padding:
-        2px 5px;
-
-    border-radius: 999px;
-
-    background:
-        rgba(30,30,30,0.88);
-
-    color: white;
-
-    white-space: nowrap;
-
-    font-size: 7px;
-    font-weight: 900;
-
-    letter-spacing: 0.2px;
-}
-
-
-/* =========================================================
-   29. ПІДСВІЧЕНА ЦІЛЬ
-========================================================= */
-
-.target-cell {
-    z-index: 70 !important;
-
-    background:
-        #fff03a !important;
-
-    box-shadow:
-        0 0 0 5px
-        rgba(255,211,0,0.40),
-        0 0 28px
-        rgba(255,219,0,1) !important;
-
-    animation:
-        targetPulse
-        0.8s
-        infinite
-        alternate;
-}
-
-@keyframes targetPulse {
-
-    from {
-        transform:
-            translate(-50%, -50%)
-            scale(1);
-    }
-
-    to {
-        transform:
-            translate(-50%, -50%)
-            scale(1.16);
-    }
-}
-
-
-/* =========================================================
-   30. ЛОГО У ЦЕНТРІ ПОЛЯ
-========================================================= */
-
-.board-center-brand {
-    position: absolute;
-
-    left: 50%;
-    top: 42%;
-
-    transform:
-        translate(-50%, -50%);
-
-    width: 270px;
-    height: 190px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    z-index: 3;
-
-    pointer-events: none;
-}
-
-.board-center-logo {
-    display: block;
-
-    width: 100%;
-    max-height: 100%;
-
-    object-fit: contain;
-
-    filter:
-        drop-shadow(
-            0 10px 18px
-            rgba(0,0,0,0.18)
-        );
-}
-
-
-/* =========================================================
-   31. ФІШКИ
-========================================================= */
-
-.board-piece {
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    object-fit: contain;
-
-    pointer-events: auto;
-
-    filter:
-        drop-shadow(
-            0 4px 5px
-            rgba(0,0,0,0.38)
-        );
-
-    z-index: 80;
-}
-
-.player-piece {
-    width: 72px;
-    height: 72px;
-
-    transform:
-        translate(-50%, -82%);
-
-    cursor: grab;
-
-    z-index: 95;
-
-    filter:
-        drop-shadow(
-            0 0 3px #fff
-        )
-        drop-shadow(
-            0 7px 8px
-            rgba(0,0,0,0.55)
-        );
-}
-
-.player-piece:active {
-    cursor: grabbing;
-}
-
-.ai-piece {
-    width: 58px;
-    height: 58px;
-
-    transform:
-        translate(-50%, -72%);
-
-    z-index: 90;
-}
-
-
-/* КОЛИ НА КОМІРЦІ ДЕКІЛЬКА ФІШОК */
-
-.board-cell .board-piece:nth-of-type(2) {
-    transform:
-        translate(-76%, -80%);
-}
-
-.board-cell .board-piece:nth-of-type(3) {
-    transform:
-        translate(-24%, -80%);
-}
-
-
-/* =========================================================
-   32. НИЖНІЙ HUD
-========================================================= */
-
-.player-bottom-hud {
-    position: absolute;
-
-    left: 2.5%;
-    right: 2.5%;
-    bottom: 14px;
-
-    min-height: 88px;
-
-    display: grid;
-
-    grid-template-columns:
-        230px
-        minmax(350px, 1fr)
-        210px
-        190px;
-
-    gap: 9px;
-
-    padding: 9px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(255,255,255,0.93);
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    box-shadow:
-        0 12px 30px
-        rgba(0,0,0,0.18);
-
-    z-index: 130;
-}
-
-
-/* =========================================================
-   33. КАР'ЄРА В HUD
-========================================================= */
-
-.player-career-hud {
-    display: grid;
-
-    grid-template-columns:
-        64px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 8px;
-
-    min-width: 0;
-
-    padding:
-        7px 9px;
-
-    border:
-        2px solid
-        rgba(210,171,0,0.40);
+        rgba(82,65,0,0.55);
 
     border-radius: 14px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff8bd,
-            #ffe34a
-        );
-
-    cursor: pointer;
-
-    text-align: left;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.player-career-hud:hover {
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.13);
-}
-
-.hud-token-image {
-    width: 62px;
-    height: 62px;
-
-    object-fit: contain;
-}
-
-.hud-career-text {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.hud-player-name {
-    font-size: 15px;
-    font-weight: 900;
-
-    color: #222;
-}
-
-.hud-player-profession {
-    font-size: 12px;
-    font-weight: 800;
-
-    color: #373737;
-
-    line-height: 1.2;
-}
-
-.hud-career-text small {
-    margin-top: 2px;
-
-    font-size: 8px;
-
-    color: #746100;
-
-    line-height: 1.2;
-}
-
-
-/* =========================================================
-   34. ПОКАЗНИКИ У HUD
-========================================================= */
-
-.hud-player-stats {
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 7px;
-}
-
-.hud-stat-item {
-    min-width: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 6px;
-
-    padding:
-        7px 6px;
-
-    border-radius: 13px;
-
-    background:
-        rgba(248,248,245,0.95);
-
-    border:
-        1px solid
-        rgba(0,0,0,0.05);
-}
-
-.hud-stat-icon {
-    font-size: 22px;
-}
-
-.hud-stat-item > div {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-}
-
-.hud-stat-item small {
-    font-size: 7px;
-
-    color: #777;
-
-    font-weight: 900;
-
-    letter-spacing: 0.2px;
-}
-
-.hud-stat-item strong {
-    font-size: 13px;
-    font-weight: 900;
-
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   35. МРІЯ + БАНК У HUD
-========================================================= */
-
-.hud-feature-button {
-    min-width: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 9px;
-
-    padding:
-        8px 10px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.06);
-
-    border-radius: 14px;
-
-    cursor: pointer;
-
-    text-align: left;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.hud-feature-button:hover {
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.12);
-}
-
-.hud-dream-button {
-    background:
-        linear-gradient(
-            145deg,
-            #fff8bf,
-            #ffe568
-        );
-}
-
-.hud-bank-button {
-    background:
-        rgba(255,255,255,0.97);
-
-    border:
-        2px solid
-        rgba(232,193,0,0.48);
-}
-
-.hud-feature-icon {
-    flex: 0 0 auto;
-
-    font-size: 30px;
-}
-
-.hud-feature-button > div {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.hud-feature-button small {
-    color: #777;
-
-    font-size: 8px;
-    font-weight: 900;
-}
-
-.hud-feature-button strong {
-    overflow: hidden;
-
-    color: #222;
-
-    font-size: 11px;
-    font-weight: 900;
-
-    line-height: 1.22;
-
-    display: -webkit-box;
-
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-
-/* =========================================================
-   36. ЄДИНА ПРАВА РОБОЧА ПАНЕЛЬ
-========================================================= */
-
-.game-work-panel {
-    position: relative;
-
-    width: 100%;
-    height: calc(100vh - 28px);
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 11px;
-
-    padding:
-        15px 13px;
-
-    border-radius: 22px;
-
-    background:
-        rgba(255,255,255,0.94);
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    box-shadow:
-        0 14px 34px
-        rgba(0,0,0,0.18);
-
-    overflow-y: auto;
-
-    z-index: 200;
-}
-
-
-/* =========================================================
-   37. КУБИК
-========================================================= */
-
-.dice-section {
-    display: flex;
-    flex-direction: column;
-
-    gap: 8px;
-}
-
-.dice-title {
-    text-align: center;
-
-    font-size: 18px;
-    font-weight: 900;
-
-    letter-spacing: 0.3px;
-}
-
-.dice {
-    width: 76px;
-    height: 76px;
-
-    margin:
-        0 auto;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border:
-        2px solid
-        rgba(0,0,0,0.10);
-
-    border-radius: 16px;
-
-    background:
-        rgba(255,255,255,0.98);
-
-    font-size: 56px;
-
-    box-shadow:
-        0 8px 18px
-        rgba(0,0,0,0.12);
-}
-
-.game-work-panel .main-game-btn {
-    width: 100%;
-    min-width: 0;
-
-    padding:
-        12px 8px;
-
-    border-radius: 12px;
-
-    font-size: 12px;
-}
-
-.dice-message {
-    padding:
-        10px 11px;
-
-    border-radius: 11px;
-
-    background:
-        rgba(255,234,86,0.35);
-
-    font-size: 11px;
-    font-weight: 900;
-
-    line-height: 1.45;
-
-    color: #333;
-}
-
-
-/* =========================================================
-   38. ПОТОЧНА КАРТКА / РАЙФИК
-========================================================= */
-
-.current-card-panel {
-    width: 100%;
-
-    min-height: 230px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.06);
-
-    border-radius: 15px;
-
-    background:
-        rgba(249,249,247,0.95);
-
-    overflow: hidden;
-}
-
-.raifik-board-message {
-    min-height: 230px;
-
-    display: grid;
-
-    grid-template-columns:
-        78px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding:
-        14px 11px;
-}
-
-.raifik-board-message img {
-    width: 76px;
-    height: 135px;
-
-    object-fit: contain;
-}
-
-.raifik-board-message > div {
-    min-width: 0;
-}
-
-.raifik-board-message strong {
-    display: block;
-
-    margin-bottom: 6px;
-
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.raifik-board-message p {
-    color: #4d4d4d;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    line-height: 1.45;
-}
-
-
-/* =========================================================
-   39. ПОРОЖНЯ КАРТКА
-========================================================= */
-
-.current-card-empty {
-    min-height: 230px;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 7px;
-
-    padding: 14px;
-
-    text-align: center;
-}
-
-.current-card-empty > span {
-    width: 58px;
-    height: 58px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 13px;
-
-    background: #333;
-
-    color: #ffe74b;
-
-    font-size: 30px;
-    font-weight: 900;
-}
-
-.current-card-empty strong {
-    font-size: 11px;
-}
-
-.current-card-empty small {
-    color: #777;
-
-    font-size: 9px;
-}
-
-
-/* =========================================================
-   40. ГРАВЦІ
-========================================================= */
-
-.other-players-block {
-    margin-top: 2px;
-}
-
-.other-players-block h3 {
-    margin-bottom: 7px;
-
-    color: #666;
-
-    font-size: 10px;
-
-    font-weight: 900;
-
-    letter-spacing: 0.5px;
-}
-
-.mini-opponents-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 5px;
-}
-
-.mini-opponent-button {
-    width: 100%;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding:
-        7px 8px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.05);
-
-    border-radius: 10px;
-
-    background:
-        rgba(255,255,255,0.88);
-
-    cursor: pointer;
-
-    transition:
-        0.16s ease;
-}
-
-.mini-opponent-button:hover {
-    background:
-        #fff6b7;
-
-    transform:
-        translateX(-2px);
-}
-
-.mini-opponent-button img {
-    width: 38px;
-    height: 38px;
-
-    object-fit: contain;
-}
-
-.mini-opponent-button span {
-    font-size: 11px;
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   41. НИЖНІ КНОПКИ ПАНЕЛІ
-========================================================= */
-
-.work-panel-actions {
-    display: flex;
-    flex-direction: column;
-
-    gap: 6px;
-
-    margin-top: auto;
-}
-
-.work-panel-button {
-    width: 100%;
-
-    min-height: 38px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 6px;
-
-    padding:
-        8px 10px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.08);
-
-    border-radius: 10px;
-
-    background:
-        rgba(247,247,244,0.98);
-
-    color: #333;
-
-    cursor: pointer;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.work-panel-button:hover {
-    background:
-        #fff4ae;
-}
-
-#journalCount {
-    min-width: 19px;
-    height: 19px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding:
-        0 5px;
-
-    border-radius: 999px;
-
-    background:
-        #f1ca00;
-
-    color: #111;
-
-    font-size: 9px;
-}
-
-.finish-game-button {
-    background:
-        rgba(46,46,46,0.96);
-
-    color: white;
-}
-
-.finish-game-button:hover {
-    background:
-        #111;
-}
-
-
-/* =========================================================
-   42. 3 КАРТКИ
-========================================================= */
-
-.current-card-choice,
-.life-number-card {
-    padding:
-        12px 10px;
-}
-
-.current-card-raifik-line {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    margin-bottom: 10px;
-}
-
-.current-card-raifik-line img {
-    width: 54px;
-    height: 82px;
-
-    object-fit: contain;
-}
-
-.current-card-raifik-line strong {
-    font-size: 12px;
-    font-weight: 900;
-}
-
-.current-card-raifik-line p {
-    margin-top: 4px;
-
-    color: #666;
-
-    font-size: 9px;
-
-    line-height: 1.35;
-}
-
-.three-card-choice {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 6px;
-}
-
-.hidden-game-card {
-    height: 88px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border:
-        2px solid
-        #c3a000;
-
-    border-radius: 11px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #393939,
-            #141414
-        );
-
-    color: #ffe12d;
-
-    font-size: 30px;
-    font-weight: 900;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.hidden-game-card:hover {
-    transform:
-        translateY(-4px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.22);
-}
-
-
-/* =========================================================
-   43. ЖИТТЯ — ЧИСЛО
-========================================================= */
-
-.life-number-card input {
-    width: 100%;
-
-    padding:
-        11px 9px;
-
-    margin:
-        6px 0 9px;
-
-    border:
-        2px solid
-        rgba(215,180,0,0.55);
-
-    border-radius: 11px;
-
-    text-align: center;
-
-    font-size: 16px;
-
-    outline: none;
-}
-
-
-/* =========================================================
-   44. ВІДКРИТА КАРТКА
-========================================================= */
-
-.revealed-current-card {
-    min-height: 230px;
-
-    display: flex;
-    flex-direction: column;
-
-    justify-content: center;
-
-    gap: 9px;
-
-    padding:
-        14px 12px;
-}
-
-.revealed-card-type {
-    color: #796200;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.revealed-current-card h3 {
-    font-size: 16px;
-
-    line-height: 1.2;
-}
-
-.revealed-current-card p,
-.decision-card-text {
-    color: #555;
-
-    font-size: 10px;
-
-    line-height: 1.42;
-}
-
-.revealed-card-effects {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 6px;
-}
-
-.revealed-card-effects span {
-    padding:
-        5px 7px;
-
-    border-radius: 8px;
-
-    background:
-        #fff2a4;
-
-    font-size: 9px;
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   45. БЕРУ / ЧАСТКОВО / НЕ БЕРУ
-========================================================= */
-
-.card-effect-title,
-.card-question {
-    font-size: 10px;
-
-    font-weight: 900;
-
-    color: #555;
-}
-
-.card-decision-buttons {
-    display: grid;
-
-    grid-template-columns:
-        1fr;
-
-    gap: 6px;
-}
-
-.card-action-btn {
-    width: 100%;
-
-    min-height: 35px;
-
-    padding:
-        7px 8px;
-
-    border-radius: 9px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.08);
-
-    font-size: 9px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-}
-
-.accept-card-btn {
-    background:
-        #ffe33c;
-}
-
-.partial-card-btn {
-    background:
-        #fff5b2;
-}
-
-.decline-card-btn {
-    background:
-        #ececec;
-}
-
-.finish-turn-btn {
-    margin-top: 3px;
-}
-
-
-/* =========================================================
-   46. AI RESULT
-========================================================= */
-
-.ai-turn-result {
-    min-height: 230px;
-
-    padding:
-        14px 10px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-}
-
-.ai-turn-result img {
-    width: 74px;
-    height: 120px;
-
-    object-fit: contain;
-}
-
-.ai-turn-result strong {
-    display: block;
-
-    font-size: 13px;
-}
-
-.ai-turn-result h4 {
-    margin:
-        5px 0 8px;
-
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   47. МОДАЛКА
-========================================================= */
-
-.game-info-modal[hidden] {
-    display: none !important;
-}
-
-.game-info-modal {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 5000;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background:
-        rgba(10,15,20,0.50);
-
-    backdrop-filter:
-        blur(7px);
-}
-
-.game-info-modal-card {
-    position: relative;
-
-    width: min(620px, 92vw);
-
-    max-height: 84vh;
-
-    overflow-y: auto;
-
-    padding:
-        32px 30px;
-
-    border-radius: 25px;
-
-    background:
-        rgba(255,255,255,0.98);
-
-    box-shadow:
-        0 25px 65px
-        rgba(0,0,0,0.30);
-}
-
-.game-info-close {
-    position: absolute;
-
-    top: 11px;
-    right: 12px;
-
-    width: 38px;
-    height: 38px;
-
-    border: none;
-    border-radius: 50%;
-
-    background:
-        rgba(0,0,0,0.06);
-
-    font-size: 24px;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   48. ІНФО ПРО КОМІРКУ
-========================================================= */
-
-.cell-info-popup {
-    text-align: center;
-}
-
-.cell-info-icon {
-    margin-bottom: 8px;
-
-    font-size: 54px;
-}
-
-.cell-info-popup h3 {
-    margin-bottom: 10px;
-
-    font-size: 27px;
-}
-
-.cell-info-popup p {
-    color: #555;
-
-    line-height: 1.5;
-}
-
-
-/* =========================================================
-   49. УСІ ТИПИ КОМІРОК
-========================================================= */
-
-.all-cell-types-popup h2 {
-    margin-bottom: 7px;
-
-    font-size: 28px;
-}
-
-.all-cell-types-popup > p {
-    margin-bottom: 18px;
-
-    color: #666;
-}
-
-.all-cell-types-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 7px;
-}
-
-.all-cell-type-row {
-    display: grid;
-
-    grid-template-columns:
-        44px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 9px;
-
-    padding:
-        9px 11px;
-
-    border-radius: 12px;
-
-    background:
-        #f8f8f5;
-}
-
-.all-cell-type-row > span {
-    font-size: 25px;
-}
-
-.all-cell-type-row div {
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.all-cell-type-row strong {
-    font-size: 13px;
-}
-
-.all-cell-type-row small {
-    color: #666;
-
-    line-height: 1.3;
-}
-
-
-/* =========================================================
-   50. ІНФО AI
-========================================================= */
-
-.participant-info-popup {
-    text-align: center;
-}
-
-.participant-popup-token {
-    width: 145px;
-    height: 145px;
-
-    object-fit: contain;
-}
-
-.participant-info-popup h3 {
-    font-size: 27px;
-}
-
-.participant-info-popup > p {
-    margin:
-        5px 0 14px;
-
-    color: #555;
-}
-
-.participant-popup-stats {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap: 8px;
-
-    margin-bottom: 13px;
-}
-
-.participant-popup-stats span {
-    padding: 10px;
-
-    border-radius: 11px;
-
-    background:
-        #f7f7f2;
-
-    font-weight: 800;
-}
-
-.participant-popup-dream {
-    padding: 12px;
-
-    border-radius: 12px;
-
-    background:
-        #fff6c4;
-}
-
-.participant-popup-position {
-    margin-top: 11px;
-
-    color: #666;
-
-    font-size: 13px;
-}
-
-
-/* =========================================================
-   51. КАР'ЄРНИЙ ПРОГРЕС
-========================================================= */
-
-.career-progress-popup h2 {
-    font-size: 27px;
-}
-
-.career-popup-profile {
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    margin-bottom: 18px;
-}
-
-.career-popup-token {
-    width: 105px;
-    height: 105px;
-
-    object-fit: contain;
-}
-
-.career-popup-profile p {
-    margin-top: 5px;
-
-    color: #555;
-
-    font-weight: 800;
-}
-
-.next-career-level {
-    display: flex;
-    flex-direction: column;
-
-    gap: 3px;
-
-    padding:
-        13px 15px;
-
-    margin-bottom: 15px;
-
-    border-radius: 13px;
-
-    background:
-        #fff2a4;
-}
-
-.next-career-level span {
-    color: #796200;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.next-career-level strong {
-    font-size: 18px;
-}
-
-.progress-help-text {
-    margin-bottom: 13px;
-
-    color: #555;
-}
-
-.career-max-level {
-    margin-top: 15px;
-
-    padding: 15px;
-
-    border-radius: 14px;
-
-    background:
-        #fff2a4;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   52. МРІЯ / ВИМОГИ
-========================================================= */
-
-.dream-progress-popup {
-    text-align: center;
-}
-
-.dream-confirmed-icon {
-    margin-bottom: 7px;
-
-    font-size: 55px;
-}
-
-.dream-progress-popup h2 {
-    font-size: 18px;
-
-    color: #777;
-}
-
-.dream-progress-popup h3 {
-    margin:
-        4px 0 16px;
-
-    font-size: 27px;
-}
-
-.dream-check-message {
-    margin-bottom: 15px;
-
-    padding: 12px;
-
-    border-radius: 13px;
-
-    font-weight: 800;
-}
-
-.dream-ready {
-    background:
-        #e6f8df;
-}
-
-.dream-not-ready {
-    background:
-        #fff4bc;
-}
-
-
-/* =========================================================
-   53. ПРОГРЕС ДО КАР'ЄРИ / МРІЇ
-========================================================= */
-
-.requirement-progress-row {
-    margin-bottom: 13px;
-
-    padding:
-        11px 12px;
-
-    border-radius: 13px;
-
-    background:
-        #f7f7f4;
-
-    text-align: left;
-}
-
-.requirement-progress-head {
-    display: flex;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-bottom: 8px;
-}
-
-.requirement-progress-head strong {
-    font-size: 13px;
-}
-
-.requirement-progress-head span {
-    font-size: 12px;
-
-    font-weight: 900;
-
-    color: #796200;
-}
-
-.requirement-values {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap: 7px;
-
-    margin-bottom: 8px;
-}
-
-.requirement-values > div {
-    padding:
-        7px;
-
-    border-radius: 9px;
-
-    background:
-        white;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.requirement-values small {
-    color: #777;
-
-    font-size: 9px;
-}
-
-.requirement-values strong {
-    font-size: 11px;
-}
-
-.requirement-progress-bar {
-    width: 100%;
-    height: 9px;
-
-    overflow: hidden;
-
-    border-radius: 999px;
-
-    background:
-        rgba(0,0,0,0.09);
-}
-
-.requirement-progress-fill {
-    height: 100%;
-
-    border-radius: inherit;
-
-    background:
-        linear-gradient(
-            90deg,
-            #e7bc00,
-            #ffe553
-        );
-}
-
-
-/* =========================================================
-   54. ЖУРНАЛ ХОДІВ
-========================================================= */
-
-.game-journal-popup h2 {
-    margin-bottom: 7px;
-}
-
-.game-journal-popup > p {
-    margin-bottom: 16px;
-
-    color: #666;
-
-    line-height: 1.4;
-}
-
-.journal-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 8px;
-}
-
-.journal-entry {
-    padding:
-        11px 12px;
-
-    border-radius: 12px;
-
-    background:
-        #f7f7f4;
-}
-
-.journal-entry-head {
-    display: flex;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-bottom: 5px;
-}
-
-.journal-entry-head strong {
-    font-size: 13px;
-}
-
-.journal-entry-head span {
-    color: #888;
-
-    font-size: 9px;
-}
-
-.journal-entry-action {
-    font-size: 12px;
-
-    font-weight: 800;
-}
-
-.journal-entry-details {
-    margin-top: 4px;
-
-    color: #666;
-
-    font-size: 10px;
-
-    line-height: 1.35;
-}
-
-.journal-empty {
-    padding: 20px;
-
-    text-align: center;
-
-    color: #777;
-}
-
-
-/* =========================================================
-   55. ЗАВЕРШИТИ ГРУ
-========================================================= */
-
-.finish-game-popup {
-    text-align: center;
-}
-
-.finish-game-popup h2 {
-    margin-bottom: 8px;
-
-    font-size: 27px;
-}
-
-.finish-game-popup p {
-    margin-bottom: 18px;
-
-    color: #666;
-}
-
-.finish-game-actions {
-    display: flex;
-
-    justify-content: center;
-
-    gap: 10px;
-}
-
-.secondary-game-btn {
-    padding:
-        13px 20px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.12);
-
-    border-radius: 13px;
-
-    background:
-        #eee;
-
-    cursor: pointer;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   56. БАНК
-========================================================= */
-
-.bank-hub-header {
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-bottom: 14px;
-}
-
-.bank-hub-main-icon {
-    width: 62px;
-    height: 62px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 16px;
-
-    background:
-        #ffe341;
-
-    font-size: 34px;
-}
-
-.bank-hub-label {
-    color: #8a7400;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.bank-hub-header h2 {
-    font-size: 29px;
-}
-
-.bank-hub-description {
-    margin-bottom: 17px;
-
-    color: #555;
-
-    line-height: 1.45;
-}
-
-.bank-products-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
-
-    gap: 9px;
-}
-
-.bank-product-card {
-    min-height: 145px;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    gap: 8px;
-
-    padding:
-        14px;
-
-    border:
-        2px solid
-        rgba(0,0,0,0.05);
-
-    border-radius: 15px;
-
-    background:
-        #fafaf7;
-
-    text-align: left;
-
-    cursor: pointer;
-}
-
-.bank-product-card:hover {
-    border-color:
-        #e2bd00;
-
-    background:
-        #fff9d0;
-}
-
-.bank-product-icon {
-    font-size: 31px;
-}
-
-.bank-product-text {
-    display: flex;
-    flex-direction: column;
-
-    gap: 4px;
-}
-
-.bank-product-text strong {
-    font-size: 14px;
-}
-
-.bank-product-text small {
-    color: #666;
-
-    font-size: 10px;
-
-    line-height: 1.35;
-}
-
-.bank-product-status {
-    margin-top: auto;
-
-    color: #8a7400;
-
-    font-size: 9px;
-    font-weight: 900;
-}
-
-.bank-product-coming {
-    opacity: 0.82;
-}
-
-.bank-hub-note {
-    margin-top: 15px;
-
-    padding: 12px;
-
-    border-radius: 12px;
-
-    background:
-        #fff6c4;
-
-    color: #665600;
-
-    font-size: 11px;
-
-    line-height: 1.4;
-}
-
-
-/* =========================================================
-   57. ОКРЕМИЙ ПРОДУКТ БАНКУ
-========================================================= */
-
-.bank-product-popup {
-    text-align: center;
-}
-
-.bank-product-popup-icon {
-    margin-bottom: 8px;
-
-    font-size: 56px;
-}
-
-.bank-product-popup h2 {
-    margin-bottom: 8px;
-
-    font-size: 28px;
-}
-
-.bank-product-popup > p {
-    margin-bottom: 15px;
-
-    color: #555;
-
-    line-height: 1.45;
-}
-
-.bank-product-development-note {
-    margin-bottom: 17px;
-
-    padding: 14px;
-
-    border-radius: 13px;
-
-    background:
-        #fff6c4;
-
-    color: #625400;
-
-    line-height: 1.45;
-}
-
-
-/* =========================================================
-   58. ПЕРЕХІД
-========================================================= */
-
-.transition-card .main-game-btn {
-    margin-top: 5px;
-}
-
-
-/* =========================================================
-   59. НОУТБУК 1366–1450
-
-   ОСНОВНИЙ РОЗМІР,
-   ПІД ЯКИЙ ЗАРАЗ РОБИМО ГРУ.
-========================================================= */
-
-@media (max-width: 1450px) {
-
-    .main-board-screen {
-        grid-template-columns:
-            minmax(0,1fr)
-            225px;
-
-        gap: 10px;
-
-        padding: 10px;
-    }
-
-
-    .rectangle-game-board,
-    .expanded-game-board {
-        height:
-            calc(100vh - 20px);
-    }
-
-
-    .game-work-panel {
-        height:
-            calc(100vh - 20px);
-
-        padding:
-            11px 10px;
-
-        gap: 7px;
-    }
-
-
-    .outer-rectangle-board {
-        top: 6%;
-
-        width: 89%;
-        height: 64%;
-    }
-
-
-    .inner-rectangle-board {
-        top: 23%;
-
-        width: 54%;
-        height: 34%;
-    }
-
-
-    .board-cell {
-        width: 39px;
-        height: 39px;
-    }
-
-
-    .special-board-cell {
-        width: 45px;
-        height: 45px;
-    }
-
-
-    .start-board-cell,
-    .transition-board-cell {
-        width: 53px;
-        height: 53px;
-    }
-
-
-    .cell-icon {
-        font-size: 20px;
-    }
-
-
-    .special-board-cell .cell-icon {
-        font-size: 23px;
-    }
-
-
-    .player-piece {
-        width: 67px;
-        height: 67px;
-    }
-
-
-    .ai-piece {
-        width: 54px;
-        height: 54px;
-    }
-
-
-    .board-center-brand {
-        top: 41%;
-
-        width: 235px;
-        height: 160px;
-    }
-
-
-    .player-bottom-hud {
-        left: 1.5%;
-        right: 1.5%;
-
-        bottom: 8px;
-
-        min-height: 80px;
-
-        grid-template-columns:
-            205px
-            minmax(320px,1fr)
-            185px
-            170px;
-
-        gap: 6px;
-
-        padding: 7px;
-    }
-
-
-    .hud-token-image {
-        width: 54px;
-        height: 54px;
-    }
-
-
-    .player-career-hud {
-        grid-template-columns:
-            55px
-            minmax(0,1fr);
-    }
-
-
-    .hud-player-name {
-        font-size: 13px;
-    }
-
-
-    .hud-player-profession {
-        font-size: 10px;
-    }
-
-
-    .hud-stat-icon {
-        font-size: 19px;
-    }
-
-
-    .hud-stat-item strong {
-        font-size: 11px;
-    }
-
-
-    .hud-feature-icon {
-        font-size: 25px;
-    }
-
-
-    .hud-feature-button strong {
-        font-size: 9px;
-    }
-
-
-    .dice-title {
-        font-size: 16px;
-    }
-
-
-    .dice {
-        width: 64px;
-        height: 64px;
-
-        font-size: 47px;
-    }
-
-
-    .game-work-panel .main-game-btn {
-        padding:
-            9px 6px;
-
-        font-size: 10px;
-    }
-
-
-    .dice-message {
-        padding:
-            7px 8px;
-
-        font-size: 9px;
-    }
-
-
-    .current-card-panel {
-        min-height: 205px;
-    }
-
-
-    .raifik-board-message {
-        min-height: 205px;
-
-        grid-template-columns:
-            65px
-            minmax(0,1fr);
-
-        padding:
-            9px 7px;
-    }
-
-
-    .raifik-board-message img {
-        width: 62px;
-        height: 105px;
-    }
-
-
-    .raifik-board-message strong {
-        font-size: 12px;
-    }
-
-
-    .raifik-board-message p {
-        font-size: 9px;
-    }
-
-
-    .mini-opponent-button {
-        padding:
-            5px 6px;
-    }
-
-
-    .mini-opponent-button img {
-        width: 31px;
-        height: 31px;
-    }
-
-
-    .work-panel-button {
-        min-height: 32px;
-
-        padding:
-            6px 7px;
-
-        font-size: 9px;
-    }
-
-}
-
-
-/* =========================================================
-   60. МЕНШІ НОУТБУКИ
-
-   ГРА РОЗРАХОВАНА НА ПК,
-   але не даємо їй вилізти за екран.
-========================================================= */
-
-@media (max-width: 1200px) {
-
-    .main-board-screen {
-        grid-template-columns:
-            minmax(0,1fr)
-            205px;
-    }
-
-
-    .outer-rectangle-board {
-        width: 86%;
-        height: 61%;
-    }
-
-
-    .inner-rectangle-board {
-        width: 51%;
-        height: 32%;
-    }
-
-
-    .board-cell {
-        width: 35px;
-        height: 35px;
-    }
-
-
-    .special-board-cell {
-        width: 40px;
-        height: 40px;
-    }
-
-
-    .start-board-cell,
-    .transition-board-cell {
-        width: 47px;
-        height: 47px;
-    }
-
-
-    .cell-icon {
-        font-size: 17px;
-    }
-
-
-    .player-piece {
-        width: 59px;
-        height: 59px;
-    }
-
-
-    .ai-piece {
-        width: 48px;
-        height: 48px;
-    }
-
-
-    .board-center-brand {
-        width: 195px;
-        height: 135px;
-    }
-
-
-    .player-bottom-hud {
-        grid-template-columns:
-            180px
-            minmax(285px,1fr)
-            160px
-            150px;
-    }
-
-
-    .hud-player-stats {
-        gap: 4px;
-    }
-
-
-    .hud-stat-item {
-        padding:
-            5px 4px;
-    }
-
-}
-/* =========================================================
-   18. ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
-
-   НОВА ВЕРСІЯ:
-   - фон bg-game.png
-   - велике прямокутне поле
-   - одна панель справа
-   - HUD унизу
-   - лого у центрі
-   - Мрія та Банк унизу
-========================================================= */
-
-.main-board-screen {
-    position: relative;
-
-    width: 100%;
-    height: 100vh;
-
-    display: grid;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        245px;
-
-    gap: 14px;
-
-    padding: 14px;
-
-    background-image:
-        linear-gradient(
-            rgba(0,0,0,0.02),
-            rgba(0,0,0,0.02)
-        ),
-        url("assets/bg-game.png");
-
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-
-    overflow: hidden;
-}
-
-
-/* =========================================================
-   19. ОСНОВНА ЗОНА ПОЛЯ
-========================================================= */
-
-.rectangle-game-board,
-.expanded-game-board {
-    position: relative;
-
-    width: 100%;
-    height: calc(100vh - 28px);
-
-    min-width: 0;
-    min-height: 0;
-
-    border-radius: 24px;
-
-    overflow: hidden;
-}
-
-
-/* =========================================================
-   20. ПРЯМОКУТНІ МАРШРУТИ
-========================================================= */
-
-.rectangle-board {
-    position: absolute;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    pointer-events: none;
-}
-
-
-/* =========================================================
-   21. ЗОВНІШНІЙ ШЛЯХ — 56
-========================================================= */
-
-.outer-rectangle-board {
-    top: 7%;
-
-    width: 91%;
-    height: 66%;
-
-    z-index: 5;
-}
-
-
-/* =========================================================
-   22. ВНУТРІШНІЙ ШЛЯХ — 28
-========================================================= */
-
-.inner-rectangle-board {
-    top: 24%;
-
-    width: 56%;
-    height: 36%;
-
-    z-index: 8;
-}
-
-
-/* =========================================================
-   23. КОМІРКИ
-
-   Іконки спеціально більші,
-   бо на фоні вони губилися.
-========================================================= */
-
-.board-cell {
-    position: absolute;
-
-    width: 43px;
-    height: 43px;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    transform:
-        translate(-50%, -50%);
-
-    border:
-        2px solid
-        rgba(110,90,0,0.30);
-
-    border-radius: 10px;
-
-    background:
-        rgba(255,255,255,0.96);
-
-    box-shadow:
-        0 4px 10px
-        rgba(0,0,0,0.22);
-
-    cursor: pointer;
-
-    pointer-events: auto;
-
-    z-index: 15;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease,
-        background 0.16s ease;
-}
-
-.board-cell:hover {
-    z-index: 40;
-
-    transform:
-        translate(-50%, -50%)
-        scale(1.11);
-
-    box-shadow:
-        0 8px 18px
-        rgba(0,0,0,0.30);
-}
-
-
-/* =========================================================
-   24. НОМЕР + ІКОНКА
-========================================================= */
-
-.cell-number {
-    position: absolute;
-
-    top: 3px;
-    left: 4px;
-
-    font-size: 7px;
-    line-height: 1;
-
-    font-weight: 900;
-
-    color: #555;
-}
-
-.cell-icon {
-    display: block;
-
-    margin-top: 4px;
-
-    font-size: 22px;
-    line-height: 1;
-}
-
-
-/* =========================================================
-   25. СПЕЦІАЛЬНІ КОМІРКИ
-========================================================= */
-
-.special-board-cell {
-    width: 49px;
-    height: 49px;
-
-    border-color:
-        rgba(143,112,0,0.55);
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff27a,
-            #f1c900
-        );
-
-    box-shadow:
-        0 6px 15px
-        rgba(0,0,0,0.22);
-}
-
-.special-board-cell .cell-icon {
-    font-size: 25px;
-}
-
-
-/* =========================================================
-   26. START
-========================================================= */
-
-.start-board-cell {
-    width: 58px;
-    height: 58px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #ffe935,
-            #e8b900
-        );
-
-    border:
-        3px solid
-        rgba(85,68,0,0.52);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(255,224,0,0.20),
-        0 7px 18px
-        rgba(0,0,0,0.26);
-
-    z-index: 25;
-}
-
-.start-board-cell .cell-icon {
-    font-size: 24px;
-}
-
-
-/* =========================================================
-   27. ПЕРЕХІД
-========================================================= */
-
-.transition-board-cell {
-    width: 61px;
-    height: 61px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff075,
-            #edc000
-        );
-
-    border:
-        3px solid
-        rgba(104,82,0,0.55);
-
-    box-shadow:
-        0 0 0 4px
-        rgba(255,224,0,0.18),
-        0 7px 18px
-        rgba(0,0,0,0.24);
-
-    z-index: 25;
-}
-
-.transition-board-cell .cell-icon {
-    font-size: 25px;
-}
-
-
-/* =========================================================
-   28. START / ПЕРЕХІД — ПІДПИС
-========================================================= */
-
-.cell-special-label {
-    position: absolute;
-
-    bottom: -16px;
-
-    left: 50%;
-
-    transform:
-        translateX(-50%);
-
-    padding:
-        2px 5px;
-
-    border-radius: 999px;
-
-    background:
-        rgba(30,30,30,0.88);
-
-    color: white;
-
-    white-space: nowrap;
-
-    font-size: 7px;
-    font-weight: 900;
-
-    letter-spacing: 0.2px;
-}
-
-
-/* =========================================================
-   29. ПІДСВІЧЕНА ЦІЛЬ
-========================================================= */
-
-.target-cell {
-    z-index: 70 !important;
-
-    background:
-        #fff03a !important;
-
-    box-shadow:
-        0 0 0 5px
-        rgba(255,211,0,0.40),
-        0 0 28px
-        rgba(255,219,0,1) !important;
-
-    animation:
-        targetPulse
-        0.8s
-        infinite
-        alternate;
-}
-
-@keyframes targetPulse {
-
-    from {
-        transform:
-            translate(-50%, -50%)
-            scale(1);
-    }
-
-    to {
-        transform:
-            translate(-50%, -50%)
-            scale(1.16);
-    }
-}
-
-
-/* =========================================================
-   30. ЛОГО У ЦЕНТРІ ПОЛЯ
-========================================================= */
-
-.board-center-brand {
-    position: absolute;
-
-    left: 50%;
-    top: 42%;
-
-    transform:
-        translate(-50%, -50%);
-
-    width: 270px;
-    height: 190px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    z-index: 3;
-
-    pointer-events: none;
-}
-
-.board-center-logo {
-    display: block;
-
-    width: 100%;
-    max-height: 100%;
-
-    object-fit: contain;
-
-    filter:
-        drop-shadow(
-            0 10px 18px
-            rgba(0,0,0,0.18)
-        );
-}
-
-
-/* =========================================================
-   31. ФІШКИ
-========================================================= */
-
-.board-piece {
-    position: absolute;
-
-    left: 50%;
-    top: 50%;
-
-    object-fit: contain;
-
-    pointer-events: auto;
-
-    filter:
-        drop-shadow(
-            0 4px 5px
-            rgba(0,0,0,0.38)
-        );
-
-    z-index: 80;
-}
-
-.player-piece {
-    width: 72px;
-    height: 72px;
-
-    transform:
-        translate(-50%, -82%);
-
-    cursor: grab;
-
-    z-index: 95;
-
-    filter:
-        drop-shadow(
-            0 0 3px #fff
-        )
-        drop-shadow(
-            0 7px 8px
-            rgba(0,0,0,0.55)
-        );
-}
-
-.player-piece:active {
-    cursor: grabbing;
-}
-
-.ai-piece {
-    width: 58px;
-    height: 58px;
-
-    transform:
-        translate(-50%, -72%);
-
-    z-index: 90;
-}
-
-
-/* КОЛИ НА КОМІРЦІ ДЕКІЛЬКА ФІШОК */
-
-.board-cell .board-piece:nth-of-type(2) {
-    transform:
-        translate(-76%, -80%);
-}
-
-.board-cell .board-piece:nth-of-type(3) {
-    transform:
-        translate(-24%, -80%);
-}
-
-
-/* =========================================================
-   32. НИЖНІЙ HUD
-========================================================= */
-
-.player-bottom-hud {
-    position: absolute;
-
-    left: 2.5%;
-    right: 2.5%;
-    bottom: 14px;
-
-    min-height: 88px;
-
-    display: grid;
-
-    grid-template-columns:
-        230px
-        minmax(350px, 1fr)
-        210px
-        190px;
-
-    gap: 9px;
-
-    padding: 9px;
-
-    border-radius: 20px;
-
-    background:
-        rgba(255,255,255,0.93);
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    box-shadow:
-        0 12px 30px
-        rgba(0,0,0,0.18);
-
-    z-index: 130;
-}
-
-
-/* =========================================================
-   33. КАР'ЄРА В HUD
-========================================================= */
-
-.player-career-hud {
-    display: grid;
-
-    grid-template-columns:
-        64px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 8px;
-
-    min-width: 0;
-
-    padding:
-        7px 9px;
-
-    border:
-        2px solid
-        rgba(210,171,0,0.40);
-
-    border-radius: 14px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff8bd,
-            #ffe34a
-        );
-
-    cursor: pointer;
-
-    text-align: left;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.player-career-hud:hover {
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.13);
-}
-
-.hud-token-image {
-    width: 62px;
-    height: 62px;
-
-    object-fit: contain;
-}
-
-.hud-career-text {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.hud-player-name {
-    font-size: 15px;
-    font-weight: 900;
-
-    color: #222;
-}
-
-.hud-player-profession {
-    font-size: 12px;
-    font-weight: 800;
-
-    color: #373737;
-
-    line-height: 1.2;
-}
-
-.hud-career-text small {
-    margin-top: 2px;
-
-    font-size: 8px;
-
-    color: #746100;
-
-    line-height: 1.2;
-}
-
-
-/* =========================================================
-   34. ПОКАЗНИКИ У HUD
-========================================================= */
-
-.hud-player-stats {
-    display: grid;
-
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 7px;
-}
-
-.hud-stat-item {
-    min-width: 0;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 6px;
-
-    padding:
-        7px 6px;
-
-    border-radius: 13px;
-
-    background:
-        rgba(248,248,245,0.95);
-
-    border:
-        1px solid
-        rgba(0,0,0,0.05);
-}
-
-.hud-stat-icon {
-    font-size: 22px;
-}
-
-.hud-stat-item > div {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-}
-
-.hud-stat-item small {
-    font-size: 7px;
-
-    color: #777;
-
-    font-weight: 900;
-
-    letter-spacing: 0.2px;
-}
-
-.hud-stat-item strong {
-    font-size: 13px;
-    font-weight: 900;
-
-    white-space: nowrap;
-}
-
-
-/* =========================================================
-   35. МРІЯ + БАНК У HUD
-========================================================= */
-
-.hud-feature-button {
-    min-width: 0;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 9px;
-
-    padding:
-        8px 10px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.06);
-
-    border-radius: 14px;
-
-    cursor: pointer;
-
-    text-align: left;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.hud-feature-button:hover {
-    transform:
-        translateY(-2px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.12);
-}
-
-.hud-dream-button {
-    background:
-        linear-gradient(
-            145deg,
-            #fff8bf,
-            #ffe568
-        );
-}
-
-.hud-bank-button {
-    background:
-        rgba(255,255,255,0.97);
-
-    border:
-        2px solid
-        rgba(232,193,0,0.48);
-}
-
-.hud-feature-icon {
-    flex: 0 0 auto;
-
-    font-size: 30px;
-}
-
-.hud-feature-button > div {
-    min-width: 0;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.hud-feature-button small {
-    color: #777;
-
-    font-size: 8px;
-    font-weight: 900;
-}
-
-.hud-feature-button strong {
-    overflow: hidden;
-
-    color: #222;
-
-    font-size: 11px;
-    font-weight: 900;
-
-    line-height: 1.22;
-
-    display: -webkit-box;
-
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-
-/* =========================================================
-   36. ЄДИНА ПРАВА РОБОЧА ПАНЕЛЬ
-========================================================= */
-
-.game-work-panel {
-    position: relative;
-
-    width: 100%;
-    height: calc(100vh - 28px);
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 11px;
-
-    padding:
-        15px 13px;
-
-    border-radius: 22px;
-
-    background:
-        rgba(255,255,255,0.94);
-
-    backdrop-filter:
-        blur(10px);
-
-    -webkit-backdrop-filter:
-        blur(10px);
-
-    box-shadow:
-        0 14px 34px
-        rgba(0,0,0,0.18);
-
-    overflow-y: auto;
-
-    z-index: 200;
-}
-
-
-/* =========================================================
-   37. КУБИК
-========================================================= */
-
-.dice-section {
-    display: flex;
-    flex-direction: column;
-
-    gap: 8px;
-}
-
-.dice-title {
-    text-align: center;
-
-    font-size: 18px;
-    font-weight: 900;
-
-    letter-spacing: 0.3px;
-}
-
-.dice {
-    width: 76px;
-    height: 76px;
-
-    margin:
-        0 auto;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border:
-        2px solid
-        rgba(0,0,0,0.10);
-
-    border-radius: 16px;
-
-    background:
-        rgba(255,255,255,0.98);
-
-    font-size: 56px;
-
-    box-shadow:
-        0 8px 18px
-        rgba(0,0,0,0.12);
-}
-
-.game-work-panel .main-game-btn {
-    width: 100%;
-    min-width: 0;
-
-    padding:
-        12px 8px;
-
-    border-radius: 12px;
-
-    font-size: 12px;
-}
-
-.dice-message {
-    padding:
-        10px 11px;
-
-    border-radius: 11px;
-
-    background:
-        rgba(255,234,86,0.35);
-
-    font-size: 11px;
-    font-weight: 900;
-
-    line-height: 1.45;
-
-    color: #333;
-}
-
-
-/* =========================================================
-   38. ПОТОЧНА КАРТКА / РАЙФИК
-========================================================= */
-
-.current-card-panel {
-    width: 100%;
-
-    min-height: 230px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.06);
-
-    border-radius: 15px;
-
-    background:
-        rgba(249,249,247,0.95);
-
-    overflow: hidden;
-}
-
-.raifik-board-message {
-    min-height: 230px;
-
-    display: grid;
-
-    grid-template-columns:
-        78px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 10px;
-
-    padding:
-        14px 11px;
-}
-
-.raifik-board-message img {
-    width: 76px;
-    height: 135px;
-
-    object-fit: contain;
-}
-
-.raifik-board-message > div {
-    min-width: 0;
-}
-
-.raifik-board-message strong {
-    display: block;
-
-    margin-bottom: 6px;
-
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.raifik-board-message p {
-    color: #4d4d4d;
-
-    font-size: 11px;
-    font-weight: 700;
-
-    line-height: 1.45;
-}
-
-
-/* =========================================================
-   39. ПОРОЖНЯ КАРТКА
-========================================================= */
-
-.current-card-empty {
-    min-height: 230px;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: center;
-    justify-content: center;
-
-    gap: 7px;
-
-    padding: 14px;
-
-    text-align: center;
-}
-
-.current-card-empty > span {
-    width: 58px;
-    height: 58px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 13px;
-
-    background: #333;
-
-    color: #ffe74b;
-
-    font-size: 30px;
-    font-weight: 900;
-}
-
-.current-card-empty strong {
-    font-size: 11px;
-}
-
-.current-card-empty small {
-    color: #777;
-
-    font-size: 9px;
-}
-
-
-/* =========================================================
-   40. ГРАВЦІ
-========================================================= */
-
-.other-players-block {
-    margin-top: 2px;
-}
-
-.other-players-block h3 {
-    margin-bottom: 7px;
-
-    color: #666;
-
-    font-size: 10px;
-
-    font-weight: 900;
-
-    letter-spacing: 0.5px;
-}
-
-.mini-opponents-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 5px;
-}
-
-.mini-opponent-button {
-    width: 100%;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    padding:
-        7px 8px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.05);
-
-    border-radius: 10px;
-
-    background:
-        rgba(255,255,255,0.88);
-
-    cursor: pointer;
-
-    transition:
-        0.16s ease;
-}
-
-.mini-opponent-button:hover {
-    background:
-        #fff6b7;
-
-    transform:
-        translateX(-2px);
-}
-
-.mini-opponent-button img {
-    width: 38px;
-    height: 38px;
-
-    object-fit: contain;
-}
-
-.mini-opponent-button span {
-    font-size: 11px;
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   41. НИЖНІ КНОПКИ ПАНЕЛІ
-========================================================= */
-
-.work-panel-actions {
-    display: flex;
-    flex-direction: column;
-
-    gap: 6px;
-
-    margin-top: auto;
-}
-
-.work-panel-button {
-    width: 100%;
-
-    min-height: 38px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 6px;
-
-    padding:
-        8px 10px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.08);
-
-    border-radius: 10px;
-
-    background:
-        rgba(247,247,244,0.98);
-
-    color: #333;
-
-    cursor: pointer;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.work-panel-button:hover {
-    background:
-        #fff4ae;
-}
-
-#journalCount {
-    min-width: 19px;
-    height: 19px;
-
-    display: inline-flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding:
-        0 5px;
-
-    border-radius: 999px;
-
-    background:
-        #f1ca00;
-
-    color: #111;
-
-    font-size: 9px;
-}
-
-.finish-game-button {
-    background:
-        rgba(46,46,46,0.96);
-
-    color: white;
-}
-
-.finish-game-button:hover {
-    background:
-        #111;
-}
-
-
-/* =========================================================
-   42. 3 КАРТКИ
-========================================================= */
-
-.current-card-choice,
-.life-number-card {
-    padding:
-        12px 10px;
-}
-
-.current-card-raifik-line {
-    display: flex;
-
-    align-items: center;
-
-    gap: 8px;
-
-    margin-bottom: 10px;
-}
-
-.current-card-raifik-line img {
-    width: 54px;
-    height: 82px;
-
-    object-fit: contain;
-}
-
-.current-card-raifik-line strong {
-    font-size: 12px;
-    font-weight: 900;
-}
-
-.current-card-raifik-line p {
-    margin-top: 4px;
-
-    color: #666;
-
-    font-size: 9px;
-
-    line-height: 1.35;
-}
-
-.three-card-choice {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
-    gap: 6px;
-}
-
-.hidden-game-card {
-    height: 88px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border:
-        2px solid
-        #c3a000;
-
-    border-radius: 11px;
-
-    background:
-        linear-gradient(
-            145deg,
-            #393939,
-            #141414
-        );
-
-    color: #ffe12d;
-
-    font-size: 30px;
-    font-weight: 900;
-
-    cursor: pointer;
-
-    transition:
-        transform 0.16s ease,
-        box-shadow 0.16s ease;
-}
-
-.hidden-game-card:hover {
-    transform:
-        translateY(-4px);
-
-    box-shadow:
-        0 8px 16px
-        rgba(0,0,0,0.22);
-}
-
-
-/* =========================================================
-   43. ЖИТТЯ — ЧИСЛО
-========================================================= */
-
-.life-number-card input {
-    width: 100%;
-
-    padding:
-        11px 9px;
-
-    margin:
-        6px 0 9px;
-
-    border:
-        2px solid
-        rgba(215,180,0,0.55);
-
-    border-radius: 11px;
-
-    text-align: center;
-
-    font-size: 16px;
-
-    outline: none;
-}
-
-
-/* =========================================================
-   44. ВІДКРИТА КАРТКА
-========================================================= */
-
-.revealed-current-card {
-    min-height: 230px;
-
-    display: flex;
-    flex-direction: column;
-
-    justify-content: center;
-
-    gap: 9px;
-
-    padding:
-        14px 12px;
-}
-
-.revealed-card-type {
-    color: #796200;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.revealed-current-card h3 {
-    font-size: 16px;
-
-    line-height: 1.2;
-}
-
-.revealed-current-card p,
-.decision-card-text {
-    color: #555;
-
-    font-size: 10px;
-
-    line-height: 1.42;
-}
-
-.revealed-card-effects {
-    display: flex;
-
-    flex-wrap: wrap;
-
-    gap: 6px;
-}
-
-.revealed-card-effects span {
-    padding:
-        5px 7px;
-
-    border-radius: 8px;
-
-    background:
-        #fff2a4;
-
-    font-size: 9px;
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   45. БЕРУ / ЧАСТКОВО / НЕ БЕРУ
-========================================================= */
-
-.card-effect-title,
-.card-question {
-    font-size: 10px;
-
-    font-weight: 900;
-
-    color: #555;
-}
-
-.card-decision-buttons {
-    display: grid;
-
-    grid-template-columns:
-        1fr;
-
-    gap: 6px;
-}
-
-.card-action-btn {
-    width: 100%;
-
-    min-height: 35px;
-
-    padding:
-        7px 8px;
-
-    border-radius: 9px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.08);
-
-    font-size: 9px;
-
-    font-weight: 900;
-
-    cursor: pointer;
-}
-
-.accept-card-btn {
-    background:
-        #ffe33c;
-}
-
-.partial-card-btn {
-    background:
-        #fff5b2;
-}
-
-.decline-card-btn {
-    background:
-        #ececec;
-}
-
-.finish-turn-btn {
-    margin-top: 3px;
-}
-
-
-/* =========================================================
-   46. AI RESULT
-========================================================= */
-
-.ai-turn-result {
-    min-height: 230px;
-
-    padding:
-        14px 10px;
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-}
-
-.ai-turn-result img {
-    width: 74px;
-    height: 120px;
-
-    object-fit: contain;
-}
-
-.ai-turn-result strong {
-    display: block;
-
-    font-size: 13px;
-}
-
-.ai-turn-result h4 {
-    margin:
-        5px 0 8px;
-
-    font-size: 12px;
-}
-
-
-/* =========================================================
-   47. МОДАЛКА
-========================================================= */
-
-.game-info-modal[hidden] {
-    display: none !important;
-}
-
-.game-info-modal {
-    position: fixed;
-
-    inset: 0;
-
-    z-index: 5000;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    padding: 20px;
-
-    background:
-        rgba(10,15,20,0.50);
-
-    backdrop-filter:
-        blur(7px);
-}
-
-.game-info-modal-card {
-    position: relative;
-
-    width: min(620px, 92vw);
-
-    max-height: 84vh;
-
-    overflow-y: auto;
-
-    padding:
-        32px 30px;
-
-    border-radius: 25px;
-
-    background:
-        rgba(255,255,255,0.98);
-
-    box-shadow:
-        0 25px 65px
-        rgba(0,0,0,0.30);
-}
-
-.game-info-close {
-    position: absolute;
-
-    top: 11px;
-    right: 12px;
-
-    width: 38px;
-    height: 38px;
-
-    border: none;
-    border-radius: 50%;
-
-    background:
-        rgba(0,0,0,0.06);
-
-    font-size: 24px;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   48. ІНФО ПРО КОМІРКУ
-========================================================= */
-
-.cell-info-popup {
-    text-align: center;
-}
-
-.cell-info-icon {
-    margin-bottom: 8px;
-
-    font-size: 54px;
-}
-
-.cell-info-popup h3 {
-    margin-bottom: 10px;
-
-    font-size: 27px;
-}
-
-.cell-info-popup p {
-    color: #555;
-
-    line-height: 1.5;
-}
-
-
-/* =========================================================
-   49. УСІ ТИПИ КОМІРОК
-========================================================= */
-
-.all-cell-types-popup h2 {
-    margin-bottom: 7px;
-
-    font-size: 28px;
-}
-
-.all-cell-types-popup > p {
-    margin-bottom: 18px;
-
-    color: #666;
-}
-
-.all-cell-types-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 7px;
-}
-
-.all-cell-type-row {
-    display: grid;
-
-    grid-template-columns:
-        44px
-        minmax(0,1fr);
-
-    align-items: center;
-
-    gap: 9px;
-
-    padding:
-        9px 11px;
-
-    border-radius: 12px;
-
-    background:
-        #f8f8f5;
-}
-
-.all-cell-type-row > span {
-    font-size: 25px;
-}
-
-.all-cell-type-row div {
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.all-cell-type-row strong {
-    font-size: 13px;
-}
-
-.all-cell-type-row small {
-    color: #666;
-
-    line-height: 1.3;
-}
-
-
-/* =========================================================
-   50. ІНФО AI
-========================================================= */
-
-.participant-info-popup {
-    text-align: center;
-}
-
-.participant-popup-token {
-    width: 145px;
-    height: 145px;
-
-    object-fit: contain;
-}
-
-.participant-info-popup h3 {
-    font-size: 27px;
-}
-
-.participant-info-popup > p {
-    margin:
-        5px 0 14px;
-
-    color: #555;
-}
-
-.participant-popup-stats {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2,1fr);
-
-    gap: 8px;
-
-    margin-bottom: 13px;
-}
-
-.participant-popup-stats span {
-    padding: 10px;
-
-    border-radius: 11px;
-
-    background:
-        #f7f7f2;
-
-    font-weight: 800;
-}
-
-.participant-popup-dream {
-    padding: 12px;
-
-    border-radius: 12px;
-
-    background:
-        #fff6c4;
-}
-
-.participant-popup-position {
-    margin-top: 11px;
-
-    color: #666;
-
-    font-size: 13px;
-}
-
-
-/* =========================================================
-   51. КАР'ЄРНИЙ ПРОГРЕС
-========================================================= */
-
-.career-progress-popup h2 {
-    font-size: 27px;
-}
-
-.career-popup-profile {
-    display: flex;
-
-    align-items: center;
-
-    gap: 14px;
-
-    margin-bottom: 18px;
-}
-
-.career-popup-token {
-    width: 105px;
-    height: 105px;
-
-    object-fit: contain;
-}
-
-.career-popup-profile p {
-    margin-top: 5px;
-
-    color: #555;
-
-    font-weight: 800;
-}
-
-.next-career-level {
-    display: flex;
-    flex-direction: column;
-
-    gap: 3px;
-
-    padding:
-        13px 15px;
-
-    margin-bottom: 15px;
-
-    border-radius: 13px;
-
-    background:
-        #fff2a4;
-}
-
-.next-career-level span {
-    color: #796200;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.next-career-level strong {
-    font-size: 18px;
-}
-
-.progress-help-text {
-    margin-bottom: 13px;
-
-    color: #555;
-}
-
-.career-max-level {
-    margin-top: 15px;
-
-    padding: 15px;
-
-    border-radius: 14px;
-
-    background:
-        #fff2a4;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   52. МРІЯ / ВИМОГИ
-========================================================= */
-
-.dream-progress-popup {
-    text-align: center;
-}
-
-.dream-confirmed-icon {
-    margin-bottom: 7px;
-
-    font-size: 55px;
-}
-
-.dream-progress-popup h2 {
-    font-size: 18px;
-
-    color: #777;
-}
-
-.dream-progress-popup h3 {
-    margin:
-        4px 0 16px;
-
-    font-size: 27px;
-}
-
-.dream-check-message {
-    margin-bottom: 15px;
-
-    padding: 12px;
-
-    border-radius: 13px;
-
-    font-weight: 800;
-}
-
-.dream-ready {
-    background:
-        #e6f8df;
-}
-
-.dream-not-ready {
-    background:
-        #fff4bc;
-}
-
-
-/* =========================================================
-   53. ПРОГРЕС ДО КАР'ЄРИ / МРІЇ
-========================================================= */
-
-.requirement-progress-row {
-    margin-bottom: 13px;
-
-    padding:
-        11px 12px;
-
-    border-radius: 13px;
-
-    background:
-        #f7f7f4;
-
-    text-align: left;
-}
-
-.requirement-progress-head {
-    display: flex;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-bottom: 8px;
-}
-
-.requirement-progress-head strong {
-    font-size: 13px;
-}
-
-.requirement-progress-head span {
-    font-size: 12px;
-
-    font-weight: 900;
-
-    color: #796200;
-}
-
-.requirement-values {
-    display: grid;
-
-    grid-template-columns:
-        repeat(3,1fr);
-
-    gap: 7px;
-
-    margin-bottom: 8px;
-}
-
-.requirement-values > div {
-    padding:
-        7px;
-
-    border-radius: 9px;
-
-    background:
-        white;
-
-    display: flex;
-    flex-direction: column;
-
-    gap: 2px;
-}
-
-.requirement-values small {
-    color: #777;
-
-    font-size: 9px;
-}
-
-.requirement-values strong {
-    font-size: 11px;
-}
-
-.requirement-progress-bar {
-    width: 100%;
-    height: 9px;
-
-    overflow: hidden;
-
-    border-radius: 999px;
-
-    background:
-        rgba(0,0,0,0.09);
-}
-
-.requirement-progress-fill {
-    height: 100%;
-
-    border-radius: inherit;
-
-    background:
-        linear-gradient(
-            90deg,
-            #e7bc00,
-            #ffe553
-        );
-}
-
-
-/* =========================================================
-   54. ЖУРНАЛ ХОДІВ
-========================================================= */
-
-.game-journal-popup h2 {
-    margin-bottom: 7px;
-}
-
-.game-journal-popup > p {
-    margin-bottom: 16px;
-
-    color: #666;
-
-    line-height: 1.4;
-}
-
-.journal-list {
-    display: flex;
-    flex-direction: column;
-
-    gap: 8px;
-}
-
-.journal-entry {
-    padding:
-        11px 12px;
-
-    border-radius: 12px;
-
-    background:
-        #f7f7f4;
-}
-
-.journal-entry-head {
-    display: flex;
-
-    justify-content: space-between;
-
-    gap: 10px;
-
-    margin-bottom: 5px;
-}
-
-.journal-entry-head strong {
-    font-size: 13px;
-}
-
-.journal-entry-head span {
-    color: #888;
-
-    font-size: 9px;
-}
-
-.journal-entry-action {
-    font-size: 12px;
-
-    font-weight: 800;
-}
-
-.journal-entry-details {
-    margin-top: 4px;
-
-    color: #666;
-
-    font-size: 10px;
-
-    line-height: 1.35;
-}
-
-.journal-empty {
-    padding: 20px;
-
-    text-align: center;
-
-    color: #777;
-}
-
-
-/* =========================================================
-   55. ЗАВЕРШИТИ ГРУ
-========================================================= */
-
-.finish-game-popup {
-    text-align: center;
-}
-
-.finish-game-popup h2 {
-    margin-bottom: 8px;
-
-    font-size: 27px;
-}
-
-.finish-game-popup p {
-    margin-bottom: 18px;
-
-    color: #666;
-}
-
-.finish-game-actions {
-    display: flex;
-
-    justify-content: center;
-
-    gap: 10px;
-}
-
-.secondary-game-btn {
-    padding:
-        13px 20px;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.12);
-
-    border-radius: 13px;
-
-    background:
-        #eee;
-
-    cursor: pointer;
-
-    font-weight: 900;
-}
-
-
-/* =========================================================
-   56. БАНК
-========================================================= */
-
-.bank-hub-header {
-    display: flex;
-
-    align-items: center;
-
-    gap: 12px;
-
-    margin-bottom: 14px;
-}
-
-.bank-hub-main-icon {
-    width: 62px;
-    height: 62px;
-
-    display: flex;
-
-    align-items: center;
-    justify-content: center;
-
-    border-radius: 16px;
-
-    background:
-        #ffe341;
-
-    font-size: 34px;
-}
-
-.bank-hub-label {
-    color: #8a7400;
-
-    font-size: 10px;
-    font-weight: 900;
-}
-
-.bank-hub-header h2 {
-    font-size: 29px;
-}
-
-.bank-hub-description {
-    margin-bottom: 17px;
-
-    color: #555;
-
-    line-height: 1.45;
-}
-
-.bank-products-grid {
-    display: grid;
-
-    grid-template-columns:
-        repeat(2,minmax(0,1fr));
-
-    gap: 9px;
-}
-
-.bank-product-card {
-    min-height: 145px;
-
-    display: flex;
-    flex-direction: column;
-
-    align-items: flex-start;
-
-    gap: 8px;
-
-    padding:
-        14px;
-
-    border:
-        2px solid
-        rgba(0,0,0,0.05);
-
-    border-radius: 15px;
-
-    background:
-        #fafaf7;
-
-    text-align: left;
-
-    cursor: pointer;
-}
-
-.bank-product-card:hover {
-    border-color:
-        #e2bd00;
-
-    background:
-        #fff9d0;
-}
-
-.bank-product-icon {
-    font-size: 31px;
-}
-
-.bank-product-text {
-    display: flex;
-    flex-direction: column;
-
-    gap: 4px;
-}
-
-.bank-product-text strong {
-    font-size: 14px;
-}
-
-.bank-product-text small {
-    color: #666;
-
-    font-size: 10px;
-
-    line-height: 1.35;
-}
-
-.bank-product-status {
-    margin-top: auto;
-
-    color: #8a7400;
-
-    font-size: 9px;
-    font-weight: 900;
-}
-
-.bank-product-coming {
-    opacity: 0.82;
-}
-
-.bank-hub-note {
-    margin-top: 15px;
-
-    padding: 12px;
-
-    border-radius: 12px;
-
-    background:
-        #fff6c4;
-
-    color: #665600;
-
-    font-size: 11px;
-
-    line-height: 1.4;
-}
-
-
-/* =========================================================
-   57. ОКРЕМИЙ ПРОДУКТ БАНКУ
-========================================================= */
-
-.bank-product-popup {
-    text-align: center;
-}
-
-.bank-product-popup-icon {
-    margin-bottom: 8px;
-
-    font-size: 56px;
-}
-
-.bank-product-popup h2 {
-    margin-bottom: 8px;
-
-    font-size: 28px;
-}
-
-.bank-product-popup > p {
-    margin-bottom: 15px;
-
-    color: #555;
-
-    line-height: 1.45;
-}
-
-.bank-product-development-note {
-    margin-bottom: 17px;
-
-    padding: 14px;
-
-    border-radius: 13px;
-
-    background:
-        #fff6c4;
-
-    color: #625400;
-
-    line-height: 1.45;
-}
-
-
-/* =========================================================
-   58. ПЕРЕХІД
-========================================================= */
-
-.transition-card .main-game-btn {
-    margin-top: 5px;
-}
-
-
-/* =========================================================
-   59. НОУТБУК 1366–1450
-
-   ОСНОВНИЙ РОЗМІР,
-   ПІД ЯКИЙ ЗАРАЗ РОБИМО ГРУ.
-========================================================= */
-
-@media (max-width: 1450px) {
-
-    .main-board-screen {
-        grid-template-columns:
-            minmax(0,1fr)
-            225px;
-
-        gap: 10px;
-
-        padding: 10px;
-    }
-
-
-    .rectangle-game-board,
-    .expanded-game-board {
-        height:
-            calc(100vh - 20px);
-    }
-
-
-    .game-work-panel {
-        height:
-            calc(100vh - 20px);
-
-        padding:
-            11px 10px;
-
-        gap: 7px;
-    }
-
-
-    .outer-rectangle-board {
-        top: 6%;
-
-        width: 89%;
-        height: 64%;
-    }
-
-
-    .inner-rectangle-board {
-        top: 23%;
-
-        width: 54%;
-        height: 34%;
-    }
-
-
-    .board-cell {
-        width: 39px;
-        height: 39px;
-    }
-
-
-    .special-board-cell {
-        width: 45px;
-        height: 45px;
-    }
-
-
-    .start-board-cell,
-    .transition-board-cell {
-        width: 53px;
-        height: 53px;
-    }
-
-
-    .cell-icon {
-        font-size: 20px;
-    }
-
-
-    .special-board-cell .cell-icon {
-        font-size: 23px;
-    }
-
-
-    .player-piece {
-        width: 67px;
-        height: 67px;
-    }
-
-
-    .ai-piece {
-        width: 54px;
-        height: 54px;
-    }
-
-
-    .board-center-brand {
-        top: 41%;
-
-        width: 235px;
-        height: 160px;
-    }
-
-
-    .player-bottom-hud {
-        left: 1.5%;
-        right: 1.5%;
-
-        bottom: 8px;
-
-        min-height: 80px;
-
-        grid-template-columns:
-            205px
-            minmax(320px,1fr)
-            185px
-            170px;
-
-        gap: 6px;
-
-        padding: 7px;
-    }
-
-
-    .hud-token-image {
-        width: 54px;
-        height: 54px;
-    }
-
-
-    .player-career-hud {
-        grid-template-columns:
-            55px
-            minmax(0,1fr);
-    }
-
-
-    .hud-player-name {
-        font-size: 13px;
-    }
-
-
-    .hud-player-profession {
-        font-size: 10px;
-    }
-
-
-    .hud-stat-icon {
-        font-size: 19px;
-    }
-
-
-    .hud-stat-item strong {
-        font-size: 11px;
-    }
-
-
-    .hud-feature-icon {
-        font-size: 25px;
-    }
-
-
-    .hud-feature-button strong {
-        font-size: 9px;
-    }
-
-
-    .dice-title {
-        font-size: 16px;
-    }
-
-
-    .dice {
-        width: 64px;
-        height: 64px;
-
-        font-size: 47px;
-    }
-
-
-    .game-work-panel .main-game-btn {
-        padding:
-            9px 6px;
-
-        font-size: 10px;
-    }
-
-
-    .dice-message {
-        padding:
-            7px 8px;
-
-        font-size: 9px;
-    }
-
-
-    .current-card-panel {
-        min-height: 205px;
-    }
-
-
-    .raifik-board-message {
-        min-height: 205px;
-
-        grid-template-columns:
-            65px
-            minmax(0,1fr);
-
-        padding:
-            9px 7px;
-    }
-
-
-    .raifik-board-message img {
-        width: 62px;
-        height: 105px;
-    }
-
-
-    .raifik-board-message strong {
-        font-size: 12px;
-    }
-
-
-    .raifik-board-message p {
-        font-size: 9px;
-    }
-
-
-    .mini-opponent-button {
-        padding:
-            5px 6px;
-    }
-
-
-    .mini-opponent-button img {
-        width: 31px;
-        height: 31px;
-    }
-
-
-    .work-panel-button {
-        min-height: 32px;
-
-        padding:
-            6px 7px;
-
-        font-size: 9px;
-    }
-
-}
-
-
-/* =========================================================
-   60. МЕНШІ НОУТБУКИ
-
-   ГРА РОЗРАХОВАНА НА ПК,
-   але не даємо їй вилізти за екран.
-========================================================= */
-
-@media (max-width: 1200px) {
-
-    .main-board-screen {
-        grid-template-columns:
-            minmax(0,1fr)
-            205px;
-    }
-
-
-    .outer-rectangle-board {
-        width: 86%;
-        height: 61%;
-    }
-
-
-    .inner-rectangle-board {
-        width: 51%;
-        height: 32%;
-    }
-
-
-    .board-cell {
-        width: 35px;
-        height: 35px;
-    }
-
-
-    .special-board-cell {
-        width: 40px;
-        height: 40px;
-    }
-
-
-    .start-board-cell,
-    .transition-board-cell {
-        width: 47px;
-        height: 47px;
-    }
-
-
-    .cell-icon {
-        font-size: 17px;
-    }
-
-
-    .player-piece {
-        width: 59px;
-        height: 59px;
-    }
-
-
-    .ai-piece {
-        width: 48px;
-        height: 48px;
-    }
-
-
-    .board-center-brand {
-        width: 195px;
-        height: 135px;
-    }
-
-
-    .player-bottom-hud {
-        grid-template-columns:
-            180px
-            minmax(285px,1fr)
-            160px
-            150px;
-    }
-
-
-    .hud-player-stats {
-        gap: 4px;
-    }
-
-
-    .hud-stat-item {
-        padding:
-            5px 4px;
-    }
-
-}
-
-/* =========================================================
-   FINAL — ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
-   CV ЖИТТЯ
-========================================================= */
-
-
-/* =========================================================
-   1. ОСНОВНИЙ ЕКРАН
-========================================================= */
-
-.main-board-screen {
-    position: relative !important;
-
-    width: 100vw !important;
-    height: 100vh !important;
-
-    display: grid !important;
-
-    grid-template-columns:
-        minmax(0, 1fr)
-        245px !important;
-
-    gap: 12px !important;
-
-    padding: 10px !important;
-
-    background:
-        linear-gradient(
-            rgba(255,255,255,0.02),
-            rgba(255,255,255,0.02)
-        ),
-        url("assets/bg-game.png")
-        center center / cover
-        no-repeat !important;
-
-    overflow: hidden !important;
-}
-
-
-/* =========================================================
-   2. ЗОНА ПОЛЯ
-========================================================= */
-
-.main-board-screen .rectangle-game-board {
-    position: relative !important;
-
-    width: 100% !important;
-    height: calc(100vh - 20px) !important;
-
-    min-width: 0 !important;
-    min-height: 0 !important;
-
-    overflow: hidden !important;
-
-    border-radius: 22px !important;
-
-    background: transparent !important;
-}
-
-
-/* =========================================================
-   3. МАРШРУТИ
-========================================================= */
-
-.main-board-screen .rectangle-board {
-    position: absolute !important;
-
-    left: 50% !important;
-    top: 44% !important;
-
-    transform:
-        translate(-50%, -50%) !important;
-
-    pointer-events: none !important;
-}
-
-
-/* =========================================================
-   4. ЗОВНІШНІЙ ШЛЯХ — 56
-========================================================= */
-
-.main-board-screen .outer-rectangle-board {
-    width: 88% !important;
-
-    height:
-        min(
-            58vh,
-            520px
-        ) !important;
-
-    z-index: 5 !important;
-}
-
-
-/* =========================================================
-   5. ВНУТРІШНІЙ ШЛЯХ — 28
-========================================================= */
-
-.main-board-screen .inner-rectangle-board {
-    width: 55% !important;
-
-    height:
-        min(
-            31vh,
-            280px
-        ) !important;
-
-    z-index: 8 !important;
-}
-
-
-/* =========================================================
-   6. КОМІРКИ
-========================================================= */
-
-.main-board-screen .board-cell {
-    position: absolute !important;
-
-    width: 38px !important;
-    height: 38px !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    align-items: center !important;
-    justify-content: center !important;
-
-    transform:
-        translate(-50%, -50%) !important;
-
-    border:
-        1.5px solid
-        rgba(140,112,0,0.32) !important;
-
-    border-radius: 9px !important;
-
-    background:
-        rgba(255,255,255,0.96) !important;
-
-    box-shadow:
-        0 4px 10px
-        rgba(0,0,0,0.17) !important;
-
-    cursor: pointer !important;
-
-    pointer-events: auto !important;
-
-    z-index: 15 !important;
-}
-
-
-/* =========================================================
-   7. HOVER
-========================================================= */
-
-.main-board-screen .board-cell:hover {
-    z-index: 70 !important;
-
-    transform:
-        translate(-50%, -50%)
-        scale(1.10) !important;
-
-    box-shadow:
-        0 7px 16px
-        rgba(0,0,0,0.25) !important;
-}
-
-
-/* =========================================================
-   8. НОМЕР
-========================================================= */
-
-.main-board-screen .cell-number {
-    position: absolute !important;
-
-    top: 3px !important;
-    left: 4px !important;
-
-    font-size: 7px !important;
-    font-weight: 900 !important;
-
-    color: #555 !important;
-}
-
-
-/* =========================================================
-   9. ІКОНКА
-========================================================= */
-
-.main-board-screen .cell-icon {
-    margin-top: 3px !important;
-
-    font-size: 18px !important;
-
-    line-height: 1 !important;
-}
-
-
-/* =========================================================
-   10. СПЕЦІАЛЬНІ ПОЛЯ
-========================================================= */
-
-.main-board-screen .special-board-cell {
-    width: 43px !important;
-    height: 43px !important;
-
-    background:
-        linear-gradient(
-            145deg,
-            #fff16d,
-            #efc800
-        ) !important;
-
-    border:
-        2px solid
-        rgba(115,91,0,0.45) !important;
-
-    box-shadow:
-        0 5px 12px
-        rgba(0,0,0,0.19) !important;
-}
-
-
-.main-board-screen
-.special-board-cell
-.cell-icon {
-    font-size: 20px !important;
-}
-
-
-/* =========================================================
-   11. START
-========================================================= */
-
-.main-board-screen .start-board-cell {
-    width: 51px !important;
-    height: 51px !important;
 
     background:
         linear-gradient(
             145deg,
             #ffed42,
-            #e8b900
-        ) !important;
+            #e5b800
+        );
 
-    border:
-        3px solid
-        rgba(89,70,0,0.50) !important;
+    box-shadow:
+        0 0 0 4px
+        rgba(255,222,0,0.20),
 
-    z-index: 30 !important;
+        0 8px 20px
+        rgba(0,0,0,0.27);
+
+    z-index: 30;
+}
+
+.start-board-cell .cell-icon {
+    font-size: 29px;
 }
 
 
 /* =========================================================
-   12. ПЕРЕХІД
+   28. ПЕРЕХІД
 ========================================================= */
 
-.main-board-screen .transition-board-cell {
-    width: 51px !important;
-    height: 51px !important;
+.transition-board-cell {
+    width: 64px;
+    height: 64px;
+
+    border:
+        3px solid
+        rgba(82,65,0,0.55);
+
+    border-radius: 14px;
 
     background:
         linear-gradient(
             145deg,
-            #fff17c,
+            #fff082,
             #e8bc00
-        ) !important;
-
-    border:
-        3px solid
-        rgba(89,70,0,0.50) !important;
-
-    z-index: 30 !important;
-}
-
-
-/* =========================================================
-   13. START / ПЕРЕХІД — ПІДПИС
-========================================================= */
-
-.main-board-screen .cell-special-label {
-    position: absolute !important;
-
-    left: 50% !important;
-    bottom: -14px !important;
-
-    transform:
-        translateX(-50%) !important;
-
-    padding:
-        2px 6px !important;
-
-    border-radius: 999px !important;
-
-    background:
-        rgba(30,30,30,0.92) !important;
-
-    color: white !important;
-
-    white-space: nowrap !important;
-
-    font-size: 6px !important;
-    font-weight: 900 !important;
-}
-
-
-/* =========================================================
-   14. ЦІЛЬ ПІСЛЯ КУБИКА
-========================================================= */
-
-.main-board-screen .target-cell {
-    z-index: 100 !important;
-
-    background:
-        #fff02e !important;
+        );
 
     box-shadow:
         0 0 0 4px
-        rgba(255,213,0,0.40),
+        rgba(255,222,0,0.17),
 
-        0 0 24px
-        rgba(255,220,0,0.95) !important;
+        0 8px 20px
+        rgba(0,0,0,0.25);
 
-    animation:
-        finalTargetPulse
-        0.8s
-        infinite
-        alternate !important;
+    z-index: 30;
+}
+
+.transition-board-cell .cell-icon {
+    font-size: 29px;
 }
 
 
-@keyframes finalTargetPulse {
+/* =========================================================
+   29. ПІДПИС START / ПЕРЕХІД
+========================================================= */
+
+.cell-special-label {
+    position: absolute;
+
+    left: 50%;
+    bottom: -17px;
+
+    transform:
+        translateX(-50%);
+
+    padding: 3px 7px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(25,25,25,0.93);
+
+    color: white;
+
+    white-space: nowrap;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    letter-spacing: 0.2px;
+}
+
+
+/* =========================================================
+   30. ПІДСВІЧЕНА КОМІРКА
+========================================================= */
+
+.target-cell {
+    z-index: 100;
+
+    background:
+        #fff02e;
+
+    box-shadow:
+        0 0 0 5px
+        rgba(255,213,0,0.42),
+
+        0 0 30px
+        rgba(255,220,0,1);
+
+    animation:
+        targetCellPulse
+        0.8s
+        infinite
+        alternate;
+}
+
+@keyframes targetCellPulse {
 
     from {
-
         transform:
             translate(-50%, -50%)
             scale(1);
-
     }
 
     to {
-
         transform:
             translate(-50%, -50%)
-            scale(1.15);
-
+            scale(1.13);
     }
 
 }
 
 
 /* =========================================================
-   15. CV ЖИТТЯ — ЛІВИЙ ВЕРХНІЙ КУТОК
+   31. ЛОГО ВСЕРЕДИНІ МАЛОГО ПОЛЯ
+
+   Більше НЕ у лівому верхньому кутку.
+   Воно стоїть у центрі внутрішнього прямокутника
+   і не перекриває комірки.
 ========================================================= */
 
-.board-corner-brand {
-    position: absolute !important;
+.board-corner-brand,
+.board-center-brand {
+    position: absolute;
 
-    left: 22px !important;
-    top: 18px !important;
+    left: 50%;
+    top: 43%;
 
-    width: 155px !important;
+    width: 150px;
+    height: 105px;
 
-    z-index: 4 !important;
+    display: flex;
 
-    pointer-events: none !important;
+    align-items: center;
+    justify-content: center;
+
+    transform:
+        translate(-50%, -50%);
+
+    z-index: 3;
+
+    pointer-events: none;
 }
 
+.board-corner-logo,
+.board-center-logo {
+    display: block;
 
-.board-corner-logo {
-    display: block !important;
+    width: 100%;
+    max-height: 100%;
 
-    width: 155px !important;
-    height: auto !important;
-
-    object-fit: contain !important;
+    object-fit: contain;
 
     filter:
         drop-shadow(
             0 6px 12px
             rgba(0,0,0,0.18)
-        ) !important;
+        );
 }
 
 
 /* =========================================================
-   16. ФІШКИ
+   32. ФІШКИ
+
+   ВАЖЛИВО:
+   фішка НЕ лежить прямо на іконці комірки.
+
+   Вона піднімається над / поряд із коміркою,
+   щоб ми завжди бачили:
+   - номер;
+   - іконку;
+   - тип поля.
 ========================================================= */
 
-.main-board-screen .board-piece {
-    position: absolute !important;
+.board-piece {
+    position: absolute;
 
-    left: 50% !important;
-    top: 50% !important;
+    left: 50%;
+    top: 50%;
 
-    object-fit: contain !important;
+    object-fit: contain;
 
-    pointer-events: auto !important;
+    pointer-events: auto;
 
-    z-index: 80 !important;
-}
-
-
-.main-board-screen .player-piece {
-    width: 62px !important;
-    height: 62px !important;
-
-    transform:
-        translate(-50%, -76%) !important;
-
-    cursor: grab !important;
-
-    z-index: 100 !important;
+    z-index: 80;
 
     filter:
         drop-shadow(
-            0 0 2px
-            white
-        )
-        drop-shadow(
-            0 6px 7px
-            rgba(0,0,0,0.45)
-        ) !important;
+            0 5px 7px
+            rgba(0,0,0,0.40)
+        );
 }
 
 
-.main-board-screen .ai-piece {
-    width: 49px !important;
-    height: 49px !important;
+/* ГОЛОВНИЙ ГРАВЕЦЬ */
+
+.player-piece {
+    width: 66px;
+    height: 66px;
+
+    left: 50%;
+    top: -2px;
 
     transform:
-        translate(-50%, -67%) !important;
+        translate(-50%, -70%);
 
-    z-index: 90 !important;
+    cursor: grab;
+
+    z-index: 100;
+
+    filter:
+        drop-shadow(
+            0 0 3px
+            rgba(255,255,255,0.95)
+        )
+        drop-shadow(
+            0 6px 8px
+            rgba(0,0,0,0.52)
+        );
+}
+
+.player-piece:active {
+    cursor: grabbing;
+}
+
+
+/* AI */
+
+.ai-piece {
+    width: 53px;
+    height: 53px;
+
+    left: 100%;
+    top: 50%;
+
+    transform:
+        translate(4px, -50%);
+
+    z-index: 90;
 }
 
 
 /* =========================================================
-   17. НИЖНІЙ HUD
+   33. КІЛЬКА ФІШОК НА ОДНІЙ КОМІРЦІ
+
+   Кожна займає своє місце НАВКОЛО комірки,
+   а не поверх самої іконки.
 ========================================================= */
 
-.main-board-screen .player-bottom-hud {
-    position: absolute !important;
+.board-cell .board-piece:nth-of-type(1) {
+    --piece-slot: 1;
+}
 
-    left: 12px !important;
-    right: 12px !important;
-    bottom: 10px !important;
+.board-cell .board-piece:nth-of-type(2) {
+    left: 0%;
+    top: 50%;
 
-    min-height: 82px !important;
+    transform:
+        translate(-108%, -50%);
+}
 
-    display: grid !important;
+.board-cell .board-piece:nth-of-type(3) {
+    left: 100%;
+    top: 50%;
 
-    grid-template-columns:
-        220px
-        minmax(300px, 1fr)
-        185px
-        170px !important;
+    transform:
+        translate(8px, -50%);
+}
 
-    gap: 7px !important;
+.board-cell .board-piece:nth-of-type(4) {
+    left: 50%;
+    top: 100%;
 
-    padding: 7px !important;
-
-    border-radius: 18px !important;
-
-    background:
-        rgba(255,255,255,0.94) !important;
-
-    backdrop-filter:
-        blur(10px) !important;
-
-    -webkit-backdrop-filter:
-        blur(10px) !important;
-
-    box-shadow:
-        0 10px 28px
-        rgba(0,0,0,0.18) !important;
-
-    z-index: 150 !important;
+    transform:
+        translate(-50%, 5px);
 }
 
 
 /* =========================================================
-   18. ПРОФЕСІЯ
+   34. ДЛЯ ГРАВЦЯ ЗБЕРІГАЄМО ВЕРХНЮ ПОЗИЦІЮ,
+   НАВІТЬ ЯКЩО В КОМІРЦІ ВЖЕ Є AI
 ========================================================= */
 
-.main-board-screen .player-career-hud {
-    min-width: 0 !important;
+.board-cell .player-piece {
+    left: 50%;
 
-    display: grid !important;
+    top: -2px;
 
-    grid-template-columns:
-        57px
-        minmax(0,1fr) !important;
-
-    align-items: center !important;
-
-    gap: 7px !important;
-
-    padding:
-        7px 8px !important;
-
-    border: none !important;
-
-    border-radius: 13px !important;
-
-    background:
-        linear-gradient(
-            135deg,
-            #ffe640,
-            #efc400
-        ) !important;
-
-    cursor: pointer !important;
-
-    text-align: left !important;
-}
-
-
-.main-board-screen .hud-token-image {
-    width: 55px !important;
-    height: 55px !important;
-
-    object-fit: contain !important;
-}
-
-
-.main-board-screen .hud-player-name {
-    font-size: 13px !important;
-    font-weight: 900 !important;
-}
-
-
-.main-board-screen .hud-player-profession {
-    margin-top: 2px !important;
-
-    font-size: 10px !important;
-    font-weight: 800 !important;
-
-    line-height: 1.15 !important;
-}
-
-
-.main-board-screen
-.hud-career-text small {
-    margin-top: 3px !important;
-
-    font-size: 8px !important;
-
-    color: #695700 !important;
+    transform:
+        translate(-50%, -70%);
 }
 
 
 /* =========================================================
-   19. ПОКАЗНИКИ
+   КІНЕЦЬ ЧАСТИНИ 1
 ========================================================= */
 
-.main-board-screen .hud-player-stats {
-    display: grid !important;
+/* =========================================================
+   CV ЖИТТЯ — ЛЮБИ. МРІЙ. ДІЙ.
+   STYLE.CSS
 
-    grid-template-columns:
-        repeat(4, minmax(0,1fr)) !important;
+   ЧАСТИНА 2
 
-    gap: 5px !important;
-}
+   - нижній HUD
+   - показники гравця
+   - кар'єра
+   - мрія
+   - банк
+   - права панель
+   - суперники
+   - кубик
+   - Райфик
+   - журнал ходів
+   - кнопка "Поля гри"
+   - кнопка "Завершити гру"
+   - загальна модалка
+   - інформація про поля
+========================================================= */
 
 
-.main-board-screen .hud-stat-item {
-    min-width: 0 !important;
+/* =========================================================
+   35. НИЖНІЙ HUD ГРАВЦЯ
+========================================================= */
 
-    display: flex !important;
+.player-game-hud {
+    position: absolute;
 
-    align-items: center !important;
-    justify-content: center !important;
+    left: 50%;
+    bottom: 12px;
 
-    gap: 5px !important;
+    transform: translateX(-50%);
 
-    padding:
-        6px 5px !important;
+    width: min(94%, 1120px);
 
-    border-radius: 12px !important;
+    min-height: 82px;
 
-    background:
-        rgba(250,250,247,0.94) !important;
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 10px;
+
+    padding: 10px 14px;
 
     border:
         1px solid
-        rgba(0,0,0,0.05) !important;
-}
+        rgba(255,255,255,0.55);
 
+    border-radius: 22px;
 
-.main-board-screen .hud-stat-icon {
-    font-size: 19px !important;
-}
+    background:
+        rgba(255,255,255,0.94);
 
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 
-.main-board-screen .hud-stat-item small {
-    display: block !important;
+    box-shadow:
+        0 12px 32px
+        rgba(0,0,0,0.20);
 
-    color: #777 !important;
-
-    font-size: 6px !important;
-    font-weight: 900 !important;
-}
-
-
-.main-board-screen .hud-stat-item strong {
-    display: block !important;
-
-    margin-top: 2px !important;
-
-    font-size: 11px !important;
-    font-weight: 900 !important;
-
-    white-space: nowrap !important;
+    z-index: 500;
 }
 
 
 /* =========================================================
-   20. МРІЯ + БАНК
+   36. ПРОФІЛЬ У HUD
 ========================================================= */
 
-.main-board-screen .hud-feature-button {
-    min-width: 0 !important;
+.player-hud-profile {
+    min-width: 160px;
 
-    display: flex !important;
+    display: flex;
 
-    align-items: center !important;
+    align-items: center;
 
-    gap: 8px !important;
+    gap: 10px;
 
-    padding:
-        7px 9px !important;
+    padding-right: 12px;
 
-    border-radius: 13px !important;
+    border-right:
+        1px solid
+        rgba(0,0,0,0.09);
+}
 
-    cursor: pointer !important;
+.player-hud-token {
+    width: 54px;
+    height: 54px;
 
-    text-align: left !important;
+    flex: 0 0 auto;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 4px 5px
+            rgba(0,0,0,0.25)
+        );
+}
+
+.player-hud-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+.player-hud-name {
+    max-width: 110px;
+
+    overflow: hidden;
+
+    color: #161616;
+
+    font-size: 15px;
+    font-weight: 900;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.player-hud-profession {
+    max-width: 125px;
+
+    overflow: hidden;
+
+    color: #666;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
-.main-board-screen .hud-dream-button {
-    border: none !important;
+/* =========================================================
+   37. ПОКАЗНИКИ
+========================================================= */
+
+.player-stats-hud {
+    display: flex;
+
+    align-items: stretch;
+
+    gap: 7px;
+}
+
+.player-stat-box {
+    min-width: 72px;
+    min-height: 58px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+
+    padding: 7px 9px;
+
+    border-radius: 14px;
+
+    background:
+        rgba(245,245,245,0.96);
+
+    border:
+        1px solid
+        rgba(0,0,0,0.05);
+}
+
+.player-stat-icon {
+    font-size: 18px;
+
+    line-height: 1;
+}
+
+.player-stat-label {
+    color: #777;
+
+    font-size: 9px;
+    font-weight: 800;
+
+    text-transform: uppercase;
+}
+
+.player-stat-value {
+    color: #171717;
+
+    font-size: 14px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   38. КЛІКАБЕЛЬНІ HUD-КНОПКИ
+   КАР'ЄРА / МРІЯ / БАНК
+========================================================= */
+
+.hud-action-button {
+    min-width: 105px;
+    min-height: 60px;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    padding: 7px 10px;
+
+    border:
+        1px solid
+        rgba(0,0,0,0.07);
+
+    border-radius: 15px;
+
+    background:
+        rgba(255,255,255,0.98);
+
+    color: #1a1a1a;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 4px 11px
+        rgba(0,0,0,0.07);
+
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        background 0.16s ease;
+}
+
+.hud-action-button:hover {
+    transform: translateY(-2px);
+
+    background: #fff8c9;
+
+    box-shadow:
+        0 8px 17px
+        rgba(0,0,0,0.12);
+}
+
+.hud-action-icon {
+    font-size: 21px;
+}
+
+.hud-action-title {
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.hud-action-value {
+    max-width: 100px;
+
+    overflow: hidden;
+
+    color: #666;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+
+/* =========================================================
+   39. БАНК У HUD — ГОЛУБИЙ
+========================================================= */
+
+#bankHudButton,
+.bank-hud-button {
+    border:
+        1px solid
+        rgba(58,133,191,0.25);
 
     background:
         linear-gradient(
             145deg,
-            #fff5a8,
-            #ffe04b
-        ) !important;
+            #e8f7ff,
+            #c8ebff
+        );
 }
 
-
-.main-board-screen .hud-bank-button {
-    border:
-        2px solid
-        rgba(215,177,0,0.46) !important;
-
+#bankHudButton:hover,
+.bank-hud-button:hover {
     background:
-        rgba(255,255,255,0.96) !important;
-}
-
-
-.main-board-screen .hud-feature-icon {
-    flex: 0 0 auto !important;
-
-    font-size: 27px !important;
-}
-
-
-.main-board-screen
-.hud-feature-button small {
-    display: block !important;
-
-    color: #777 !important;
-
-    font-size: 7px !important;
-    font-weight: 900 !important;
-}
-
-
-.main-board-screen
-.hud-feature-button strong {
-    display: block !important;
-
-    margin-top: 2px !important;
-
-    font-size: 9px !important;
-    font-weight: 900 !important;
-
-    line-height: 1.18 !important;
-}
-
-
-/* =========================================================
-   21. ПРАВА ПАНЕЛЬ
-========================================================= */
-
-.main-board-screen .game-work-panel {
-    position: relative !important;
-
-    width: 100% !important;
-    height: calc(100vh - 20px) !important;
-
-    display: flex !important;
-    flex-direction: column !important;
-
-    gap: 8px !important;
-
-    padding:
-        11px 10px !important;
-
-    border-radius: 20px !important;
-
-    background:
-        rgba(255,255,255,0.94) !important;
-
-    backdrop-filter:
-        blur(10px) !important;
-
-    -webkit-backdrop-filter:
-        blur(10px) !important;
+        linear-gradient(
+            145deg,
+            #d9f3ff,
+            #aee1ff
+        );
 
     box-shadow:
-        0 12px 30px
-        rgba(0,0,0,0.17) !important;
-
-    overflow-y: auto !important;
-
-    z-index: 200 !important;
+        0 8px 19px
+        rgba(45,131,190,0.20);
 }
 
 
 /* =========================================================
-   22. КУБИК
+   40. ПРАВА ПАНЕЛЬ
 ========================================================= */
 
-.main-board-screen .dice-section {
-    display: flex !important;
+.game-right-panel {
+    position: relative;
 
-    flex-direction: column !important;
+    width: 250px;
+    height: calc(100vh - 20px);
 
-    gap: 6px !important;
+    display: flex;
+    flex-direction: column;
+
+    gap: 9px;
+
+    min-height: 0;
+
+    z-index: 600;
 }
 
 
-.main-board-screen .dice-title {
-    text-align: center !important;
+/* =========================================================
+   41. БЛОК СУПЕРНИКІВ
+========================================================= */
 
-    font-size: 15px !important;
-    font-weight: 900 !important;
+.opponents-panel {
+    flex: 0 0 auto;
+
+    padding: 11px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,0.94);
+
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    box-shadow:
+        0 9px 24px
+        rgba(0,0,0,0.16);
+}
+
+.opponents-panel-title {
+    margin-bottom: 8px;
+
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.7px;
+
+    text-transform: uppercase;
+}
+
+.mini-opponents-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap: 7px;
+}
+
+.mini-opponent-button {
+    min-width: 0;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding: 6px;
+
+    border:
+        1px solid
+        rgba(0,0,0,0.05);
+
+    border-radius: 11px;
+
+    background:
+        rgba(247,247,247,0.96);
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        background 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.mini-opponent-button:hover {
+    transform: translateY(-1px);
+
+    background: #fff6bc;
+
+    box-shadow:
+        0 5px 12px
+        rgba(0,0,0,0.08);
+}
+
+.mini-opponent-token {
+    width: 34px;
+    height: 34px;
+
+    flex: 0 0 auto;
+
+    object-fit: contain;
+}
+
+.mini-opponent-info {
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: flex-start;
+
+    gap: 1px;
+}
+
+.mini-opponent-name {
+    max-width: 68px;
+
+    overflow: hidden;
+
+    color: #222;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.mini-opponent-profession {
+    max-width: 68px;
+
+    overflow: hidden;
+
+    color: #777;
+
+    font-size: 8px;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 
-.main-board-screen .dice {
-    width: 62px !important;
-    height: 62px !important;
+/* =========================================================
+   42. КУБИК
+========================================================= */
+
+.dice-panel {
+    flex: 0 0 auto;
+
+    padding: 12px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,0.96);
+
+    box-shadow:
+        0 9px 24px
+        rgba(0,0,0,0.16);
+
+    text-align: center;
+}
+
+#diceTitle,
+.dice-title {
+    margin-bottom: 4px;
+
+    color: #222;
+
+    font-size: 16px;
+    font-weight: 900;
+}
+
+#dice,
+.dice {
+    min-height: 58px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin: 3px 0 4px;
+
+    color: #181818;
+
+    font-size: 54px;
+
+    line-height: 1;
+}
+
+#diceMessage,
+.dice-message {
+    min-height: 31px;
+
+    margin-bottom: 7px;
+
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+#rollDiceButton {
+    width: 100%;
+    min-width: 0;
+
+    padding: 10px 12px;
+
+    border-radius: 13px;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   43. ПОТОЧНА КАРТКА / РАЙФИК
+========================================================= */
+
+.current-card-panel {
+    flex: 0 0 auto;
+
+    min-height: 105px;
+    max-height: 185px;
+
+    padding: 10px;
+
+    overflow-y: auto;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,0.96);
+
+    box-shadow:
+        0 9px 24px
+        rgba(0,0,0,0.16);
+}
+
+.raifik-board-message {
+    min-height: 82px;
+
+    display: grid;
+
+    grid-template-columns:
+        65px
+        minmax(0,1fr);
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+.raifik-board-message img {
+    width: 65px;
+    height: 76px;
+
+    object-fit: contain;
+
+    align-self: end;
+}
+
+.raifik-board-message strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.raifik-board-message p {
+    color: #444;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   44. ЖУРНАЛ ХОДІВ
+========================================================= */
+
+.game-log-panel {
+    flex: 1 1 auto;
+
+    min-height: 90px;
+
+    display: flex;
+    flex-direction: column;
+
+    padding: 10px;
+
+    border-radius: 18px;
+
+    background:
+        rgba(255,255,255,0.94);
+
+    box-shadow:
+        0 9px 24px
+        rgba(0,0,0,0.15);
+
+    overflow: hidden;
+}
+
+.game-log-title {
+    flex: 0 0 auto;
+
+    margin-bottom: 6px;
+
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.5px;
+
+    text-transform: uppercase;
+}
+
+#gameLog,
+.game-log {
+    flex: 1 1 auto;
+
+    min-height: 0;
+
+    overflow-y: auto;
+
+    padding-right: 3px;
+}
+
+.game-log-item {
+    padding: 6px 7px;
+
+    margin-bottom: 4px;
+
+    border-radius: 9px;
+
+    background:
+        rgba(245,245,245,0.95);
+
+    color: #555;
+
+    font-size: 9px;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+.game-log-item:first-child {
+    background: #fff6bd;
+
+    color: #292929;
+}
+
+
+/* =========================================================
+   45. СКРОЛ У ПРАВІЙ ПАНЕЛІ
+========================================================= */
+
+#gameLog::-webkit-scrollbar,
+.current-card-panel::-webkit-scrollbar {
+    width: 5px;
+}
+
+#gameLog::-webkit-scrollbar-thumb,
+.current-card-panel::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(0,0,0,0.20);
+}
+
+
+/* =========================================================
+   46. НИЖНІ КНОПКИ ПРАВОЇ ПАНЕЛІ
+========================================================= */
+
+.right-panel-actions {
+    flex: 0 0 auto;
+
+    display: grid;
+
+    grid-template-columns:
+        1fr;
+
+    gap: 6px;
+}
+
+.cell-info-button,
+#cellInfoButton,
+.end-game-button,
+#endGameButton {
+    width: 100%;
+
+    min-height: 36px;
+
+    padding: 8px 10px;
+
+    border-radius: 11px;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+
+/* =========================================================
+   47. ПОЛЯ ГРИ
+========================================================= */
+
+.cell-info-button,
+#cellInfoButton {
+    border:
+        1px solid
+        rgba(0,0,0,0.08);
+
+    background:
+        rgba(255,255,255,0.96);
+
+    color: #222;
+}
+
+.cell-info-button:hover,
+#cellInfoButton:hover {
+    transform: translateY(-1px);
+
+    background: #fff5b6;
+}
+
+
+/* =========================================================
+   48. ЗАВЕРШИТИ ГРУ
+========================================================= */
+
+.end-game-button,
+#endGameButton {
+    border:
+        1px solid
+        rgba(180,50,40,0.16);
+
+    background:
+        #fff0ee;
+
+    color: #9d2b22;
+}
+
+.end-game-button:hover,
+#endGameButton:hover {
+    transform: translateY(-1px);
+
+    background: #ffe1dd;
+
+    box-shadow:
+        0 6px 13px
+        rgba(160,45,35,0.12);
+}
+
+
+/* =========================================================
+   49. ЗАГАЛЬНЕ МОДАЛЬНЕ ВІКНО
+
+   ВАЖЛИВО:
+   тепер інформація відкривається ПО ЦЕНТРУ,
+   а не в правій панелі.
+========================================================= */
+
+.game-info-modal {
+    position: fixed;
+
+    inset: 0;
+
+    z-index: 10000;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    padding: 30px;
+
+    background:
+        rgba(16,20,25,0.62);
+
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.game-info-modal[hidden] {
+    display: none !important;
+}
+
+.game-info-modal-card {
+    position: relative;
+
+    width: min(760px,92vw);
+
+    max-height: 88vh;
+
+    overflow-y: auto;
+
+    padding: 32px;
+
+    border:
+        1px solid
+        rgba(255,255,255,0.55);
+
+    border-radius: 28px;
+
+    background:
+        rgba(255,255,255,0.98);
+
+    box-shadow:
+        0 28px 80px
+        rgba(0,0,0,0.35);
+
+    animation:
+        gameModalAppear
+        0.22s
+        ease-out;
+}
+
+@keyframes gameModalAppear {
+
+    from {
+        opacity: 0;
+
+        transform:
+            translateY(15px)
+            scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+}
+
+.game-info-close {
+    position: absolute;
+
+    top: 13px;
+    right: 15px;
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border: none;
+    border-radius: 50%;
+
+    background:
+        rgba(0,0,0,0.07);
+
+    color: #333;
+
+    font-size: 27px;
+
+    line-height: 1;
+
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition:
+        background 0.15s ease,
+        transform 0.15s ease;
+}
+
+.game-info-close:hover {
+    background:
+        rgba(0,0,0,0.12);
+
+    transform: rotate(4deg);
+}
+
+
+/* =========================================================
+   50. ІНФОРМАЦІЯ ПРО ОДНЕ ПОЛЕ
+========================================================= */
+
+.cell-info-popup {
+    padding: 15px 12px 8px;
+
+    text-align: center;
+}
+
+.cell-info-icon {
+    width: 90px;
+    height: 90px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
 
     margin:
-        0 auto !important;
+        0 auto
+        15px;
 
-    display: flex !important;
-
-    align-items: center !important;
-    justify-content: center !important;
-
-    border-radius: 13px !important;
+    border-radius: 24px;
 
     background:
-        white !important;
-
-    border:
-        2px solid
-        rgba(0,0,0,0.08) !important;
-
-    font-size: 46px !important;
-}
-
-
-.main-board-screen
-.game-work-panel
-.main-game-btn {
-    width: 100% !important;
-
-    min-width: 0 !important;
-
-    padding:
-        9px 6px !important;
-
-    border-radius: 11px !important;
-
-    font-size: 10px !important;
-}
-
-
-.main-board-screen .dice-message {
-    padding:
-        7px 8px !important;
-
-    border-radius: 10px !important;
-
-    background:
-        rgba(255,232,70,0.32) !important;
-
-    color: #333 !important;
-
-    font-size: 9px !important;
-    font-weight: 800 !important;
-
-    line-height: 1.35 !important;
-}
-
-
-/* =========================================================
-   23. РАЙФИК
-========================================================= */
-
-.main-board-screen .current-card-panel {
-    width: 100% !important;
-
-    min-height: 185px !important;
-
-    border-radius: 14px !important;
-
-    background:
-        rgba(250,250,247,0.95) !important;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.05) !important;
-
-    overflow: hidden !important;
-}
-
-
-.main-board-screen .raifik-board-message {
-    min-height: 185px !important;
-
-    display: grid !important;
-
-    grid-template-columns:
-        62px
-        minmax(0,1fr) !important;
-
-    align-items: center !important;
-
-    gap: 7px !important;
-
-    padding:
-        9px 7px !important;
-}
-
-
-.main-board-screen
-.raifik-board-message img {
-    width: 60px !important;
-    height: 105px !important;
-
-    object-fit: contain !important;
-}
-
-
-.main-board-screen
-.raifik-board-message strong {
-    display: block !important;
-
-    margin-bottom: 4px !important;
-
-    font-size: 11px !important;
-    font-weight: 900 !important;
-}
-
-
-.main-board-screen
-.raifik-board-message p {
-    color: #505050 !important;
-
-    font-size: 9px !important;
-
-    line-height: 1.35 !important;
-}
-
-
-/* =========================================================
-   24. ГРАВЦІ
-========================================================= */
-
-.main-board-screen
-.other-players-block h3 {
-    margin-bottom: 5px !important;
-
-    color: #666 !important;
-
-    font-size: 9px !important;
-    font-weight: 900 !important;
-}
-
-
-.main-board-screen
-.mini-opponents-list {
-    gap: 4px !important;
-}
-
-
-.main-board-screen
-.mini-opponent-button {
-    padding:
-        5px 6px !important;
-
-    border-radius: 9px !important;
-}
-
-
-.main-board-screen
-.mini-opponent-button img {
-    width: 31px !important;
-    height: 31px !important;
-}
-
-
-.main-board-screen
-.mini-opponent-button span {
-    font-size: 9px !important;
-}
-
-
-/* =========================================================
-   25. КНОПКА ТИПИ ПОЛІВ
-========================================================= */
-
-.main-board-screen
-.work-panel-actions {
-    margin-top: auto !important;
-}
-
-
-.main-board-screen
-.work-panel-button {
-    width: 100% !important;
-
-    min-height: 34px !important;
-
-    padding:
-        7px 8px !important;
-
-    border:
-        1px solid
-        rgba(0,0,0,0.07) !important;
-
-    border-radius: 9px !important;
-
-    background:
-        rgba(248,248,245,0.96) !important;
-
-    font-size: 9px !important;
-    font-weight: 900 !important;
-
-    cursor: pointer !important;
-}
-
-
-/* =========================================================
-   26. ОБРАНИЙ БАНКІВСЬКИЙ ПРОДУКТ
-========================================================= */
-
-.bank-product-selected {
-    border-color:
-        #e1bb00 !important;
-
-    background:
-        #fff4a9 !important;
+        linear-gradient(
+            145deg,
+            #fff8c5,
+            #ffe55c
+        );
+
+    font-size: 48px;
 
     box-shadow:
-        0 0 0 2px
-        rgba(233,195,0,0.12) !important;
+        0 10px 22px
+        rgba(0,0,0,0.10);
 }
 
+.cell-info-popup h3 {
+    margin-bottom: 9px;
 
-.bank-product-selected
-.bank-product-status {
-    color: #4e7200 !important;
+    color: #222;
+
+    font-size: 27px;
+    font-weight: 900;
 }
 
+.cell-info-popup p {
+    max-width: 520px;
 
-/* =========================================================
-   27. НОУТБУКИ 1366–1450
-========================================================= */
+    margin: 0 auto;
 
-@media (max-width: 1450px) {
+    color: #555;
 
-    .main-board-screen {
+    font-size: 15px;
 
-        grid-template-columns:
-            minmax(0,1fr)
-            220px !important;
-
-        gap: 9px !important;
-
-        padding: 9px !important;
-
-    }
-
-
-    .main-board-screen
-    .rectangle-game-board {
-
-        height:
-            calc(100vh - 18px) !important;
-
-    }
-
-
-    .main-board-screen
-    .game-work-panel {
-
-        height:
-            calc(100vh - 18px) !important;
-
-    }
-
-
-    .main-board-screen
-    .outer-rectangle-board {
-
-        width:
-            87% !important;
-
-        height:
-            min(
-                56vh,
-                455px
-            ) !important;
-
-    }
-
-
-    .main-board-screen
-    .inner-rectangle-board {
-
-        width:
-            54% !important;
-
-        height:
-            min(
-                29vh,
-                235px
-            ) !important;
-
-    }
-
-
-    .main-board-screen
-    .board-cell {
-
-        width: 34px !important;
-        height: 34px !important;
-
-    }
-
-
-    .main-board-screen
-    .special-board-cell {
-
-        width: 39px !important;
-        height: 39px !important;
-
-    }
-
-
-    .main-board-screen
-    .start-board-cell,
-    .main-board-screen
-    .transition-board-cell {
-
-        width: 46px !important;
-        height: 46px !important;
-
-    }
-
-
-    .main-board-screen
-    .cell-icon {
-
-        font-size: 16px !important;
-
-    }
-
-
-    .main-board-screen
-    .player-piece {
-
-        width: 58px !important;
-        height: 58px !important;
-
-    }
-
-
-    .main-board-screen
-    .ai-piece {
-
-        width: 46px !important;
-        height: 46px !important;
-
-    }
-
-
-    .board-corner-brand {
-
-        left: 16px !important;
-        top: 14px !important;
-
-        width: 135px !important;
-
-    }
-
-
-    .board-corner-logo {
-
-        width: 135px !important;
-
-    }
-
-
-    .main-board-screen
-    .player-bottom-hud {
-
-        left: 8px !important;
-        right: 8px !important;
-        bottom: 7px !important;
-
-        min-height: 75px !important;
-
-        grid-template-columns:
-            195px
-            minmax(260px,1fr)
-            165px
-            150px !important;
-
-        gap: 5px !important;
-
-        padding: 6px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-token-image {
-
-        width: 49px !important;
-        height: 49px !important;
-
-    }
-
-
-    .main-board-screen
-    .player-career-hud {
-
-        grid-template-columns:
-            50px
-            minmax(0,1fr) !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-player-name {
-
-        font-size: 11px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-player-profession {
-
-        font-size: 9px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-stat-icon {
-
-        font-size: 17px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-stat-item strong {
-
-        font-size: 10px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-feature-icon {
-
-        font-size: 23px !important;
-
-    }
-
-
-    .main-board-screen
-    .hud-feature-button strong {
-
-        font-size: 8px !important;
-
-    }
-
+    line-height: 1.5;
 }
 
 
 /* =========================================================
-   28. МЕНШИЙ НОУТБУК
+   51. УСІ ТИПИ ПОЛІВ
 ========================================================= */
 
-@media (max-width: 1200px) {
-
-    .main-board-screen {
-
-        grid-template-columns:
-            minmax(0,1fr)
-            195px !important;
-
-    }
-
-
-    .main-board-screen
-    .outer-rectangle-board {
-
-        width: 84% !important;
-
-    }
-
-
-    .main-board-screen
-    .inner-rectangle-board {
-
-        width: 51% !important;
-
-    }
-
-
-    .main-board-screen
-    .board-cell {
-
-        width: 31px !important;
-        height: 31px !important;
-
-    }
-
-
-    .main-board-screen
-    .special-board-cell {
-
-        width: 35px !important;
-        height: 35px !important;
-
-    }
-
-
-    .main-board-screen
-    .start-board-cell,
-    .main-board-screen
-    .transition-board-cell {
-
-        width: 41px !important;
-        height: 41px !important;
-
-    }
-
-
-    .main-board-screen
-    .player-piece {
-
-        width: 52px !important;
-        height: 52px !important;
-
-    }
-
-
-    .main-board-screen
-    .ai-piece {
-
-        width: 41px !important;
-        height: 41px !important;
-
-    }
-
-
-    .main-board-screen
-    .player-bottom-hud {
-
-        grid-template-columns:
-            175px
-            minmax(230px,1fr)
-            145px
-            135px !important;
-
-    }
-
+.all-cell-types-popup {
+    padding: 4px;
 }
+
+.all-cell-types-popup > h2 {
+    margin-bottom: 7px;
+
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.all-cell-types-popup > p {
+    margin-bottom: 20px;
+
+    color: #666;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+}
+
+.all-cell-types-list {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2,minmax(0,1fr));
+
+    gap: 9px;
+}
+
+.all-cell-type-row {
+    min-height: 78px;
+
+    display: grid;
+
+    grid-template-columns:
+        52px
+        minmax(0,1fr);
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 10px 12px;
+
+    border:
+        1px solid
+        rgba(0,0,0,0.06);
+
+    border-radius: 15px;
+
+    background:
+        rgba(248,248,248,0.95);
+}
+
+.all-cell-type-row > span {
+    width: 48px;
+    height: 48px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background: #fff5ad;
+
+    font-size: 27px;
+}
+
+.all-cell-type-row strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.all-cell-type-row small {
+    display: block;
+
+    color: #666;
+
+    font-size: 10px;
+
+    line-height: 1.3;
+}
+
+
 /* =========================================================
-   FINAL FIX — ІГРОВИЙ ЕКРАН
-   вставити В САМИЙ КІНЕЦЬ style.css
+   52. ІНФОРМАЦІЯ ПРО СУПЕРНИКА
 ========================================================= */
 
+.participant-info-popup {
+    padding: 5px;
 
-/* =========================
-   1. БІЛЬШІ КОМІРКИ
-========================= */
-
-.board-cell {
-    width: 44px !important;
-    height: 44px !important;
-
-    border-radius: 11px !important;
+    text-align: center;
 }
 
-.special-board-cell {
-    width: 50px !important;
-    height: 50px !important;
+.participant-popup-token {
+    width: 135px;
+    height: 135px;
+
+    margin-bottom: 5px;
+
+    object-fit: contain;
+
+    filter:
+        drop-shadow(
+            0 7px 10px
+            rgba(0,0,0,0.20)
+        );
 }
 
-.start-board-cell,
-.transition-board-cell {
-    width: 54px !important;
-    height: 54px !important;
+.participant-info-popup h3 {
+    margin-bottom: 4px;
+
+    font-size: 27px;
+    font-weight: 900;
 }
 
-.cell-icon {
-    font-size: 21px !important;
+.participant-info-popup > p {
+    margin-bottom: 16px;
+
+    color: #555;
+
+    font-size: 14px;
+    font-weight: 700;
 }
 
-.special-board-cell .cell-icon {
-    font-size: 24px !important;
+.participant-popup-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+    gap: 8px;
+
+    margin: 14px 0;
 }
 
-.cell-number {
-    font-size: 8px !important;
+.participant-popup-stats span {
+    padding: 10px 8px;
+
+    border-radius: 12px;
+
+    background:
+        rgba(245,245,245,0.98);
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.participant-popup-dream {
+    margin-top: 13px;
+
+    padding: 13px;
+
+    border-radius: 14px;
+
+    background: #fff6bd;
+
+    color: #555;
+
+    font-size: 13px;
+}
+
+.participant-popup-dream strong {
+    color: #222;
+}
+
+.participant-popup-position {
+    margin-top: 9px;
+
+    color: #777;
+
+    font-size: 11px;
+    font-weight: 700;
 }
 
 
-/* =========================
-   2. БАНК — ГОЛУБИЙ
-========================= */
+/* =========================================================
+   53. МОДАЛКА КАР'ЄРИ
+========================================================= */
 
-.hud-bank-button {
+.career-progress-popup {
+    padding: 4px;
+}
+
+.career-popup-profile {
+    display: flex;
+
+    align-items: center;
+
+    gap: 15px;
+
+    margin-bottom: 20px;
+
+    padding-bottom: 16px;
+
+    border-bottom:
+        1px solid
+        rgba(0,0,0,0.08);
+}
+
+.career-popup-token {
+    width: 95px;
+    height: 95px;
+
+    object-fit: contain;
+}
+
+.career-popup-profile h2 {
+    margin-bottom: 4px;
+
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.career-popup-profile p {
+    color: #555;
+
+    font-size: 14px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   54. НАСТУПНА КАР'ЄРНА СХОДИНКА
+========================================================= */
+
+.next-career-level {
+    padding: 14px 16px;
+
+    margin-bottom: 10px;
+
+    border-radius: 16px;
+
     background:
         linear-gradient(
             145deg,
-            #dff4ff,
-            #9fddff
-        ) !important;
+            #fff9d2,
+            #ffef91
+        );
+}
+
+.next-career-level > span {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #7d6800;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    letter-spacing: 0.6px;
+}
+
+.next-career-level > strong {
+    display: block;
+
+    color: #222;
+
+    font-size: 20px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   55. "СКІЛЬКИ ЩЕ ПОТРІБНО"
+
+   Ці класи підготовлені під JS-блок,
+   де показуємо не просто вимогу,
+   а різницю між поточним і необхідним.
+========================================================= */
+
+.career-needed-block {
+    margin-top: 14px;
+
+    padding: 15px;
+
+    border-radius: 16px;
+
+    background:
+        rgba(247,247,247,0.96);
+}
+
+.career-needed-title {
+    margin-bottom: 10px;
+
+    color: #555;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.career-needed-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4,minmax(0,1fr));
+
+    gap: 8px;
+}
+
+.career-needed-item {
+    padding: 10px 7px;
+
+    border-radius: 12px;
+
+    background: white;
+
+    text-align: center;
+
+    box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.05);
+}
+
+.career-needed-item span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    font-size: 19px;
+}
+
+.career-needed-item small {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #777;
+
+    font-size: 9px;
+    font-weight: 800;
+}
+
+.career-needed-item strong {
+    color: #222;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.career-needed-complete {
+    background: #eaf8e9;
+}
+
+.career-needed-complete strong {
+    color: #287b31;
+}
+
+.career-max-level {
+    padding: 17px;
+
+    border-radius: 16px;
+
+    background: #fff4af;
+
+    text-align: center;
+
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.progress-help-text {
+    margin-top: 15px;
+
+    color: #666;
+
+    font-size: 12px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   56. ПРОГРЕС МРІЇ
+========================================================= */
+
+.dream-progress-popup {
+    padding: 5px;
+}
+
+.dream-confirmed-icon {
+    width: 88px;
+    height: 88px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin:
+        0 auto
+        9px;
+
+    border-radius: 24px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff7c1,
+            #ffe25a
+        );
+
+    font-size: 46px;
+}
+
+.dream-progress-popup > h3 {
+    margin-bottom: 4px;
+
+    text-align: center;
+
+    font-size: 26px;
+    font-weight: 900;
+}
+
+.dream-progress-popup > p {
+    margin-bottom: 18px;
+
+    color: #666;
+
+    text-align: center;
+
+    font-size: 13px;
+}
+
+.dream-progress-row {
+    margin-bottom: 13px;
+}
+
+.dream-progress-title {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-bottom: 5px;
+
+    font-size: 12px;
+}
+
+.dream-progress-title span {
+    font-weight: 800;
+}
+
+.dream-progress-title strong {
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.dream-progress-bar {
+    width: 100%;
+    height: 12px;
+
+    overflow: hidden;
+
+    border-radius: 999px;
+
+    background:
+        rgba(0,0,0,0.08);
+}
+
+.dream-progress-fill {
+    height: 100%;
+
+    border-radius: inherit;
+
+    background:
+        linear-gradient(
+            90deg,
+            #f0ca00,
+            #ffe85c
+        );
+
+    transition:
+        width 0.35s ease;
+}
+
+
+/* =========================================================
+   57. ЗАГАЛЬНІ СТАНИ МОДАЛОК
+========================================================= */
+
+.modal-section-title {
+    margin-bottom: 6px;
+
+    color: #222;
+
+    font-size: 24px;
+    font-weight: 900;
+}
+
+.modal-section-description {
+    margin-bottom: 15px;
+
+    color: #666;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   58. КНОПКИ В МОДАЛКАХ
+========================================================= */
+
+.modal-action-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 9px;
+
+    margin-top: 18px;
+}
+
+.modal-secondary-button {
+    min-width: 130px;
+
+    padding: 11px 16px;
+
+    border:
+        1px solid
+        rgba(0,0,0,0.10);
+
+    border-radius: 13px;
+
+    background: #f3f3f3;
+
+    color: #333;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.modal-secondary-button:hover {
+    background: #e9e9e9;
+}
+
+.modal-danger-button {
+    min-width: 130px;
+
+    padding: 11px 16px;
+
+    border:
+        1px solid
+        rgba(180,45,35,0.15);
+
+    border-radius: 13px;
+
+    background: #ffe7e4;
+
+    color: #a52c22;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   59. ПІДТВЕРДЖЕННЯ ЗАВЕРШЕННЯ ГРИ
+========================================================= */
+
+.end-game-popup {
+    padding: 12px;
+
+    text-align: center;
+}
+
+.end-game-popup-icon {
+    margin-bottom: 8px;
+
+    font-size: 50px;
+}
+
+.end-game-popup h2 {
+    margin-bottom: 8px;
+
+    font-size: 27px;
+    font-weight: 900;
+}
+
+.end-game-popup p {
+    max-width: 500px;
+
+    margin: 0 auto;
+
+    color: #666;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   60. АДАПТАЦІЯ ГОЛОВНОГО ЕКРАНУ
+========================================================= */
+
+@media (max-width: 1180px) {
+
+    .main-board-screen {
+        grid-template-columns:
+            minmax(0,1fr)
+            225px;
+    }
+
+    .game-right-panel {
+        width: 225px;
+    }
+
+    .board-cell {
+        width: 46px;
+        height: 46px;
+    }
+
+    .special-board-cell {
+        width: 53px;
+        height: 53px;
+    }
+
+    .start-board-cell,
+    .transition-board-cell {
+        width: 59px;
+        height: 59px;
+    }
+
+    .cell-icon {
+        font-size: 21px;
+    }
+
+    .player-game-hud {
+        width: 96%;
+    }
+
+    .player-stat-box {
+        min-width: 62px;
+    }
+
+    .hud-action-button {
+        min-width: 90px;
+    }
+
+}
+
+
+/* =========================================================
+   61. МЕНШІ ЕКРАНИ
+========================================================= */
+
+@media (max-width: 920px) {
+
+    .main-board-screen {
+        grid-template-columns: 1fr;
+
+        overflow-y: auto;
+    }
+
+    .rectangle-game-board,
+    .expanded-game-board {
+        height: 720px;
+    }
+
+    .game-right-panel {
+        width: 100%;
+        height: auto;
+
+        display: grid;
+
+        grid-template-columns:
+            repeat(2,minmax(0,1fr));
+    }
+
+    .game-log-panel {
+        min-height: 180px;
+    }
+
+    .player-game-hud {
+        position: fixed;
+
+        bottom: 8px;
+
+        width: calc(100% - 20px);
+
+        overflow-x: auto;
+
+        justify-content: flex-start;
+    }
+
+    .all-cell-types-list {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 2
+========================================================= */
+
+/* =========================================================
+   CV ЖИТТЯ — ЛЮБИ. МРІЙ. ДІЙ.
+   STYLE.CSS
+
+   ЧАСТИНА 3
+
+   - картки Подія / Банк
+   - вибір із 3 карток
+   - Життя 1–20
+   - Доля
+   - відкрита картка
+   - ефекти карток
+   - Банк
+   - кредит
+   - депозит
+   - страхування
+   - інвестиції
+   - валютні операції
+   - AI результат
+   - кар'єрні розрахунки
+   - фінальне вікно
+========================================================= */
+
+
+/* =========================================================
+   62. ЗОНА ВИБОРУ КАРТКИ
+========================================================= */
+
+.current-card-choice {
+    width: 100%;
+
+    display: flex;
+    flex-direction: column;
+
+    gap: 10px;
+}
+
+
+/* =========================================================
+   63. РАЙФИК У КАРТЦІ
+========================================================= */
+
+.current-card-raifik-line {
+    display: grid;
+
+    grid-template-columns:
+        54px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 8px;
+}
+
+.current-card-raifik-line img {
+    width: 54px;
+    height: 62px;
+
+    object-fit: contain;
+
+    align-self: end;
+}
+
+.current-card-raifik-line strong {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #222;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.current-card-raifik-line p {
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   64. ТРИ ЗАКРИТІ КАРТКИ
+========================================================= */
+
+.three-card-choice {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 7px;
+}
+
+.hidden-game-card {
+    position: relative;
+
+    min-height: 72px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    overflow: hidden;
 
     border:
         2px solid
-        rgba(51, 153, 204, 0.45) !important;
-}
+        rgba(255, 213, 0, 0.75);
 
-.hud-bank-button:hover {
+    border-radius: 13px;
+
     background:
         linear-gradient(
             145deg,
-            #caedff,
-            #7fd1ff
-        ) !important;
+            #222222,
+            #3a3a3a
+        );
+
+    color: #ffe353;
+
+    font-size: 29px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 13px
+        rgba(0, 0, 0, 0.16);
+
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        border-color 0.16s ease;
+}
+
+.hidden-game-card::before {
+    content: "";
+
+    position: absolute;
+
+    inset: 5px;
+
+    border:
+        1px solid
+        rgba(255, 225, 82, 0.32);
+
+    border-radius: 9px;
+
+    pointer-events: none;
+}
+
+.hidden-game-card:hover {
+    transform:
+        translateY(-3px)
+        rotate(-1deg);
+
+    border-color: #ffe353;
+
+    box-shadow:
+        0 10px 19px
+        rgba(0, 0, 0, 0.23);
+}
+
+.hidden-game-card:nth-child(2):hover {
+    transform:
+        translateY(-3px)
+        rotate(1deg);
 }
 
 
-/* =========================
-   3. ШРИФТИ HUD БІЛЬШІ
-========================= */
+/* =========================================================
+   65. ЖИТТЯ — ВИБІР ЧИСЛА
+========================================================= */
 
-.hud-player-name {
-    font-size: 15px !important;
+.life-number-card {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 9px;
 }
 
-.hud-player-profession {
-    font-size: 12px !important;
+#lifeNumberInput {
+    width: 100%;
+    height: 42px;
+
+    padding:
+        0
+        12px;
+
+    border:
+        2px solid
+        rgba(0, 0, 0, 0.10);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background: #f8f8f8;
+
+    color: #222;
+
+    font-size: 17px;
+    font-weight: 900;
+
+    text-align: center;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
 }
 
-.hud-career-text small {
-    font-size: 9px !important;
+#lifeNumberInput:focus {
+    border-color: #e4c000;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(255, 222, 46, 0.18);
+
+    background: white;
 }
 
-.hud-stat-item small {
-    font-size: 8px !important;
-}
+.form-error {
+    min-height: 14px;
 
-.hud-stat-item strong {
-    font-size: 14px !important;
-}
+    color: #b43b31;
 
-.hud-feature-button small {
-    font-size: 9px !important;
-}
+    font-size: 9px;
+    font-weight: 800;
 
-.hud-feature-button strong {
-    font-size: 12px !important;
-}
-
-
-/* =========================
-   4. ПРАВА ПАНЕЛЬ — ШРИФТИ
-========================= */
-
-.game-work-panel .dice-title {
-    font-size: 19px !important;
-}
-
-.game-work-panel .dice-message {
-    font-size: 12px !important;
-}
-
-.raifik-board-message strong {
-    font-size: 15px !important;
-}
-
-.raifik-board-message p {
-    font-size: 12px !important;
-}
-
-.other-players-block h3 {
-    font-size: 12px !important;
-}
-
-.mini-opponent-button span {
-    font-size: 12px !important;
-}
-
-.work-panel-button {
-    font-size: 11px !important;
+    text-align: center;
 }
 
 
-/* =========================
-   5. КАРТКА — БІЛЬШИЙ ТЕКСТ
-========================= */
+/* =========================================================
+   66. ОСНОВНА КНОПКА ВСЕРЕДИНІ ГРИ
+========================================================= */
+
+.main-game-btn {
+    min-height: 39px;
+
+    padding:
+        9px
+        14px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe45b,
+            #f4c900
+        );
+
+    color: #1b1b1b;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 12px
+        rgba(165, 133, 0, 0.18);
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.main-game-btn:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 8px 16px
+        rgba(165, 133, 0, 0.25);
+}
+
+.main-game-btn:active {
+    transform: translateY(1px);
+}
+
+.main-game-btn:disabled {
+    opacity: 0.45;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   67. ВІДКРИТА КАРТКА
+========================================================= */
+
+.revealed-current-card {
+    width: 100%;
+
+    padding: 10px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.06);
+
+    border-radius: 14px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #f8f8f8
+        );
+
+    box-shadow:
+        0 5px 14px
+        rgba(0, 0, 0, 0.07);
+}
 
 .revealed-card-type {
-    font-size: 12px !important;
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    margin-bottom: 6px;
+
+    padding:
+        4px
+        7px;
+
+    border-radius: 999px;
+
+    background: #fff1a1;
+
+    color: #5c4c00;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    text-transform: uppercase;
 }
 
 .revealed-current-card h3 {
-    font-size: 17px !important;
+    margin-bottom: 4px;
+
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 900;
+
+    line-height: 1.2;
 }
 
-.revealed-current-card p,
-.decision-card-text {
-    font-size: 12px !important;
+.revealed-current-card > p {
+    color: #555;
+
+    font-size: 10px;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   68. ЕФЕКТИ КАРТКИ
+========================================================= */
+
+.revealed-card-effects {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 5px;
+
+    margin-top: 7px;
 }
 
 .revealed-card-effects span {
-    font-size: 11px !important;
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 3px;
+
+    padding:
+        5px
+        7px;
+
+    border-radius: 8px;
+
+    background: #f1f1f1;
+
+    color: #222;
+
+    font-size: 9px;
+    font-weight: 900;
 }
 
 
-/* =========================
-   6. КНОПКИ РІШЕННЯ
-========================= */
+/* =========================================================
+   69. ПОЗИТИВНІ / НЕГАТИВНІ ЕФЕКТИ
+   ПІДГОТОВКА ДЛЯ JS
+========================================================= */
 
-.card-decision-buttons {
-    display: grid !important;
+.effect-positive {
+    background:
+        #e8f7e9 !important;
+
+    color:
+        #267232 !important;
+}
+
+.effect-negative {
+    background:
+        #ffe9e6 !important;
+
+    color:
+        #a4382f !important;
+}
+
+.effect-neutral {
+    background:
+        #f1f1f1 !important;
+
+    color:
+        #555 !important;
+}
+
+
+/* =========================================================
+   70. БАНК — ГОЛОВНА МОДАЛКА
+========================================================= */
+
+.bank-hub-popup {
+    width: 100%;
+}
+
+.bank-hub-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 14px;
+
+    margin-bottom: 11px;
+
+    padding-right: 42px;
+}
+
+.bank-hub-main-icon {
+    width: 68px;
+    height: 68px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 19px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #e7f6ff,
+            #b9e5ff
+        );
+
+    font-size: 36px;
+
+    box-shadow:
+        0 8px 17px
+        rgba(43, 131, 185, 0.14);
+}
+
+.bank-hub-label {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #53809a;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    letter-spacing: 0.8px;
+
+    text-transform: uppercase;
+}
+
+.bank-hub-header h2 {
+    color: #222;
+
+    font-size: 29px;
+    font-weight: 900;
+}
+
+.bank-hub-description {
+    margin-bottom: 17px;
+
+    color: #666;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   71. СІТКА БАНКІВСЬКИХ ПРОДУКТІВ
+========================================================= */
+
+.bank-products-grid {
+    display: grid;
 
     grid-template-columns:
-        repeat(3, 1fr) !important;
+        repeat(2, minmax(0, 1fr));
 
-    gap: 7px !important;
-
-    margin-top: 10px !important;
-}
-
-.card-action-btn {
-    min-height: 40px !important;
-
-    padding: 8px !important;
-
-    font-size: 10px !important;
-
-    border-radius: 10px !important;
-}
-
-.accept-card-btn {
-    background: #ffe13b !important;
-}
-
-.partial-card-btn {
-    background: #dff4ff !important;
-}
-
-.decline-card-btn {
-    background: #eeeeee !important;
+    gap: 10px;
 }
 
 
-/* =========================
-   7. ПОЛЕ ЧАСТКОВОЇ СУМИ
-========================= */
+/* =========================================================
+   72. КАРТКА БАНКІВСЬКОГО ПРОДУКТУ
+========================================================= */
 
-.partial-amount-box {
-    margin-top: 10px;
+.bank-product-card {
+    position: relative;
+
+    min-height: 100px;
+
+    display: grid;
+
+    grid-template-columns:
+        48px
+        minmax(0, 1fr);
+
+    grid-template-rows:
+        auto
+        auto;
+
+    align-items: center;
+
+    gap:
+        5px
+        10px;
+
+    padding: 12px;
+
+    border:
+        1px solid
+        rgba(50, 126, 170, 0.13);
+
+    border-radius: 16px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #f9fdff,
+            #edf8ff
+        );
+
+    color: #222;
+
+    text-align: left;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 5px 13px
+        rgba(0, 0, 0, 0.05);
+
+    transition:
+        transform 0.16s ease,
+        box-shadow 0.16s ease,
+        border-color 0.16s ease,
+        background 0.16s ease;
+}
+
+.bank-product-card:hover {
+    transform: translateY(-2px);
+
+    border-color:
+        rgba(50, 126, 170, 0.32);
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffffff,
+            #e1f4ff
+        );
+
+    box-shadow:
+        0 9px 19px
+        rgba(46, 119, 160, 0.12);
+}
+
+
+/* =========================================================
+   73. ІКОНКА БАНК-ПРОДУКТУ
+========================================================= */
+
+.bank-product-icon {
+    grid-row:
+        1 /
+        span 2;
+
+    width: 46px;
+    height: 46px;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 13px;
+
+    background:
+        rgba(255, 255, 255, 0.92);
+
+    font-size: 27px;
+
+    box-shadow:
+        0 4px 10px
+        rgba(0, 0, 0, 0.06);
+}
+
+.bank-product-text {
+    min-width: 0;
+}
+
+.bank-product-text strong {
+    display: block;
+
+    margin-bottom: 3px;
+
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+.bank-product-text small {
+    display: block;
+
+    color: #68777f;
+
+    font-size: 9px;
+
+    line-height: 1.3;
+}
+
+
+/* =========================================================
+   74. СТАТУС БАНКІВСЬКОГО ПРОДУКТУ
+========================================================= */
+
+.bank-product-status {
+    grid-column: 2;
+
+    justify-self: start;
+
+    padding:
+        4px
+        7px;
+
+    border-radius: 999px;
+
+    background:
+        rgba(42, 128, 179, 0.09);
+
+    color: #337da5;
+
+    font-size: 8px;
+    font-weight: 900;
+}
+
+.bank-product-selected {
+    border-color:
+        rgba(46, 142, 89, 0.30);
+
+    background:
+        linear-gradient(
+            145deg,
+            #f4fff6,
+            #e1f7e6
+        );
+}
+
+.bank-product-selected
+.bank-product-status {
+    background: #dff4e3;
+
+    color: #26773b;
+}
+
+
+/* =========================================================
+   75. ПРИМІТКА В БАНКУ
+========================================================= */
+
+.bank-hub-note {
+    margin-top: 15px;
+
+    padding: 12px 14px;
+
+    border-radius: 14px;
+
+    background:
+        #fff8cf;
+
+    color: #685c1c;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    line-height: 1.4;
+}
+
+
+/* =========================================================
+   76. БАНК — ДЕТАЛЬНЕ ВІКНО ПРОДУКТУ
+
+   ЦЕ ВЖЕ ПІДГОТОВКА ПІД ТОЧКОВУ ЛОГІКУ:
+   кредит / депозит / страхування /
+   інвестиції / валюта
+========================================================= */
+
+.bank-product-popup {
+    width: 100%;
+}
+
+.bank-product-popup-header {
+    display: flex;
+
+    align-items: center;
+
+    gap: 13px;
+
+    margin-bottom: 17px;
+
+    padding-right: 40px;
+}
+
+.bank-product-popup-icon {
+    width: 66px;
+    height: 66px;
+
+    flex: 0 0 auto;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 18px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #e8f7ff,
+            #c8ebff
+        );
+
+    font-size: 34px;
+}
+
+.bank-product-popup-header h2 {
+    margin-bottom: 3px;
+
+    color: #222;
+
+    font-size: 25px;
+    font-weight: 900;
+}
+
+.bank-product-popup-header p {
+    color: #68777f;
+
+    font-size: 12px;
+
+    line-height: 1.35;
+}
+
+
+/* =========================================================
+   77. БАНК — ФІНАНСОВИЙ БЛОК
+========================================================= */
+
+.bank-operation-box {
+    padding: 16px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.06);
+
+    border-radius: 17px;
+
+    background:
+        #f8fafb;
+}
+
+.bank-operation-title {
+    margin-bottom: 10px;
+
+    color: #333;
+
+    font-size: 12px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.bank-operation-description {
+    margin-bottom: 14px;
+
+    color: #666;
+
+    font-size: 11px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   78. БАНК — ПОЛЕ СУМИ
+========================================================= */
+
+.bank-amount-field {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+
+    margin-bottom: 12px;
+}
+
+.bank-amount-field label {
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.bank-amount-input {
+    width: 100%;
+    height: 46px;
+
+    padding:
+        0
+        13px;
+
+    border:
+        2px solid
+        rgba(50, 126, 170, 0.16);
+
+    border-radius: 12px;
+
+    outline: none;
+
+    background: white;
+
+    color: #222;
+
+    font-size: 17px;
+    font-weight: 900;
+
+    transition:
+        border-color 0.15s ease,
+        box-shadow 0.15s ease;
+}
+
+.bank-amount-input:focus {
+    border-color: #5fa8d0;
+
+    box-shadow:
+        0 0 0 3px
+        rgba(81, 165, 210, 0.14);
+}
+
+
+/* =========================================================
+   79. БАНК — ДОДАТКОВІ ПАРАМЕТРИ
+========================================================= */
+
+.bank-operation-options {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin-bottom: 13px;
+}
+
+.bank-option-button {
+    min-height: 48px;
+
+    padding:
+        8px
+        10px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.08);
+
+    border-radius: 12px;
+
+    background: white;
+
+    color: #444;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        border-color 0.15s ease,
+        background 0.15s ease;
+}
+
+.bank-option-button:hover {
+    transform: translateY(-1px);
+
+    border-color:
+        rgba(46, 132, 182, 0.30);
+
+    background: #eef9ff;
+}
+
+.bank-option-selected {
+    border-color: #55a7d4;
+
+    background: #ddf3ff;
+
+    color: #286d94;
+}
+
+
+/* =========================================================
+   80. БАНК — КНОПКИ ДІЇ
+========================================================= */
+
+.bank-action-buttons {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 13px;
+}
+
+.bank-primary-action {
+    flex: 1 1 170px;
+
+    min-height: 43px;
+
+    padding:
+        10px
+        15px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe65b,
+            #f2c800
+        );
+
+    color: #222;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    box-shadow:
+        0 6px 13px
+        rgba(178, 146, 0, 0.18);
+}
+
+.bank-secondary-action {
+    flex: 1 1 130px;
+
+    min-height: 43px;
+
+    padding:
+        10px
+        15px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.09);
+
+    border-radius: 12px;
+
+    background: #f2f2f2;
+
+    color: #444;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   81. КРЕДИТ
+========================================================= */
+
+.bank-credit-box {
+    border-left:
+        4px solid
+        #efba3b;
+}
+
+.bank-credit-summary {
+    margin-top: 12px;
+
+    padding: 11px;
+
+    border-radius: 12px;
+
+    background: #fff5d6;
+}
+
+.bank-credit-summary strong {
+    color: #765a0a;
+
+    font-size: 11px;
+}
+
+
+/* =========================================================
+   82. ДЕПОЗИТ
+========================================================= */
+
+.bank-deposit-box {
+    border-left:
+        4px solid
+        #56a873;
+}
+
+.bank-deposit-summary {
+    margin-top: 12px;
+
+    padding: 11px;
+
+    border-radius: 12px;
+
+    background: #eaf8ee;
+
+    color: #2e6d43;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   83. СТРАХУВАННЯ
+========================================================= */
+
+.bank-insurance-box {
+    border-left:
+        4px solid
+        #5b9bd5;
+}
+
+.bank-insurance-summary {
+    margin-top: 12px;
+
+    padding: 11px;
+
+    border-radius: 12px;
+
+    background: #eaf5ff;
+
+    color: #376c99;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   84. ІНВЕСТИЦІЇ
+========================================================= */
+
+.bank-investment-box {
+    border-left:
+        4px solid
+        #9c72c7;
+}
+
+.bank-investment-risk {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    margin-top: 11px;
 
     padding: 10px;
 
     border-radius: 12px;
 
-    background: #eef8ff;
+    background: #f4edfb;
+
+    color: #64458a;
+
+    font-size: 10px;
+    font-weight: 800;
 }
 
-.partial-amount-box label {
+
+/* =========================================================
+   85. ВАЛЮТНІ ОПЕРАЦІЇ
+========================================================= */
+
+.bank-currency-box {
+    border-left:
+        4px solid
+        #4f9da6;
+}
+
+.currency-selector {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 7px;
+
+    margin-bottom: 12px;
+}
+
+.currency-button {
+    min-height: 42px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.08);
+
+    border-radius: 11px;
+
+    background: white;
+
+    color: #444;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.currency-button:hover,
+.currency-button-selected {
+    border-color: #4f9da6;
+
+    background: #e6f6f7;
+
+    color: #34757c;
+}
+
+
+/* =========================================================
+   86. БАНК — ПОТОЧНІ АКТИВНІ ПРОДУКТИ
+========================================================= */
+
+.active-bank-products {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 6px;
+
+    margin-top: 12px;
+}
+
+.active-bank-product-chip {
+    display: inline-flex;
+
+    align-items: center;
+
+    gap: 4px;
+
+    padding:
+        6px
+        9px;
+
+    border-radius: 999px;
+
+    background: #e8f6ff;
+
+    color: #337da5;
+
+    font-size: 9px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   87. БАНК — ФІНАНСОВА ІНФОРМАЦІЯ
+
+   МІСЦЕ ДЛЯ МАЙБУТНІХ РОЗРАХУНКІВ
+========================================================= */
+
+.bank-calculation-preview {
+    margin-top: 13px;
+
+    padding: 13px;
+
+    border:
+        1px dashed
+        rgba(42, 126, 173, 0.30);
+
+    border-radius: 13px;
+
+    background:
+        rgba(232, 247, 255, 0.60);
+}
+
+.bank-calculation-preview-title {
+    margin-bottom: 7px;
+
+    color: #3f7694;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.bank-calculation-row {
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding:
+        5px
+        0;
+
+    border-bottom:
+        1px solid
+        rgba(0, 0, 0, 0.05);
+
+    color: #555;
+
+    font-size: 10px;
+}
+
+.bank-calculation-row:last-child {
+    border-bottom: none;
+}
+
+.bank-calculation-row strong {
+    color: #222;
+
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   88. ВИБІР РІШЕННЯ ПО КАРТЦІ
+   БЕРУ / НЕ БЕРУ / ЧАСТКОВО
+========================================================= */
+
+.card-decision-block {
+    margin-top: 14px;
+
+    padding: 13px;
+
+    border-radius: 14px;
+
+    background: #f7f7f7;
+}
+
+.card-decision-title {
+    margin-bottom: 9px;
+
+    color: #555;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.card-decision-buttons {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 7px;
+}
+
+.card-decision-button {
+    min-height: 42px;
+
+    padding:
+        8px
+        9px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.08);
+
+    border-radius: 11px;
+
+    background: white;
+
+    color: #444;
+
+    font-size: 10px;
+    font-weight: 900;
+
+    cursor: pointer;
+
+    transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease,
+        background 0.15s ease;
+}
+
+.card-decision-button:hover {
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 5px 11px
+        rgba(0, 0, 0, 0.08);
+}
+
+.card-decision-accept {
+    background: #eaf8ed;
+
+    color: #2b753d;
+}
+
+.card-decision-reject {
+    background: #fff0ee;
+
+    color: #9d3c33;
+}
+
+.card-decision-partial {
+    background: #fff7cf;
+
+    color: #76620d;
+}
+
+
+/* =========================================================
+   89. ЧАСТКОВА СУМА
+========================================================= */
+
+.partial-amount-block {
+    margin-top: 10px;
+
+    padding: 11px;
+
+    border-radius: 12px;
+
+    background: #fffbea;
+}
+
+.partial-amount-block label {
     display: block;
 
-    margin-bottom: 6px;
+    margin-bottom: 5px;
+
+    color: #665c31;
+
+    font-size: 10px;
+    font-weight: 900;
+}
+
+.partial-amount-input {
+    width: 100%;
+    height: 42px;
+
+    padding:
+        0
+        12px;
+
+    border:
+        2px solid
+        rgba(192, 158, 31, 0.20);
+
+    border-radius: 11px;
+
+    outline: none;
+
+    background: white;
+
+    font-size: 15px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   90. AI — РЕЗУЛЬТАТ ХОДУ
+========================================================= */
+
+.ai-turn-result {
+    display: grid;
+
+    grid-template-columns:
+        58px
+        minmax(0, 1fr);
+
+    align-items: center;
+
+    gap: 9px;
+
+    min-height: 80px;
+}
+
+.ai-turn-result > img {
+    width: 58px;
+    height: 66px;
+
+    object-fit: contain;
+}
+
+.ai-turn-result strong {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #222;
 
     font-size: 11px;
     font-weight: 900;
 }
 
-.partial-amount-box input {
-    width: 100%;
+.ai-turn-result h4 {
+    margin-bottom: 3px;
 
-    padding: 9px 10px;
+    color: #444;
 
-    border:
-        2px solid
-        rgba(51,153,204,0.45);
+    font-size: 11px;
+    font-weight: 800;
 
-    border-radius: 9px;
+    line-height: 1.25;
+}
+
+
+/* =========================================================
+   91. AI — СТАТУС
+========================================================= */
+
+.ai-thinking {
+    position: relative;
+
+    overflow: hidden;
+}
+
+.ai-thinking::after {
+    content: "";
+
+    position: absolute;
+
+    left: -60%;
+    bottom: 0;
+
+    width: 60%;
+    height: 3px;
+
+    border-radius: 999px;
+
+    background: #f1ce21;
+
+    animation:
+        aiThinkingLine
+        1s
+        linear
+        infinite;
+}
+
+@keyframes aiThinkingLine {
+
+    from {
+        left: -60%;
+    }
+
+    to {
+        left: 110%;
+    }
+
+}
+
+
+/* =========================================================
+   92. КАР'ЄРА — ПОТОЧНЕ / ПОТРІБНО / НЕ ВИСТАЧАЄ
+========================================================= */
+
+.career-requirement-table {
+    display: grid;
+
+    gap: 7px;
+
+    margin-top: 13px;
+}
+
+.career-requirement-row {
+    display: grid;
+
+    grid-template-columns:
+        minmax(100px, 1.3fr)
+        repeat(3, minmax(70px, 1fr));
+
+    align-items: center;
+
+    gap: 6px;
+
+    padding:
+        8px
+        10px;
+
+    border-radius: 11px;
+
+    background: #f7f7f7;
+
+    font-size: 10px;
+}
+
+.career-requirement-row > span:first-child {
+    font-weight: 900;
+}
+
+.career-requirement-current {
+    color: #555;
+
+    text-align: center;
+}
+
+.career-requirement-required {
+    color: #555;
+
+    text-align: center;
+
+    font-weight: 800;
+}
+
+.career-requirement-missing {
+    padding:
+        4px
+        6px;
+
+    border-radius: 7px;
+
+    background: #fff0d8;
+
+    color: #8b6519;
+
+    text-align: center;
+
+    font-weight: 900;
+}
+
+.career-requirement-ready {
+    padding:
+        4px
+        6px;
+
+    border-radius: 7px;
+
+    background: #e4f6e7;
+
+    color: #29733a;
+
+    text-align: center;
+
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   93. НОВА КАР'ЄРНА СХОДИНКА
+========================================================= */
+
+.career-level-up-popup {
+    text-align: center;
+}
+
+.career-level-up-icon {
+    margin-bottom: 8px;
+
+    font-size: 56px;
+}
+
+.career-level-up-popup h2 {
+    margin-bottom: 5px;
+
+    font-size: 28px;
+    font-weight: 900;
+}
+
+.career-level-up-popup p {
+    color: #666;
 
     font-size: 13px;
 }
 
+.career-level-up-name {
+    margin:
+        15px
+        0;
 
-/* =========================
-   8. ЗАВЕРШИТИ ХІД
-========================= */
+    padding: 15px;
 
-.finish-turn-btn {
-    width: 100% !important;
-
-    margin-top: 10px !important;
-
-    min-height: 42px !important;
-
-    font-size: 11px !important;
+    border-radius: 15px;
 
     background:
         linear-gradient(
-            135deg,
-            #ffe63c,
-            #f4c900
-        ) !important;
+            145deg,
+            #fff7c4,
+            #ffe568
+        );
+
+    color: #222;
+
+    font-size: 20px;
+    font-weight: 900;
 }
 
 
-/* =========================
-   9. ЖУРНАЛ
-========================= */
+/* =========================================================
+   94. ЗАВЕРШЕННЯ ГРИ — РЕЗУЛЬТАТ
+========================================================= */
 
-#journalButton {
-    display: flex !important;
-    visibility: visible !important;
-    opacity: 1 !important;
+.game-finish-popup {
+    width: 100%;
+
+    text-align: center;
 }
 
-#journalCount {
-    font-size: 10px !important;
+.game-finish-icon {
+    margin-bottom: 7px;
 
-    min-width: 22px !important;
-    height: 22px !important;
+    font-size: 58px;
 }
+
+.game-finish-popup h2 {
+    margin-bottom: 5px;
+
+    color: #222;
+
+    font-size: 30px;
+    font-weight: 900;
+}
+
+.game-finish-popup > p {
+    max-width: 560px;
+
+    margin:
+        0 auto
+        17px;
+
+    color: #666;
+
+    font-size: 13px;
+
+    line-height: 1.45;
+}
+
+
+/* =========================================================
+   95. ФІНАЛЬНА МРІЯ
+========================================================= */
+
+.finish-dream-card {
+    margin-bottom: 13px;
+
+    padding: 16px;
+
+    border-radius: 17px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #fff9d5,
+            #ffec87
+        );
+}
+
+.finish-dream-icon {
+    margin-bottom: 4px;
+
+    font-size: 40px;
+}
+
+.finish-dream-card span {
+    display: block;
+
+    color: #76620d;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.finish-dream-card strong {
+    display: block;
+
+    margin-top: 3px;
+
+    color: #222;
+
+    font-size: 20px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   96. ФІНАЛЬНІ ПОКАЗНИКИ
+========================================================= */
+
+.finish-stats-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 8px;
+
+    margin:
+        13px
+        0;
+}
+
+.finish-stat-card {
+    padding:
+        11px
+        8px;
+
+    border-radius: 13px;
+
+    background: #f6f6f6;
+}
+
+.finish-stat-card span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    font-size: 22px;
+}
+
+.finish-stat-card small {
+    display: block;
+
+    margin-bottom: 2px;
+
+    color: #777;
+
+    font-size: 8px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.finish-stat-card strong {
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   97. ФІНАЛЬНА КАР'ЄРА
+========================================================= */
+
+.finish-career-card {
+    margin-top: 10px;
+
+    padding: 13px;
+
+    border-radius: 14px;
+
+    background: #eaf5ff;
+
+    color: #3a6f91;
+}
+
+.finish-career-card span {
+    display: block;
+
+    margin-bottom: 3px;
+
+    font-size: 9px;
+    font-weight: 900;
+
+    text-transform: uppercase;
+}
+
+.finish-career-card strong {
+    color: #222;
+
+    font-size: 16px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   98. ЧИ ДОСЯГНУТА МРІЯ
+========================================================= */
+
+.dream-achieved {
+    margin-top: 12px;
+
+    padding: 12px;
+
+    border-radius: 13px;
+
+    background: #e5f7e8;
+
+    color: #27703a;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.dream-not-achieved {
+    margin-top: 12px;
+
+    padding: 12px;
+
+    border-radius: 13px;
+
+    background: #fff3dc;
+
+    color: #87621d;
+
+    font-size: 12px;
+    font-weight: 900;
+}
+
+
+/* =========================================================
+   99. ФІНАЛЬНІ КНОПКИ
+========================================================= */
+
+.finish-actions {
+    display: flex;
+
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    gap: 8px;
+
+    margin-top: 17px;
+}
+
+.finish-main-button {
+    min-width: 170px;
+
+    min-height: 44px;
+
+    padding:
+        10px
+        17px;
+
+    border: none;
+
+    border-radius: 13px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #ffe65b,
+            #f2c800
+        );
+
+    color: #222;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+.finish-secondary-button {
+    min-width: 150px;
+
+    min-height: 44px;
+
+    padding:
+        10px
+        17px;
+
+    border:
+        1px solid
+        rgba(0, 0, 0, 0.09);
+
+    border-radius: 13px;
+
+    background: #f1f1f1;
+
+    color: #444;
+
+    font-size: 11px;
+    font-weight: 900;
+
+    cursor: pointer;
+}
+
+
+/* =========================================================
+   100. ПОВІДОМЛЕННЯ ПРО УСПІХ / ПОМИЛКУ
+========================================================= */
+
+.game-success-message {
+    margin-top: 10px;
+
+    padding: 10px 12px;
+
+    border-radius: 11px;
+
+    background: #e5f7e8;
+
+    color: #27703a;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.game-warning-message {
+    margin-top: 10px;
+
+    padding: 10px 12px;
+
+    border-radius: 11px;
+
+    background: #fff3dc;
+
+    color: #87621d;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.game-error-message {
+    margin-top: 10px;
+
+    padding: 10px 12px;
+
+    border-radius: 11px;
+
+    background: #ffe9e6;
+
+    color: #9d3b31;
+
+    font-size: 10px;
+    font-weight: 800;
+}
+
+
+/* =========================================================
+   101. МОДАЛКА — СКРОЛ
+========================================================= */
+
+.game-info-modal-card::-webkit-scrollbar {
+    width: 7px;
+}
+
+.game-info-modal-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.game-info-modal-card::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+
+    background:
+        rgba(0, 0, 0, 0.18);
+}
+
+
+/* =========================================================
+   102. АДАПТАЦІЯ БАНКУ / КАРТОК
+========================================================= */
+
+@media (max-width: 760px) {
+
+    .game-info-modal {
+        padding: 14px;
+    }
+
+    .game-info-modal-card {
+        width: 100%;
+
+        max-height: 92vh;
+
+        padding:
+            27px
+            17px
+            20px;
+
+        border-radius: 21px;
+    }
+
+    .bank-products-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .participant-popup-stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .finish-stats-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .career-needed-grid {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+
+    .career-requirement-row {
+        grid-template-columns:
+            1fr
+            1fr;
+    }
+
+    .card-decision-buttons {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+/* =========================================================
+   103. ДУЖЕ МАЛИЙ ЕКРАН
+========================================================= */
+
+@media (max-width: 480px) {
+
+    .three-card-choice {
+        gap: 5px;
+    }
+
+    .hidden-game-card {
+        min-height: 65px;
+
+        font-size: 25px;
+    }
+
+    .bank-operation-options {
+        grid-template-columns: 1fr;
+    }
+
+    .currency-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .bank-product-card {
+        grid-template-columns:
+            43px
+            minmax(0, 1fr);
+
+        padding: 10px;
+    }
+
+    .bank-product-icon {
+        width: 41px;
+        height: 41px;
+
+        font-size: 24px;
+    }
+
+}
+
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 3
+========================================================= */
 
