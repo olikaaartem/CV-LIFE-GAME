@@ -1013,6 +1013,8 @@ const gameState = {
 
     selectedDreamId: null,
 
+    history:[],
+
     player: {
 
         id: "player",
@@ -6970,42 +6972,132 @@ function clearTargetCells() {
 /* =========================================================
    66. ЖУРНАЛ
 ========================================================= */
+/* =========================================================
+  66. ЖУРНАЛ ХОДІВ
+========================================================= */
+function addLog(text, details = "") {
+   if (!gameState.history) {
+       gameState.history = [];
+   }
 
-function addLog(
-    text
-) {
+   const now =
+       new Date();
 
-    const log =
-        document.getElementById(
-            "gameLog"
-        );
+   const time =
+       now.toLocaleTimeString(
+           "uk-UA",
+           {
+               hour: "2-digit",
+               minute: "2-digit"
+           }
+       );
 
+   gameState.history.push({
+       id:
+           Date.now() +
+           Math.random(),
+       time,
+       text,
+       details
+   });
 
-    if (!log) {
-        return;
-    }
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "game-log-item";
-
-
-    item.textContent =
-        text;
-
-
-    log.prepend(
-        item
-    );
-
+   updateJournalCounter();
 }
 
+/* =========================================================
+  66.1 ОНОВЛЕННЯ ЛІЧИЛЬНИКА
+========================================================= */
+function updateJournalCounter() {
+   const counter =
+       document.getElementById(
+           "journalCount"
+       );
+
+   if (!counter) {
+       return;
+   }
+
+   counter.textContent =
+       gameState.history
+           ? gameState.history.length
+           : 0;
+}
+
+/* =========================================================
+  66.2 ВІДКРИТИ ЖУРНАЛ
+========================================================= */
+function showGameJournal() {
+   const history =
+       gameState.history || [];
+
+   let journalHTML = "";
+
+   if (
+       history.length === 0
+   ) {
+       journalHTML = `
+<div class="journal-empty">
+               Поки що ходів немає.
+<br><br>
+               Кинь кубик —
+               і тут почне формуватися
+               історія гри 🎲
+</div>
+       `;
+   }
+   else {
+       journalHTML =
+           [...history]
+               .reverse()
+               .map(
+                   (entry, index) => `
+<div class="journal-entry">
+<div class="journal-entry-head">
+<strong>
+                                   Хід ${history.length - index}
+</strong>
+<span>
+                                   ${entry.time}
+</span>
+</div>
+
+<div class="journal-entry-action">
+                               ${entry.text}
+</div>
+
+                           ${
+                               entry.details
+                               ? `
+<div class="journal-entry-details">
+                                       ${entry.details}
+</div>
+                                 `
+                               : ""
+                           }
+</div>
+                   `
+               )
+               .join("");
+   }
+
+   openGameInfoModal(`
+<div class="game-journal-popup">
+<h2>
+               📜 Журнал ходів
+</h2>
+
+<p>
+               Тут зберігається історія гри:
+               кубик, переміщення,
+               поля та рішення гравців.
+</p>
+
+<div class="journal-list">
+               ${journalHTML}
+</div>
+</div>
+   `);
+}
 
 /* =========================================================
    67. ЗАПУСК
