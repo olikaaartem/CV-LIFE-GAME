@@ -3685,6 +3685,32 @@ function showGameBoard() {
             showAllCellTypes
         );
 
+/* ================================================
+   ЖУРНАЛ ХОДІВ
+================================================= */
+
+document
+    .getElementById(
+        "journalButton"
+    )
+    .addEventListener(
+        "click",
+        showGameJournal
+    );
+
+
+/* ================================================
+   ЗАВЕРШИТИ ГРУ
+================================================= */
+
+document
+    .getElementById(
+        "finishGameButton"
+    )
+    .addEventListener(
+        "click",
+        showFinishGameModal
+    );
 
     /* ================================================
        CLOSE MODAL
@@ -4561,6 +4587,97 @@ function showAllCellTypes() {
 
             <div class="all-cell-types-list">
                 ${rows}
+            </div>
+
+        </div>
+
+    `);
+
+}
+/* =========================================================
+   ЖУРНАЛ ХОДІВ
+========================================================= */
+
+function showGameJournal() {
+
+    const history =
+        gameState.history || [];
+
+
+    const journalHTML =
+        history.length
+
+        ? history
+            .slice()
+            .reverse()
+            .map((item, index) => {
+
+                const text =
+                    typeof item === "string"
+                    ? item
+                    : item.text || item.action || "Подія гри";
+
+
+                return `
+
+                    <div class="journal-entry">
+
+                        <div class="journal-entry-head">
+
+                            <strong>
+                                Хід ${history.length - index}
+                            </strong>
+
+                        </div>
+
+
+                        <div class="journal-entry-action">
+
+                            ${text}
+
+                        </div>
+
+                    </div>
+
+                `;
+
+            })
+            .join("")
+
+        : `
+
+            <div class="journal-empty">
+
+                Поки що журнал порожній.
+
+                <br><br>
+
+                Зроби перший хід 🎲
+
+            </div>
+
+        `;
+
+
+    openGameInfoModal(`
+
+        <div class="game-journal-popup">
+
+            <h2>
+                📜 Журнал ходів
+            </h2>
+
+
+            <p>
+                Тут зберігається історія
+                твоїх ходів та подій у грі.
+            </p>
+
+
+            <div class="journal-list">
+
+                ${journalHTML}
+
             </div>
 
         </div>
@@ -6833,7 +6950,6 @@ function showDreamProgress() {
 /* =========================================================
    63. ПРОГРЕС-БАР
 ========================================================= */
-
 function createDreamProgressRow(
     icon,
     label,
@@ -6841,15 +6957,41 @@ function createDreamProgressRow(
     required
 ) {
 
+    const safeRequired =
+        Number(required) || 1;
+
+    const safeCurrent =
+        Number(current) || 0;
+
+
     const percent =
         Math.min(
             100,
-            Math.round(
-                current /
-                required *
-                100
+            Math.max(
+                0,
+                Math.round(
+                    safeCurrent /
+                    safeRequired *
+                    100
+                )
             )
         );
+
+
+    const isMoney =
+        icon === "💰";
+
+
+    const currentText =
+        isMoney
+            ? `${formatMoney(safeCurrent)} грн`
+            : safeCurrent;
+
+
+    const requiredText =
+        isMoney
+            ? `${formatMoney(safeRequired)} грн`
+            : safeRequired;
 
 
     return `
@@ -6859,19 +7001,14 @@ function createDreamProgressRow(
             <div class="dream-progress-title">
 
                 <span>
-
                     ${icon}
                     ${label}
-
                 </span>
 
-
                 <strong>
-
-                    ${formatMoney(current)}
+                    ${currentText}
                     /
-                    ${formatMoney(required)}
-
+                    ${requiredText}
                 </strong>
 
             </div>
@@ -6881,10 +7018,15 @@ function createDreamProgressRow(
 
                 <div
                     class="dream-progress-fill"
-                    style="width:${percent}%"
+                    style="width: ${percent}%"
                 ></div>
 
             </div>
+
+
+            <small class="dream-progress-percent">
+                ${percent}%
+            </small>
 
         </div>
 
