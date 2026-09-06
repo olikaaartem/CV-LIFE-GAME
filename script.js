@@ -29,27 +29,19 @@ const app = document.getElementById("financeGameApp");
 /* =========================================================
    1. ОСНОВНІ НАЛАШТУВАННЯ
 ========================================================= */
-
 const GAME_CONFIG = {
-
+// кількість клітинок
     innerCells: 28,
     outerCells: 56,
-
+// АІ гравці
     aiPlayers: 2,
-
+// швидкість ходів АІ
     aiThinkDelay: 1200,
     aiStepDelay: 220,
     aiResultDelay: 1700,
-
-    incomeAmount: 10000,
-
-    startingStats: {
-        money: 10000,
-        reputation: 10,
-        knowledge: 10,
-        energy: 100
-    }
-
+   /* Кількість ходів в одному фінансовому періоді */
+    financialPeriodTurns: 3,
+ 
 };
 
 
@@ -620,63 +612,23 @@ const CAREER_SECTORS = [
    4. ПОКАЗНИКИ КАР'ЄРНИХ РІВНІВ
 
    ПОКИ СТАЛІ.
-   Пізніше можемо задати різні для професій.
+   Пізніше можемо задати різні для професій. вже зробилиии
 ========================================================= */
 
-const CAREER_LEVEL_STATS = [
 
-    {
-        level: 1,
-        money: 10000,
-        reputation: 10,
-        knowledge: 10,
-        energy: 100
-    },
-
-    {
-        level: 2,
-        money: 25000,
-        reputation: 25,
-        knowledge: 30,
-        energy: 90
-    },
-
-    {
-        level: 3,
-        money: 50000,
-        reputation: 45,
-        knowledge: 55,
-        energy: 80
-    },
-
-    {
-        level: 4,
-        money: 100000,
-        reputation: 70,
-        knowledge: 80,
-        energy: 70
-    }
-
-];
 /* =========================================================
    4.1. ОТРИМАННЯ ПАРАМЕТРІВ КАР'ЄРИ
 ========================================================= */
-
 function getCareerSectorById(sectorId) {
     return CAREER_SECTORS.find(
         sector => sector.id === sectorId
-    );
-}
-
-
+    );  }
 function getCareerStats(sectorId, level = 1) {
-
     const sector = getCareerSectorById(sectorId);
 
     if (!sector || !sector.stats) {
-        return CAREER_LEVEL_STATS[level - 1] || CAREER_LEVEL_STATS[0];
+        return null;
     }
-
     return (
         sector.stats.find(
             item => item.level === level
@@ -684,7 +636,6 @@ function getCareerStats(sectorId, level = 1) {
         sector.stats[0]
     );
 }
-
 
 /* =========================================================
    5. МРІЇ — 20 ШТУК
@@ -1397,6 +1348,10 @@ const gameState = {
 
     currentTurn: "player",
 
+   playerTurns: 0,
+
+   financialPeriod: 0,
+
     diceValue: null,
 
     target: null,
@@ -1421,7 +1376,8 @@ const gameState = {
 
         dream: null,
 
-        money: 0,
+       salary: 0,
+       money: 0,
         reputation: 0,
         knowledge: 0,
         energy: 0,
@@ -3089,6 +3045,23 @@ function createAIPlayers() {
             )[0];
 
 
+        /* Випадкова професійна сфера AI */
+
+        const sector =
+            randomItem(
+                CAREER_SECTORS
+            );
+
+
+        /* Стартові параметри 1 рівня цієї професії */
+
+        const stats =
+            getCareerStats(
+                sector.id,
+                1
+            );
+
+
         const ai = {
 
             id: `ai-${i + 1}`,
@@ -3101,10 +3074,7 @@ function createAIPlayers() {
 
             token,
 
-            sector:
-                randomItem(
-                    CAREER_SECTORS
-                ),
+            sector,
 
             careerLevel: 0,
 
@@ -3113,17 +3083,20 @@ function createAIPlayers() {
                     DREAMS
                 ),
 
+            salary:
+                stats.salary,
+
             money:
-                GAME_CONFIG.startingStats.money,
+                stats.salary,
 
             reputation:
-                GAME_CONFIG.startingStats.reputation,
+                stats.reputation,
 
             knowledge:
-                GAME_CONFIG.startingStats.knowledge,
+                stats.knowledge,
 
             energy:
-                GAME_CONFIG.startingStats.energy,
+                stats.energy,
 
             board: "inner",
 
@@ -3139,8 +3112,6 @@ function createAIPlayers() {
     }
 
 }
-
-
 /* =========================================================
    28. ЕКРАН ПЕРЕД СТАРТОМ
 ========================================================= */
@@ -4750,12 +4721,116 @@ function toggleBankProduct(
 /* =========================================================
    32.5 КАР'ЄРНИЙ ПРОГРЕС У МОДАЛЦІ
 ========================================================= */
-
-function showCareerProgressModal() {
+function showCareerProgressModal(
+    oldProfession = null,
+    newProfession = null,
+    promotedStats = null
+) {
 
     const player =
         gameState.player;
 
+
+    /* =====================================================
+       ВАРІАНТ 1 — ГРАВЕЦЬ ЩОЙНО ОТРИМАВ ПІДВИЩЕННЯ
+    ===================================================== */
+
+    if (
+        oldProfession &&
+        newProfession &&
+        promotedStats
+    ) {
+
+        openGameInfoModal(`
+
+            <div class="career-progress-popup">
+
+                <div class="career-popup-profile">
+
+                    <img
+                        src="assets/raifik.png"
+                        class="career-popup-token"
+                        alt="Райфик"
+                    >
+
+
+                    <div>
+
+                        <h2>
+                            🎉 НОВА КАР'ЄРНА СХОДИНКА!
+                        </h2>
+
+                        <p>
+                            Вітаю, ${player.name}!
+                            Ти піднялася на нову
+                            кар'єрну сходинку.
+                            Так тримати!
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <div class="next-career-level">
+
+                    <span>
+                        ТВОЄ ПІДВИЩЕННЯ
+                    </span>
+
+                    <strong>
+                        ${oldProfession}
+                        →
+                        ${newProfession}
+                    </strong>
+
+                </div>
+
+
+                <div class="participant-popup-stats">
+
+                    <span>
+                        💰 Твоя зарплата:
+                        ${formatMoney(promotedStats.salary)} грн
+                    </span>
+
+                    <span>
+                        ⭐ Репутація:
+                        ${promotedStats.reputation}
+                    </span>
+
+                    <span>
+                        🧠 Знання:
+                        ${promotedStats.knowledge}
+                    </span>
+
+                    <span>
+                        ⚡ Енергія:
+                        ${promotedStats.energy}
+                    </span>
+
+                </div>
+
+
+                <p class="progress-help-text">
+
+                    Наступне нарахування зарплати
+                    вже буде відповідати
+                    твоїй новій кар'єрній сходинці.
+
+                </p>
+
+            </div>
+
+        `);
+
+        return;
+    }
+
+
+    /* =====================================================
+       ВАРІАНТ 2 — ПРОСТО ДИВИМОСЯ КАР'ЄРНИЙ ПРОГРЕС
+    ===================================================== */
 
     const currentProfession =
         getProfessionName(
@@ -4764,7 +4839,9 @@ function showCareerProgressModal() {
                 .sector
                 .levels[
                     player.careerLevel
-                ]
+                ],
+
+            player.gender
 
         );
 
@@ -4776,7 +4853,10 @@ function showCareerProgressModal() {
     let nextHTML = `
 
         <div class="career-max-level">
-            🏆 Ти вже на найвищій кар'єрній сходинці.
+
+            🏆 Ти вже на найвищій
+            кар'єрній сходинці.
+
         </div>
 
     `;
@@ -4794,15 +4874,18 @@ function showCareerProgressModal() {
                     .sector
                     .levels[
                         nextLevel
-                    ]
+                    ],
+
+                player.gender
 
             );
 
 
         const required =
-            CAREER_LEVEL_STATS[
-                nextLevel
-            ];
+            getCareerStats(
+                player.sector.id,
+                nextLevel + 1
+            );
 
 
         nextHTML = `
@@ -4823,19 +4906,23 @@ function showCareerProgressModal() {
             <div class="participant-popup-stats">
 
                 <span>
-                    💰 ${formatMoney(required.money)}
+                    💰 Зарплата на цьому рівні:
+                    ${formatMoney(required.salary)} грн
                 </span>
 
                 <span>
-                    ⭐ ${required.reputation}
+                    ⭐ Репутація:
+                    ${required.reputation}
                 </span>
 
                 <span>
-                    🧠 ${required.knowledge}
+                    🧠 Знання:
+                    ${required.knowledge}
                 </span>
 
                 <span>
-                    ⚡ ${required.energy}
+                    ⚡ Енергія:
+                    ${required.energy}
                 </span>
 
             </div>
@@ -4880,10 +4967,10 @@ function showCareerProgressModal() {
 
             <p class="progress-help-text">
 
-                Розвивай фінанси,
-                репутацію,
+                Розвивай репутацію,
                 знання та енергію,
-                щоб рухатися кар'єрним шляхом.
+                щоб рухатися
+                кар'єрним шляхом.
 
             </p>
 
@@ -4893,7 +4980,6 @@ function showCareerProgressModal() {
     `);
 
 }
-
 
 /* =========================================================
    32.6 УСІ ТИПИ ПОЛІВ
@@ -6442,82 +6528,95 @@ function updatePlayerStatsUI() {
    54. КАР'ЄРНЕ ЗРОСТАННЯ
 ========================================================= */
 
-function checkCareerProgress(
-    participant
-) {
+function checkCareerProgress(participant) {
 
+    const sector =
+        participant.sector;
+
+    if (!sector) {
+        return;
+    }
+
+
+    // careerLevel у нас 0–3:
+    // 0 = перша сходинка, 3 = четверта
     if (
         participant.careerLevel >=
-        CAREER_LEVEL_STATS.length - 1
+        sector.levels.length - 1
     ) {
         return;
     }
 
 
+    const currentIndex =
+        participant.careerLevel;
+
     const nextIndex =
-        participant.careerLevel + 1;
+        currentIndex + 1;
 
 
-    const required =
-        CAREER_LEVEL_STATS[
-            nextIndex
-        ];
+    // Параметри НАСТУПНОЇ сходинки
+    const nextStats =
+        getCareerStats(
+            sector.id,
+            nextIndex + 1
+        );
 
 
+    /*
+       Перевіряємо умови переходу.
+    */
     const ready =
+        participant.reputation >=             nextStats.reputation &&
 
-        participant.money >=
-            required.money &&
+        participant.knowledge >=             nextStats.knowledge &&
 
-        participant.reputation >=
-            required.reputation &&
-
-        participant.knowledge >=
-            required.knowledge &&
-
-        participant.energy >=
-            required.energy;
+        participant.energy >=             nextStats.energy;
 
 
     if (!ready) {
         return;
     }
+    const oldProfession =
+        getProfessionName(
+            sector.levels[currentIndex],
+            participant.gender
+        );
+
+    const newProfession =
+        getProfessionName(
+            sector.levels[nextIndex],
+            participant.gender
+        );
 
 
+    // Переходимо на нову кар'єрну сходинку
     participant.careerLevel =
         nextIndex;
 
 
-    const profession =
-        getProfessionName(
-
-            participant
-                .sector
-                .levels[
-                    nextIndex
-                ],
-
-            participant.gender
-
-        );
+    // Нова зарплата
+    participant.salary =
+        nextStats.salary;
 
 
     addLog(
-
-        `🎉 Кар'єрне зростання: ${profession}`
-
+        `🎉 Кар'єрне зростання: ${oldProfession} → ${newProfession}`
     );
 
 
-    showRaifikCurrentCardMessage(
-
-        `🎉 Вітаю! Нова кар'єрна сходинка: ${profession}!`
-
+    showCareerProgressModal(
+        oldProfession,
+        newProfession,
+        nextStats
     );
 
 }
 
 
+/* =========================================================
+   55. AI — ПОЧАТОК
+========================================================= */
 /* =========================================================
    55. AI — ПОЧАТОК
 ========================================================= */
@@ -6555,6 +6654,33 @@ async function startAITurns() {
         await runAITurn(
             ai
         );
+
+    }
+
+
+    /* =====================================================
+       ЗАВЕРШЕНО ОДИН ПОВНИЙ ХІД ГРАВЦЯ
+    ===================================================== */
+
+    gameState.playerTurns += 1;
+
+    addLog(
+        `🔄 Завершено хід ${gameState.playerTurns}`
+    );
+
+
+    /* =====================================================
+       ФІНАНСОВИЙ ПЕРІОД
+       Кожні N ходів, заданих у GAME_CONFIG
+    ===================================================== */
+
+    if (
+        gameState.playerTurns %
+            GAME_CONFIG.financialPeriodTurns ===
+        0
+    ) {
+
+        processFinancialPeriod();
 
     }
 
@@ -6599,10 +6725,7 @@ async function startAITurns() {
             Кидай кубик 🎲
 
         `;
-
     }
-
-
     showRaifikCurrentCardMessage(
 
         `${gameState.player.name}, тепер твій хід. Кидай кубик 🎲`
@@ -6611,6 +6734,32 @@ async function startAITurns() {
 
 }
 
+/* =========================================================
+   55.1. ФІНАНСОВИЙ ПЕРІОД
+========================================================= */
+
+function processFinancialPeriod() {
+
+    gameState.financialPeriod += 1;
+
+    const player =
+        gameState.player;
+
+    const salary =
+        Number(player.salary) || 0;
+
+
+    player.money += salary;
+
+
+    addLog(
+        `💰 Фінансовий період ${gameState.financialPeriod}: зарплата +${formatMoney(salary)} грн`
+    );
+
+
+    updatePlayerStatusUI();
+
+}
 
 /* =========================================================
    56. ХІД AI
