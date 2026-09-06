@@ -2541,7 +2541,7 @@ function showCareerReveal() {
                         <div class="career-level-stats">
 
                             <span>
-                                💰 ${formatMoney(stats.money)}
+                                💰 ${formatMoney(stats.salary)}
                             </span>
 
                             <span>
