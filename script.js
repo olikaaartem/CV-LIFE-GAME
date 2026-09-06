@@ -109,15 +109,25 @@ const TOKENS = [
 
 ];
 
-
 /* =========================================================
    3. ПРОФЕСІЙНІ СФЕРИ
 
-   ПОРЯДОК:
+   Для кожної сфери:
+   - 4 кар'єрні рівні
+   - salary = зарплата за фінансовий період
+   - reputation = репутація
+   - knowledge = знання
+   - energy = енергія
+
+   ПОРЯДОК НАЗВ:
    чоловічий варіант / жіночий варіант
 ========================================================= */
 
 const CAREER_SECTORS = [
+
+    /* =====================================================
+       IT
+    ===================================================== */
 
     {
         id: "it",
@@ -129,8 +139,44 @@ const CAREER_SECTORS = [
             "Керівник команди розробки / Керівниця команди розробки",
             "IT-директор / IT-директорка",
             "CTO / Технічна директорка"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 15000,
+                reputation: 10,
+                knowledge: 20,
+                energy: 95
+            },
+            {
+                level: 2,
+                salary: 38000,
+                reputation: 30,
+                knowledge: 45,
+                energy: 85
+            },
+            {
+                level: 3,
+                salary: 70000,
+                reputation: 55,
+                knowledge: 68,
+                energy: 75
+            },
+            {
+                level: 4,
+                salary: 130000,
+                reputation: 80,
+                knowledge: 88,
+                energy: 70
+            }
         ]
     },
+
+
+    /* =====================================================
+       РЕСТОРАННИЙ БІЗНЕС
+    ===================================================== */
 
     {
         id: "restaurant",
@@ -142,8 +188,44 @@ const CAREER_SECTORS = [
             "Адміністратор ресторану / Адміністраторка ресторану",
             "Керуючий рестораном / Керуюча рестораном",
             "Власник ресторану / Власниця ресторану"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 11000,
+                reputation: 15,
+                knowledge: 10,
+                energy: 100
+            },
+            {
+                level: 2,
+                salary: 28000,
+                reputation: 35,
+                knowledge: 30,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 58000,
+                reputation: 60,
+                knowledge: 50,
+                energy: 80
+            },
+            {
+                level: 4,
+                salary: 120000,
+                reputation: 85,
+                knowledge: 75,
+                energy: 75
+            }
         ]
     },
+
+
+    /* =====================================================
+       ОСВІТА
+    ===================================================== */
 
     {
         id: "education",
@@ -155,8 +237,44 @@ const CAREER_SECTORS = [
             "Директор закладу освіти / Директорка закладу освіти",
             "Ректор університету / Ректорка університету",
             "Міністр освіти і науки України / Міністерка освіти і науки України"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 10000,
+                reputation: 20,
+                knowledge: 15,
+                energy: 100
+            },
+            {
+                level: 2,
+                salary: 26000,
+                reputation: 40,
+                knowledge: 35,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 55000,
+                reputation: 65,
+                knowledge: 60,
+                energy: 80
+            },
+            {
+                level: 4,
+                salary: 110000,
+                reputation: 90,
+                knowledge: 85,
+                energy: 70
+            }
         ]
     },
+
+
+    /* =====================================================
+       МИСТЕЦТВО
+    ===================================================== */
 
     {
         id: "art",
@@ -168,8 +286,44 @@ const CAREER_SECTORS = [
             "Артдиректор / Артдиректорка",
             "Власник артгалереї / Власниця артгалереї",
             "Директор музею / Директорка музею"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 9000,
+                reputation: 15,
+                knowledge: 10,
+                energy: 100
+            },
+            {
+                level: 2,
+                salary: 25000,
+                reputation: 35,
+                knowledge: 30,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 52000,
+                reputation: 60,
+                knowledge: 55,
+                energy: 80
+            },
+            {
+                level: 4,
+                salary: 105000,
+                reputation: 85,
+                knowledge: 80,
+                energy: 75
+            }
         ]
     },
+
+
+    /* =====================================================
+       МЕДИЦИНА
+    ===================================================== */
 
     {
         id: "medicine",
@@ -181,8 +335,44 @@ const CAREER_SECTORS = [
             "Лікар / Лікарка",
             "Завідувач відділення / Завідувачка відділення",
             "Головний лікар / Головна лікарка"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 10000,
+                reputation: 10,
+                knowledge: 20,
+                energy: 90
+            },
+            {
+                level: 2,
+                salary: 25000,
+                reputation: 25,
+                knowledge: 30,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 50000,
+                reputation: 45,
+                knowledge: 55,
+                energy: 80
+            },
+            {
+                level: 4,
+                salary: 100000,
+                reputation: 70,
+                knowledge: 80,
+                energy: 70
+            }
         ]
     },
+
+
+    /* =====================================================
+       МЕДІА
+    ===================================================== */
 
     {
         id: "media",
@@ -194,8 +384,44 @@ const CAREER_SECTORS = [
             "YouTube-блогер / YouTube-блогерка",
             "Продюсер контенту / Продюсерка контенту",
             "Власник медіакомпанії / Власниця медіакомпанії"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 8000,
+                reputation: 15,
+                knowledge: 10,
+                energy: 100
+            },
+            {
+                level: 2,
+                salary: 24000,
+                reputation: 35,
+                knowledge: 25,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 56000,
+                reputation: 60,
+                knowledge: 50,
+                energy: 75
+            },
+            {
+                level: 4,
+                salary: 115000,
+                reputation: 90,
+                knowledge: 75,
+                energy: 65
+            }
         ]
     },
+
+
+    /* =====================================================
+       ЛОГІСТИКА
+    ===================================================== */
 
     {
         id: "logistics",
@@ -207,8 +433,44 @@ const CAREER_SECTORS = [
             "Координатор логістики / Координаторка логістики",
             "Менеджер з логістики / Менеджерка з логістики",
             "Директор з логістики / Директорка з логістики"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 12000,
+                reputation: 10,
+                knowledge: 10,
+                energy: 95
+            },
+            {
+                level: 2,
+                salary: 27000,
+                reputation: 30,
+                knowledge: 30,
+                energy: 85
+            },
+            {
+                level: 3,
+                salary: 52000,
+                reputation: 50,
+                knowledge: 55,
+                energy: 75
+            },
+            {
+                level: 4,
+                salary: 110000,
+                reputation: 75,
+                knowledge: 75,
+                energy: 65
+            }
         ]
     },
+
+
+    /* =====================================================
+       ФІНАНСИ
+    ===================================================== */
 
     {
         id: "finance",
@@ -220,8 +482,44 @@ const CAREER_SECTORS = [
             "Бухгалтер / Бухгалтерка",
             "Фінансовий директор / Фінансова директорка",
             "Власник фінансової компанії / Власниця фінансової компанії"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 14000,
+                reputation: 10,
+                knowledge: 15,
+                energy: 95
+            },
+            {
+                level: 2,
+                salary: 32000,
+                reputation: 25,
+                knowledge: 35,
+                energy: 85
+            },
+            {
+                level: 3,
+                salary: 65000,
+                reputation: 50,
+                knowledge: 60,
+                energy: 75
+            },
+            {
+                level: 4,
+                salary: 135000,
+                reputation: 75,
+                knowledge: 85,
+                energy: 70
+            }
         ]
     },
+
+
+    /* =====================================================
+       ВІЙСЬКОВА СПРАВА
+    ===================================================== */
 
     {
         id: "military",
@@ -233,8 +531,44 @@ const CAREER_SECTORS = [
             "Інструктор / Інструкторка",
             "Офіцер / Офіцерка",
             "Начальник штабу / Начальниця штабу"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 16000,
+                reputation: 10,
+                knowledge: 15,
+                energy: 95
+            },
+            {
+                level: 2,
+                salary: 35000,
+                reputation: 30,
+                knowledge: 35,
+                energy: 85
+            },
+            {
+                level: 3,
+                salary: 62000,
+                reputation: 55,
+                knowledge: 55,
+                energy: 75
+            },
+            {
+                level: 4,
+                salary: 125000,
+                reputation: 85,
+                knowledge: 80,
+                energy: 70
+            }
         ]
     },
+
+
+    /* =====================================================
+       АГРО
+    ===================================================== */
 
     {
         id: "agro",
@@ -246,11 +580,41 @@ const CAREER_SECTORS = [
             "Агроном / Агрономка",
             "Керівник агропідприємства / Керівниця агропідприємства",
             "Власник агрохолдингу / Власниця агрохолдингу"
+        ],
+
+        stats: [
+            {
+                level: 1,
+                salary: 12000,
+                reputation: 15,
+                knowledge: 10,
+                energy: 100
+            },
+            {
+                level: 2,
+                salary: 28000,
+                reputation: 30,
+                knowledge: 35,
+                energy: 90
+            },
+            {
+                level: 3,
+                salary: 54000,
+                reputation: 50,
+                knowledge: 60,
+                energy: 80
+            },
+            {
+                level: 4,
+                salary: 120000,
+                reputation: 80,
+                knowledge: 80,
+                energy: 70
+            }
         ]
     }
 
 ];
-
 
 /* =========================================================
    4. ПОКАЗНИКИ КАР'ЄРНИХ РІВНІВ
@@ -294,6 +658,32 @@ const CAREER_LEVEL_STATS = [
     }
 
 ];
+/* =========================================================
+   4.1. ОТРИМАННЯ ПАРАМЕТРІВ КАР'ЄРИ
+========================================================= */
+
+function getCareerSectorById(sectorId) {
+    return CAREER_SECTORS.find(
+        sector => sector.id === sectorId
+    );
+}
+
+
+function getCareerStats(sectorId, level = 1) {
+
+    const sector = getCareerSectorById(sectorId);
+
+    if (!sector || !sector.stats) {
+        return CAREER_LEVEL_STATS[level - 1] || CAREER_LEVEL_STATS[0];
+    }
+
+    return (
+        sector.stats.find(
+            item => item.level === level
+        ) ||
+        sector.stats[0]
+    );
+}
 
 
 /* =========================================================
@@ -1943,45 +2333,27 @@ function showCareerRandomScreen() {
 /* =========================================================
    21. ВИПАДКОВА ПРОФЕСІЯ
 ========================================================= */
-
 function assignRandomCareer() {
-
     const sector =
         randomItem(
             CAREER_SECTORS
         );
-
-
     gameState.player.sector =
         sector;
-
-
     gameState.player.careerLevel =
         0;
-
-
     const stats =
-        CAREER_LEVEL_STATS[0];
-
-
-    gameState.player.money =
-        stats.money;
-
+       getCareerStats(sector.id,1);
+        gameState.player.salary =
+        stats.salary;
     gameState.player.reputation =
         stats.reputation;
-
     gameState.player.knowledge =
         stats.knowledge;
-
     gameState.player.energy =
         stats.energy;
-
-
     showCareerResult();
-
 }
-
-
 /* =========================================================
    22. ПОКАЗ ПРОФЕСІЇ
 ========================================================= */
@@ -2109,7 +2481,7 @@ function showCareerReveal() {
 
 
                 const stats =
-                    CAREER_LEVEL_STATS[index];
+                   getCareerStats(sector.id, index + 1);
 
 
                 const profession =
