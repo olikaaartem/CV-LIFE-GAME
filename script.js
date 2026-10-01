@@ -12306,12 +12306,17 @@ function applyCardSpecialAction(
     );
 
 
-    if (
-        participant.id ===
-        "player"
-    ) {
+  if (
+    participant.id ===
+    "player"
+) {
 
-        updatePlayer
+    updatePlayerStatsUI();
+
+}
+
+}
+
    /* =====================================================
        КАРТКА 9
     ===================================================== */
