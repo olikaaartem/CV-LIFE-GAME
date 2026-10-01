@@ -4178,6 +4178,83 @@ function showBeforeGameScreen() {
    - модалки;
    - фінансові періоди.
 ========================================================= */
+/* =========================================================
+   СТАН БАНКУ ГРАВЦЯ
+
+   Тимчасова базова версія,
+   поки повний Банк ще не підключений.
+========================================================= */
+
+function ensurePlayerBankState() {
+
+    const player =
+        gameState.player;
+
+
+    if (!player.bank) {
+
+        player.bank = {};
+
+    }
+
+
+    if (
+        typeof player.bank.extraVisits !==
+        "number"
+    ) {
+
+        player.bank.extraVisits =
+            GAME_CONFIG.startingBankTokens;
+
+    }
+
+
+    if (
+        typeof player.bank.premium !==
+        "boolean"
+    ) {
+
+        player.bank.premium =
+            false;
+
+    }
+
+
+    if (
+        typeof player.bank.premiumExtraGranted !==
+        "boolean"
+    ) {
+
+        player.bank.premiumExtraGranted =
+            false;
+
+    }
+
+
+    if (
+        !Array.isArray(
+            player.bank.products
+        )
+    ) {
+
+        player.bank.products =
+            [];
+
+    }
+
+
+    if (
+        !Array.isArray(
+            player.bank.debts
+        )
+    ) {
+
+        player.bank.debts =
+            [];
+
+    }
+
+}
 
 /* =========================================================
    29. ГОЛОВНИЙ ЕКРАН ГРИ
