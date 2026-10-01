@@ -15,7 +15,10 @@
    - 2 AI-гравці
    - внутрішній квадрат: 28
    - зовнішній квадрат: 56
-   - перехід 28 → 1 великого квадрату
+   - перехід з малого на велике коло
+   - повторні проходження кіл
+   - бонуси START
+   - зарплата кожні 3 власні ходи
    - кубик
    - повільні AI
    - картки Подія / Банк / Життя / Доля
@@ -23,25 +26,121 @@
 ========================================================= */
 
 
-const app = document.getElementById("financeGameApp");
+const app =
+    document.getElementById(
+        "financeGameApp"
+    );
 
 
 /* =========================================================
    1. ОСНОВНІ НАЛАШТУВАННЯ
 ========================================================= */
+
 const GAME_CONFIG = {
-// кількість клітинок
+
+    /* Кількість клітинок */
+
     innerCells: 28,
     outerCells: 56,
-// АІ гравці
+
+
+    /* AI-гравці */
+
     aiPlayers: 2,
-// швидкість ходів АІ
+
+
+    /* Швидкість ходів AI */
+
     aiThinkDelay: 1200,
     aiStepDelay: 220,
     aiResultDelay: 1700,
-   /* Кількість ходів в одному фінансовому періоді */
+
+
+    /* =====================================================
+       ФІНАНСОВИЙ ПЕРІОД
+
+       Кожні 3 ВЛАСНІ ходи
+       гравець отримує зарплату
+       відповідно до актуального
+       професійного рівня.
+    ===================================================== */
+
     financialPeriodTurns: 3,
- 
+
+
+    /* =====================================================
+       УМОВА ПЕРЕХОДУ НА ВЕЛИКЕ КОЛО
+
+       careerLevel у JS рахується від 0:
+
+       0 = професійний рівень 1
+       1 = професійний рівень 2
+       2 = професійний рівень 3
+       3 = професійний рівень 4
+
+       Для переходу потрібен
+       щонайменше професійний рівень 2.
+    ===================================================== */
+
+    outerUnlockCareerLevel: 1,
+
+
+    /* =====================================================
+       START — МАЛЕНЬКЕ КОЛО
+
+       Точна зупинка:
+       +50 000 грн
+
+       Перетин START:
+       +5 репутації
+       +5 знань
+
+       За одне проходження
+       дається лише ОДИН бонус.
+    ===================================================== */
+
+    innerExactStartMoney: 50000,
+    innerPassedStartReputation: 5,
+    innerPassedStartKnowledge: 5,
+
+
+    /* =====================================================
+       START — ВЕЛИКЕ КОЛО
+
+       Точна зупинка:
+       +100 000 грн
+
+       Перетин START:
+       +10 репутації
+       +10 знань
+
+       За одне проходження
+       дається лише ОДИН бонус.
+    ===================================================== */
+
+    outerExactStartMoney: 100000,
+    outerPassedStartReputation: 10,
+    outerPassedStartKnowledge: 10,
+
+
+    /* =====================================================
+       ДОДАТКОВІ ЗВЕРНЕННЯ ДО БАНКУ
+
+       На початку гри:
+       3 додаткові звернення.
+
+       Premium:
+       +1 додаткове звернення.
+    ===================================================== */
+
+    startingBankTokens: 3,
+    premiumExtraBankTokens: 1,
+
+
+    /* Максимальна енергія */
+
+    maxEnergy: 100
+
 };
 
 
@@ -101,6 +200,7 @@ const TOKENS = [
 
 ];
 
+
 /* =========================================================
    3. ПРОФЕСІЙНІ СФЕРИ
 
@@ -134,6 +234,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 15000,
@@ -141,6 +242,7 @@ const CAREER_SECTORS = [
                 knowledge: 20,
                 energy: 95
             },
+
             {
                 level: 2,
                 salary: 38000,
@@ -148,6 +250,7 @@ const CAREER_SECTORS = [
                 knowledge: 45,
                 energy: 85
             },
+
             {
                 level: 3,
                 salary: 70000,
@@ -155,6 +258,7 @@ const CAREER_SECTORS = [
                 knowledge: 68,
                 energy: 75
             },
+
             {
                 level: 4,
                 salary: 130000,
@@ -162,6 +266,7 @@ const CAREER_SECTORS = [
                 knowledge: 88,
                 energy: 70
             }
+
         ]
     },
 
@@ -183,6 +288,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 11000,
@@ -190,6 +296,7 @@ const CAREER_SECTORS = [
                 knowledge: 10,
                 energy: 100
             },
+
             {
                 level: 2,
                 salary: 28000,
@@ -197,6 +304,7 @@ const CAREER_SECTORS = [
                 knowledge: 30,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 58000,
@@ -204,6 +312,7 @@ const CAREER_SECTORS = [
                 knowledge: 50,
                 energy: 80
             },
+
             {
                 level: 4,
                 salary: 120000,
@@ -211,6 +320,7 @@ const CAREER_SECTORS = [
                 knowledge: 75,
                 energy: 75
             }
+
         ]
     },
 
@@ -232,6 +342,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 10000,
@@ -239,6 +350,7 @@ const CAREER_SECTORS = [
                 knowledge: 15,
                 energy: 100
             },
+
             {
                 level: 2,
                 salary: 26000,
@@ -246,6 +358,7 @@ const CAREER_SECTORS = [
                 knowledge: 35,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 55000,
@@ -253,6 +366,7 @@ const CAREER_SECTORS = [
                 knowledge: 60,
                 energy: 80
             },
+
             {
                 level: 4,
                 salary: 110000,
@@ -260,6 +374,7 @@ const CAREER_SECTORS = [
                 knowledge: 85,
                 energy: 70
             }
+
         ]
     },
 
@@ -281,6 +396,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 9000,
@@ -288,6 +404,7 @@ const CAREER_SECTORS = [
                 knowledge: 10,
                 energy: 100
             },
+
             {
                 level: 2,
                 salary: 25000,
@@ -295,6 +412,7 @@ const CAREER_SECTORS = [
                 knowledge: 30,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 52000,
@@ -302,6 +420,7 @@ const CAREER_SECTORS = [
                 knowledge: 55,
                 energy: 80
             },
+
             {
                 level: 4,
                 salary: 105000,
@@ -309,6 +428,7 @@ const CAREER_SECTORS = [
                 knowledge: 80,
                 energy: 75
             }
+
         ]
     },
 
@@ -330,6 +450,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 10000,
@@ -337,6 +458,7 @@ const CAREER_SECTORS = [
                 knowledge: 20,
                 energy: 90
             },
+
             {
                 level: 2,
                 salary: 25000,
@@ -344,6 +466,7 @@ const CAREER_SECTORS = [
                 knowledge: 30,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 50000,
@@ -351,6 +474,7 @@ const CAREER_SECTORS = [
                 knowledge: 55,
                 energy: 80
             },
+
             {
                 level: 4,
                 salary: 100000,
@@ -358,6 +482,7 @@ const CAREER_SECTORS = [
                 knowledge: 80,
                 energy: 70
             }
+
         ]
     },
 
@@ -379,6 +504,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 8000,
@@ -386,6 +512,7 @@ const CAREER_SECTORS = [
                 knowledge: 10,
                 energy: 100
             },
+
             {
                 level: 2,
                 salary: 24000,
@@ -393,6 +520,7 @@ const CAREER_SECTORS = [
                 knowledge: 25,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 56000,
@@ -400,6 +528,7 @@ const CAREER_SECTORS = [
                 knowledge: 50,
                 energy: 75
             },
+
             {
                 level: 4,
                 salary: 115000,
@@ -407,6 +536,7 @@ const CAREER_SECTORS = [
                 knowledge: 75,
                 energy: 65
             }
+
         ]
     },
 
@@ -428,6 +558,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 12000,
@@ -435,6 +566,7 @@ const CAREER_SECTORS = [
                 knowledge: 10,
                 energy: 95
             },
+
             {
                 level: 2,
                 salary: 27000,
@@ -442,6 +574,7 @@ const CAREER_SECTORS = [
                 knowledge: 30,
                 energy: 85
             },
+
             {
                 level: 3,
                 salary: 52000,
@@ -449,6 +582,7 @@ const CAREER_SECTORS = [
                 knowledge: 55,
                 energy: 75
             },
+
             {
                 level: 4,
                 salary: 110000,
@@ -456,6 +590,7 @@ const CAREER_SECTORS = [
                 knowledge: 75,
                 energy: 65
             }
+
         ]
     },
 
@@ -477,6 +612,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 14000,
@@ -484,6 +620,7 @@ const CAREER_SECTORS = [
                 knowledge: 15,
                 energy: 95
             },
+
             {
                 level: 2,
                 salary: 32000,
@@ -491,6 +628,7 @@ const CAREER_SECTORS = [
                 knowledge: 35,
                 energy: 85
             },
+
             {
                 level: 3,
                 salary: 65000,
@@ -498,6 +636,7 @@ const CAREER_SECTORS = [
                 knowledge: 60,
                 energy: 75
             },
+
             {
                 level: 4,
                 salary: 135000,
@@ -505,6 +644,7 @@ const CAREER_SECTORS = [
                 knowledge: 85,
                 energy: 70
             }
+
         ]
     },
 
@@ -526,6 +666,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 16000,
@@ -533,6 +674,7 @@ const CAREER_SECTORS = [
                 knowledge: 15,
                 energy: 95
             },
+
             {
                 level: 2,
                 salary: 35000,
@@ -540,6 +682,7 @@ const CAREER_SECTORS = [
                 knowledge: 35,
                 energy: 85
             },
+
             {
                 level: 3,
                 salary: 62000,
@@ -547,6 +690,7 @@ const CAREER_SECTORS = [
                 knowledge: 55,
                 energy: 75
             },
+
             {
                 level: 4,
                 salary: 125000,
@@ -554,6 +698,7 @@ const CAREER_SECTORS = [
                 knowledge: 80,
                 energy: 70
             }
+
         ]
     },
 
@@ -575,6 +720,7 @@ const CAREER_SECTORS = [
         ],
 
         stats: [
+
             {
                 level: 1,
                 salary: 12000,
@@ -582,6 +728,7 @@ const CAREER_SECTORS = [
                 knowledge: 10,
                 energy: 100
             },
+
             {
                 level: 2,
                 salary: 28000,
@@ -589,6 +736,7 @@ const CAREER_SECTORS = [
                 knowledge: 35,
                 energy: 90
             },
+
             {
                 level: 3,
                 salary: 54000,
@@ -596,6 +744,7 @@ const CAREER_SECTORS = [
                 knowledge: 60,
                 energy: 80
             },
+
             {
                 level: 4,
                 salary: 120000,
@@ -603,46 +752,74 @@ const CAREER_SECTORS = [
                 knowledge: 80,
                 energy: 70
             }
+
         ]
     }
 
 ];
 
-/* =========================================================
-   4. ПОКАЗНИКИ КАР'ЄРНИХ РІВНІВ
-
-   ПОКИ СТАЛІ.
-   Пізніше можемо задати різні для професій. вже зробилиии
-========================================================= */
-
 
 /* =========================================================
-   4.1. ОТРИМАННЯ ПАРАМЕТРІВ КАР'ЄРИ
+   4. ОТРИМАННЯ ПАРАМЕТРІВ КАР'ЄРИ
 ========================================================= */
+
 function getCareerSectorById(sectorId) {
-    return CAREER_SECTORS.find(
-        sector => sector.id === sectorId
-    );  }
-function getCareerStats(sectorId, level = 1) {
-    const sector = getCareerSectorById(sectorId);
 
-    if (!sector || !sector.stats) {
-        return null;
-    }
-    return (
-        sector.stats.find(
-            item => item.level === level
-        ) ||
-        sector.stats[0]
+    return CAREER_SECTORS.find(
+        sector =>
+            sector.id === sectorId
     );
+
 }
+
+
+function getCareerStats(
+    sectorId,
+    level = 1
+) {
+
+    const sector =
+        getCareerSectorById(
+            sectorId
+        );
+
+
+    if (
+        !sector ||
+        !sector.stats
+    ) {
+
+        return null;
+
+    }
+
+
+    return (
+
+        sector.stats.find(
+            item =>
+                item.level === level
+        )
+
+        ||
+
+        sector.stats[0]
+
+    );
+
+}
+
 
 /* =========================================================
    5. МРІЇ — 20 ШТУК
 
-   image поки null.
-   Коли будуть готові PNG:
-   image: "assets/dream-01.png"
+   Кар'єра НЕ є фінальною метою.
+
+   Для переходу до реалізації Мрії
+   необхідно:
+
+   1. Досягти 4 професійного рівня.
+   2. Виконати всі умови своєї Мрії.
 ========================================================= */
 
 const DREAMS = [
@@ -652,6 +829,7 @@ const DREAMS = [
         icon: "🌍",
         image: null,
         name: "Навколосвітня подорож",
+
         requirements: {
             money: 400000,
             reputation: 25,
@@ -665,6 +843,7 @@ const DREAMS = [
         icon: "🏎️",
         image: null,
         name: "Власний автопарк",
+
         requirements: {
             money: 600000,
             reputation: 40,
@@ -678,6 +857,7 @@ const DREAMS = [
         icon: "📖",
         image: null,
         name: "Написати та видати власну книгу",
+
         requirements: {
             money: 200000,
             reputation: 50,
@@ -691,6 +871,7 @@ const DREAMS = [
         icon: "🐾",
         image: null,
         name: "Відкрити притулок для тварин",
+
         requirements: {
             money: 500000,
             reputation: 60,
@@ -704,6 +885,7 @@ const DREAMS = [
         icon: "🏔️",
         image: null,
         name: "Підкорити Еверест",
+
         requirements: {
             money: 300000,
             reputation: 30,
@@ -717,6 +899,7 @@ const DREAMS = [
         icon: "🛥️",
         image: null,
         name: "Купити власну яхту",
+
         requirements: {
             money: 900000,
             reputation: 50,
@@ -730,6 +913,7 @@ const DREAMS = [
         icon: "✈️",
         image: null,
         name: "Власний літак",
+
         requirements: {
             money: 1200000,
             reputation: 70,
@@ -743,6 +927,7 @@ const DREAMS = [
         icon: "🏡",
         image: null,
         name: "Будинок мрії",
+
         requirements: {
             money: 700000,
             reputation: 40,
@@ -756,6 +941,7 @@ const DREAMS = [
         icon: "🌴",
         image: null,
         name: "Будинок біля океану",
+
         requirements: {
             money: 850000,
             reputation: 45,
@@ -769,6 +955,7 @@ const DREAMS = [
         icon: "🎓",
         image: null,
         name: "Навчатися у найкращому університеті",
+
         requirements: {
             money: 350000,
             reputation: 35,
@@ -782,6 +969,7 @@ const DREAMS = [
         icon: "❤️",
         image: null,
         name: "Займатися благодійністю",
+
         requirements: {
             money: 400000,
             reputation: 80,
@@ -795,6 +983,7 @@ const DREAMS = [
         icon: "🌱",
         image: null,
         name: "Створити власний екопроєкт",
+
         requirements: {
             money: 450000,
             reputation: 65,
@@ -808,6 +997,7 @@ const DREAMS = [
         icon: "🎭",
         image: null,
         name: "Власний творчий простір",
+
         requirements: {
             money: 550000,
             reputation: 65,
@@ -821,6 +1011,7 @@ const DREAMS = [
         icon: "🏦",
         image: null,
         name: "Власний бізнес",
+
         requirements: {
             money: 700000,
             reputation: 70,
@@ -834,6 +1025,7 @@ const DREAMS = [
         icon: "🤝",
         image: null,
         name: "Створити благодійний фонд",
+
         requirements: {
             money: 650000,
             reputation: 90,
@@ -847,6 +1039,7 @@ const DREAMS = [
         icon: "⭐",
         image: null,
         name: "Мрія життя",
+
         requirements: {
             money: 1000000,
             reputation: 80,
@@ -860,6 +1053,7 @@ const DREAMS = [
         icon: "🏅",
         image: null,
         name: "Досягти ідеальної спортивної форми",
+
         requirements: {
             money: 250000,
             reputation: 40,
@@ -873,6 +1067,7 @@ const DREAMS = [
         icon: "🗣️",
         image: null,
         name: "Вільно володіти декількома іноземними мовами",
+
         requirements: {
             money: 300000,
             reputation: 45,
@@ -886,6 +1081,7 @@ const DREAMS = [
         icon: "🎵",
         image: null,
         name: "Записати музичний альбом",
+
         requirements: {
             money: 500000,
             reputation: 75,
@@ -899,6 +1095,7 @@ const DREAMS = [
         icon: "🌐",
         image: null,
         name: "Реалізувати проєкт міжнародного масштабу",
+
         requirements: {
             money: 800000,
             reputation: 90,
@@ -916,124 +1113,208 @@ const DREAMS = [
 
 const CELL_TYPES = {
 
-    income: {
-        id: "income",
-        icon: "💰",
-        name: "Дохід",
+    /* =====================================================
+       START
+
+       Зарплата НЕ прив'язана
+       до клітинки START.
+
+       Зарплата виплачується
+       окремо кожні 3 власні ходи.
+    ===================================================== */
+
+    start: {
+        id: "start",
+        icon: "🏁",
+        name: "START",
         description:
-            "Отримання зарплати та доходу від відкритих активів."
+            "Початок нового проходження кола."
     },
+
+
+    /* =====================================================
+       БАНК
+    ===================================================== */
 
     bank: {
         id: "bank",
         icon: "🏦",
         name: "Банк",
         description:
-            "Фінансова можливість: заощадження, депозит, кредит або інше рішення."
+            "Банківський продукт або фінансове рішення."
     },
+
+
+    /* =====================================================
+       ПОДІЯ
+    ===================================================== */
 
     event: {
         id: "event",
         icon: "🎲",
         name: "Подія",
         description:
-            "Обери одну з трьох карток та дізнайся, що сталося."
+            "Професійна або фінансова ситуація, у якій потрібно прийняти рішення."
     },
+
+
+    /* =====================================================
+       ЖИТТЯ
+
+       Використовується на великому колі.
+       Рішення обов'язкове.
+
+       Якщо гравець відмовляється
+       приймати рішення —
+       пропускає наступний хід.
+    ===================================================== */
 
     life: {
         id: "life",
         icon: "❤️",
         name: "Життя",
         description:
-            "Життєва ситуація, яка може змінити твої показники."
+            "Життєва ситуація зі свідомим вибором та наслідками."
     },
+
+
+    /* =====================================================
+       ДОЛЯ
+
+       Використовується на великому колі.
+       Відмовитися від наслідків не можна.
+    ===================================================== */
 
     fate: {
         id: "fate",
         icon: "⚡",
         name: "Доля",
         description:
-            "Випадкова подія. Тут усе вирішує випадок."
+            "Випадкова подія, яка спрацьовує незалежно від бажання гравця."
     },
+
+
+    /* =====================================================
+       LOUNGE
+    ===================================================== */
 
     lounge: {
         id: "lounge",
         icon: "🎯",
         name: "Lounge & Хобі",
         description:
-            "Відпочинок, хобі та можливість відновити енергію."
+            "Відновлення енергії до максимального значення."
     },
+
+
+    /* =====================================================
+       АКАДЕМІЯ
+    ===================================================== */
 
     academy: {
         id: "academy",
         icon: "🎓",
         name: "Академія & Soft Skills",
         description:
-            "Розвиток знань, навичок і кар'єрних можливостей."
+            "Обери один із варіантів розвитку навичок."
     },
+
+
+    /* =====================================================
+       ПЕРЕХІД
+
+       Це НЕ автоматичний перехід.
+
+       Умови:
+       - мале коло вже пройдене;
+       - професійний рівень не нижче 2.
+    ===================================================== */
 
     transition: {
         id: "transition",
         icon: "➡️",
-        name: "Перехід на велике поле",
+        name: "Перехід на велике коло",
         description:
-            "Перший етап завершено. Ти переходиш на зовнішній життєвий шлях."
+            "Перевіряємо умови переходу на великий життєвий шлях."
     },
+
+
+    /* =====================================================
+       ПЕРЕВІРКА МРІЇ
+    ===================================================== */
 
     dreamCheck: {
         id: "dreamCheck",
         icon: "✨",
         name: "Перевірка Мрії",
         description:
-            "Перевіряємо, чи достатньо ресурсів для досягнення твоєї Мрії."
+            "Перевіряємо фінальний професійний рівень та всі умови твоєї Мрії."
     }
 
 };
 
 
 /* =========================================================
-   7. ВНУТРІШНІЙ КВАДРАТ — 28
+   7. МАЛЕНЬКЕ КОЛО — 28 КЛІТИНОК
 
    Рух за годинниковою стрілкою.
 
-   1  — Старт / Дохід
+   За правилами:
+
+   - гра починається тут;
+   - основне завдання:
+     професійний розвиток
+     + накопичення ресурсів;
+
+   - картки Життя та Доля
+     додаються вже на великому колі.
+
+   СПЕЦІАЛЬНІ ПОЛЯ:
+
+   1  — START
    6  — Lounge
    11 — Academy
    22 — Lounge
    25 — Academy
-   28 — Перехід
+   28 — зона переходу
 ========================================================= */
 
 const INNER_BOARD = [
 
-    "income",       // 1
+    "start",        // 1
+
     "bank",         // 2
     "event",        // 3
     "bank",         // 4
-    "life",         // 5
-    "lounge",       // 6
-    "event",        // 7
+    "event",        // 5
 
+    "lounge",       // 6
+
+    "event",        // 7
     "bank",         // 8
-    "fate",         // 9
-    "life",         // 10
+    "event",        // 9
+    "bank",         // 10
+
     "academy",      // 11
+
     "event",        // 12
     "bank",         // 13
-    "life",         // 14
-
-    "event",        // 15
-    "bank",         // 16
-    "fate",         // 17
-    "life",         // 18
+    "event",        // 14
+    "bank",         // 15
+    "event",        // 16
+    "bank",         // 17
+    "event",        // 18
     "bank",         // 19
     "event",        // 20
-    "life",         // 21
+    "bank",         // 21
 
     "lounge",       // 22
+
     "event",        // 23
     "bank",         // 24
+
     "academy",      // 25
+
     "event",        // 26
     "bank",         // 27
 
@@ -1043,11 +1324,19 @@ const INNER_BOARD = [
 
 
 /* =========================================================
-   8. ЗОВНІШНІЙ КВАДРАТ — 56
+   8. ВЕЛИКЕ КОЛО — 56 КЛІТИНОК
 
    Рух проти годинникової стрілки.
 
-   1  — Дохід
+   На великому колі
+   до гри додаються:
+
+   - Життя
+   - Доля
+
+   СПЕЦІАЛЬНІ ПОЛЯ:
+
+   1  — START
    10 — Lounge
    20 — Academy
    38 — Lounge
@@ -1055,283 +1344,127 @@ const INNER_BOARD = [
    56 — Перевірка Мрії
 ========================================================= */
 
-const OUTER_BOARD = Array.from(
-    { length: 56 },
-    (_, index) => {
+const OUTER_BOARD =
+    Array.from(
+        {
+            length:
+                GAME_CONFIG.outerCells
+        },
+        (_, index) => {
 
-        const position =
-            index + 1;
+            const position =
+                index + 1;
 
 
-        if (position === 1) {
-            return "income";
+            /* START */
+
+            if (position === 1) {
+
+                return "start";
+
+            }
+
+
+            /* Lounge */
+
+            if (
+                position === 10 ||
+                position === 38
+            ) {
+
+                return "lounge";
+
+            }
+
+
+            /* Academy */
+
+            if (
+                position === 20 ||
+                position === 48
+            ) {
+
+                return "academy";
+
+            }
+
+
+            /* Перевірка Мрії */
+
+            if (position === 56) {
+
+                return "dreamCheck";
+
+            }
+
+
+            /* =================================================
+               ЗВИЧАЙНІ ПОЛЯ ВЕЛИКОГО КОЛА
+            ================================================= */
+
+            const pattern = [
+
+                "bank",
+                "event",
+                "life",
+                "bank",
+                "fate",
+                "event",
+                "life"
+
+            ];
+
+
+            return pattern[
+                (position - 2) %
+                pattern.length
+            ];
+
         }
-
-
-        if (
-            position === 10 ||
-            position === 38
-        ) {
-            return "lounge";
-        }
-
-
-        if (
-            position === 20 ||
-            position === 48
-        ) {
-            return "academy";
-        }
-
-
-        if (position === 56) {
-            return "dreamCheck";
-        }
-
-
-        const pattern = [
-
-            "bank",
-            "event",
-            "life",
-            "bank",
-            "fate",
-            "event",
-            "life"
-
-        ];
-
-
-        return pattern[
-            (position - 2) %
-            pattern.length
-        ];
-
-    }
-);
+    );
 
 
 /* =========================================================
-   9. ТЕСТОВІ КАРТКИ
+   9. КОЛОДИ КАРТОК
 
-   ПОТІМ ЗАМІНИМО ФІНАЛЬНИМИ.
+   ФІНАЛЬНІ КАРТКИ ПІДКЛЮЧИМО
+   В НАСТУПНІЙ ЧАСТИНІ.
+
+   ВАЖЛИВО:
+
+   - Події Кола 1
+     і Події Кола 2
+     будуть окремими.
+
+   - Життя та Доля
+     використовуються на великому колі.
+
+   - Банк матиме власний
+     каталог продуктів.
+
+   Поки залишаємо структуру,
+   щоб інші функції гри
+   не падали під час підключення.
 ========================================================= */
 
-const CARD_DECKS = {
+const INNER_CARD_DECKS = {
 
-    event: [
+    event: [],
 
-        {
-            title: "Нова можливість",
-            text:
-                "Тобі запропонували взяти участь у цікавому проєкті.",
-            effects: {
-                knowledge: 10,
-                reputation: 5,
-                energy: -5
-            }
-        },
+    bank: []
 
-        {
-            title: "Новий виклик",
-            text:
-                "Ти впорався зі складним завданням і отримав новий досвід.",
-            effects: {
-                knowledge: 15,
-                energy: -10
-            }
-        },
-
-        {
-            title: "Корисне знайомство",
-            text:
-                "Нове знайомство відкрило перед тобою цікаві можливості.",
-            effects: {
-                reputation: 10
-            }
-        },
-
-        {
-            title: "Помилка — теж досвід",
-            text:
-                "Не все вдалося, але ти зробив важливі висновки.",
-            effects: {
-                knowledge: 10,
-                money: -5000
-            }
-        },
-
-        {
-            title: "Вдалий день",
-            text:
-                "Сьогодні все складається на твою користь.",
-            effects: {
-                money: 10000,
-                energy: 5
-            }
-        }
-
-    ],
+};
 
 
-    bank: [
+const OUTER_CARD_DECKS = {
 
-        {
-            title: "Вдале заощадження",
-            text:
-                "Ти грамотно розподілив гроші.",
-            effects: {
-                money: 15000,
-                knowledge: 5
-            }
-        },
+    event: [],
 
-        {
-            title: "Фінансова консультація",
-            text:
-                "Ти отримав корисні знання про особисті фінанси.",
-            effects: {
-                knowledge: 10
-            }
-        },
+    bank: [],
 
-        {
-            title: "Несподівана витрата",
-            text:
-                "Довелося використати частину накопичень.",
-            effects: {
-                money: -10000
-            }
-        },
+    life: [],
 
-        {
-            title: "Вигідна можливість",
-            text:
-                "Вдале фінансове рішення принесло прибуток.",
-            effects: {
-                money: 20000,
-                reputation: 5
-            }
-        },
-
-        {
-            title: "Фінансова дисципліна",
-            text:
-                "Ти відмовився від імпульсивної покупки.",
-            effects: {
-                money: 10000,
-                knowledge: 5
-            }
-        }
-
-    ],
-
-
-    life: [
-
-        {
-            title: "Час для себе",
-            text:
-                "Ти добре відпочив та відновив сили.",
-            effects: {
-                energy: 15
-            }
-        },
-
-        {
-            title: "Новий курс",
-            text:
-                "Ти вирішив інвестувати час у навчання.",
-            effects: {
-                knowledge: 15,
-                energy: -5
-            }
-        },
-
-        {
-            title: "Допомога друзям",
-            text:
-                "Твоя підтримка не залишилась непоміченою.",
-            effects: {
-                reputation: 10,
-                energy: -5
-            }
-        },
-
-        {
-            title: "Велика покупка",
-            text:
-                "Ти придбав річ, яку давно хотів.",
-            effects: {
-                money: -15000,
-                energy: 10
-            }
-        },
-
-        {
-            title: "Баланс",
-            text:
-                "Тобі вдалося поєднати роботу й відпочинок.",
-            effects: {
-                energy: 10,
-                reputation: 5
-            }
-        }
-
-    ],
-
-
-    fate: [
-
-        {
-            title: "Доля посміхнулась",
-            text:
-                "Сьогодні тобі щастить.",
-            effects: {
-                money: 20000
-            }
-        },
-
-        {
-            title: "Неочікуваний поворот",
-            text:
-                "Плани змінилися, але ти отримав новий досвід.",
-            effects: {
-                knowledge: 10,
-                energy: -10
-            }
-        },
-
-        {
-            title: "Приємний сюрприз",
-            text:
-                "Ти отримав гарну новину.",
-            effects: {
-                reputation: 10,
-                energy: 10
-            }
-        },
-
-        {
-            title: "Складний день",
-            text:
-                "Тобі потрібно трохи відновити сили.",
-            effects: {
-                energy: -15
-            }
-        },
-
-        {
-            title: "Вдалий шанс",
-            text:
-                "Випадкова можливість принесла хороший результат.",
-            effects: {
-                money: 10000,
-                reputation: 10
-            }
-        }
-
-    ]
+    fate: []
 
 };
 
@@ -1348,17 +1481,39 @@ const gameState = {
 
     currentTurn: "player",
 
-   playerTurns: 0,
 
-   financialPeriod: 0,
+    /* =====================================================
+       ХОДИ ТА ФІНАНСОВІ ПЕРІОДИ
+    ===================================================== */
+
+    playerTurns: 0,
+
+    financialPeriod: 0,
+
+
+    /* Поточне значення кубика */
 
     diceValue: null,
 
+
+    /* Поточна ціль руху */
+
     target: null,
+
+
+    /* Обрана Мрія */
 
     selectedDreamId: null,
 
-    history:[],
+
+    /* Журнал гри */
+
+    history: [],
+
+
+    /* =====================================================
+       ГРАВЕЦЬ
+    ===================================================== */
 
     player: {
 
@@ -1372,32 +1527,168 @@ const gameState = {
 
         sector: null,
 
+
+        /* 0 = професійний рівень 1 */
+
         careerLevel: 0,
+
 
         dream: null,
 
-       salary: 0,
-       money: 0,
+
+        /* =================================================
+           ФІНАНСИ
+        ================================================= */
+
+        salary: 0,
+
+        money: 0,
+
+
+        /* Додатковий регулярний дохід
+           з карток / активів */
+
+        passiveIncome: 0,
+
+
+        /* =================================================
+           ОСНОВНІ РЕСУРСИ
+        ================================================= */
+
         reputation: 0,
+
         knowledge: 0,
+
         energy: 0,
+
+
+        /* =================================================
+           ПОЛЕ
+        ================================================= */
 
         board: "inner",
 
-        position: 1
+        position: 1,
+
+
+        /* =================================================
+           ПРОХОДЖЕННЯ КІЛ
+        ================================================= */
+
+        innerLaps: 0,
+
+        outerLaps: 0,
+
+
+        /* Після виконання умов
+           на повторному малому колі
+           перехід робимо
+           перед наступним ходом */
+
+        pendingOuterTransition: false,
+
+
+        /* =================================================
+           ПРОПУСК ХОДУ
+
+           Використовується,
+           наприклад,
+           для карток Життя.
+        ================================================= */
+
+        skipTurns: 0,
+
+
+        /* =================================================
+           БАНК
+        ================================================= */
+
+        bank: {
+
+            /* 3 додаткові звернення */
+
+            extraVisits:
+                GAME_CONFIG
+                    .startingBankTokens,
+
+            premium: false,
+
+            premiumExtraGranted: false,
+
+            products: [],
+
+            debts: []
+
+        },
+
+
+        /* =================================================
+           ТИМЧАСОВІ / ПОСТІЙНІ ЕФЕКТИ
+        ================================================= */
+
+        effects: {
+
+            /* Якщо Lounge був відвіданий
+               при енергії 100,
+               наступне повне коло
+               енергія не зменшується */
+
+            protectEnergyForLap: false,
+
+            protectedEnergyBoard: null,
+
+            protectedEnergyLap: null,
+
+
+            /* Сімейне вогнище */
+
+            familyHearth: false,
+
+
+            /* Тимчасові бонуси енергії */
+
+            energyPerTurn: 0,
+
+            energyPerTurnTurnsLeft: 0,
+
+
+            /* Постійний дохід */
+
+            incomePerTurn: 0,
+
+
+            /* Відкладені виплати */
+
+            delayedPayments: []
+
+        }
 
     },
+
+
+    /* =====================================================
+       AI
+    ===================================================== */
 
     opponents: []
 
 };
-
 
 /* =========================================================
    11. ДОПОМІЖНІ ФУНКЦІЇ
 ========================================================= */
 
 function randomItem(array) {
+
+    if (
+        !Array.isArray(array) ||
+        array.length === 0
+    ) {
+
+        return null;
+
+    }
+
 
     return array[
         Math.floor(
@@ -1423,28 +1714,98 @@ function delay(ms) {
 
     return new Promise(
         resolve =>
-            setTimeout(resolve, ms)
+            setTimeout(
+                resolve,
+                ms
+            )
     );
 
 }
 
 
+/* =========================================================
+   ЗАМІНА ЕКРАНА
+========================================================= */
+
 function setScreen(html) {
 
-    app.innerHTML = html;
+    app.innerHTML =
+        html;
+
 
     window.scrollTo({
+
         top: 0,
+
         behavior: "instant"
+
     });
 
 }
 
 
+/* =========================================================
+   ФОРМАТ ГРОШЕЙ
+========================================================= */
+
 function formatMoney(value) {
 
-    return Number(value)
-        .toLocaleString("uk-UA");
+    return Number(
+        value || 0
+    ).toLocaleString(
+        "uk-UA"
+    );
+
+}
+
+
+/* =========================================================
+   ОБМЕЖЕННЯ ПОКАЗНИКІВ
+
+   Репутація та знання
+   не можуть бути менше 0.
+
+   Енергія:
+   0–100.
+========================================================= */
+
+function clampPlayerResources(
+    participant
+) {
+
+    if (!participant) {
+        return;
+    }
+
+
+    participant.reputation =
+        Math.max(
+            0,
+            Number(
+                participant.reputation
+            ) || 0
+        );
+
+
+    participant.knowledge =
+        Math.max(
+            0,
+            Number(
+                participant.knowledge
+            ) || 0
+        );
+
+
+    participant.energy =
+        Math.max(
+            0,
+            Math.min(
+                GAME_CONFIG.maxEnergy,
+                Number(
+                    participant.energy
+                ) || 0
+            )
+        );
 
 }
 
@@ -1454,50 +1815,170 @@ function formatMoney(value) {
 ========================================================= */
 
 function isGirl(
-    gender = gameState.player.gender
+    gender =
+        gameState.player.gender
 ) {
 
-    return gender === "girl";
+    return (
+        gender === "girl"
+    );
 
 }
 
 
+/* =========================================================
+   ГОТОВА / ГОТОВИЙ
+========================================================= */
+
 function getReadyText() {
 
     return isGirl()
+
         ? "ГОТОВА?"
+
         : "ГОТОВИЙ?";
 
 }
 
 
+/* =========================================================
+   ПРОФЕСІЯ ЗА СТАТТЮ
+
+   У CAREER_SECTORS назви записані:
+
+   чоловіча форма /
+   жіноча форма
+========================================================= */
+
 function getProfessionName(
     profession,
-    gender = gameState.player.gender
+    gender =
+        gameState.player.gender
 ) {
 
     if (!profession) {
+
         return "";
+
     }
 
 
     const parts =
         profession
+
             .split("/")
+
             .map(
                 part =>
                     part.trim()
             );
 
 
-    if (parts.length < 2) {
+    if (
+        parts.length < 2
+    ) {
+
         return profession;
+
     }
 
 
-    return gender === "girl"
+    return (
+        gender === "girl"
+    )
+
         ? parts[1]
+
         : parts[0];
+
+}
+
+
+/* =========================================================
+   ТЕКСТ "ПІДНЯВСЯ / ПІДНЯЛАСЯ"
+========================================================= */
+
+function getCareerPromotionText(
+    participant =
+        gameState.player
+) {
+
+    return (
+        participant.gender === "girl"
+    )
+
+        ? "Ти піднялася на нову професійну сходинку!"
+
+        : "Ти піднявся на нову професійну сходинку!";
+
+}
+
+
+/* =========================================================
+   ТЕКСТ "ПОТРАПИВ / ПОТРАПИЛА"
+========================================================= */
+
+function getLandedText(
+    participant =
+        gameState.player
+) {
+
+    return (
+        participant.gender === "girl"
+    )
+
+        ? "Ти потрапила"
+
+        : "Ти потрапив";
+
+}
+
+
+/* =========================================================
+   ПОТОЧНИЙ ПРОФЕСІЙНИЙ РІВЕНЬ
+
+   У коді:
+   careerLevel 0 = рівень 1
+   careerLevel 1 = рівень 2
+   careerLevel 2 = рівень 3
+   careerLevel 3 = рівень 4
+========================================================= */
+
+function getDisplayedCareerLevel(
+    participant
+) {
+
+    return (
+        Number(
+            participant?.careerLevel
+        ) || 0
+    ) + 1;
+
+}
+
+
+/* =========================================================
+   ЧИ Є ФІНАЛЬНИЙ ПРОФЕСІЙНИЙ РІВЕНЬ
+========================================================= */
+
+function hasFinalCareerLevel(
+    participant
+) {
+
+    if (
+        !participant ||
+        !participant.sector
+    ) {
+
+        return false;
+
+    }
+
+
+    return (
+        participant.careerLevel >=
+        participant.sector.levels.length - 1
+    );
 
 }
 
@@ -1586,6 +2067,7 @@ function showModeScreen() {
 
                 <div class="mode-options">
 
+
                     <button
                         id="singleModeButton"
                         class="mode-option"
@@ -1626,6 +2108,7 @@ function showModeScreen() {
 
                     </button>
 
+
                 </div>
 
             </div>
@@ -1645,6 +2128,7 @@ function showModeScreen() {
 
                 gameState.mode =
                     "single";
+
 
                 showNameScreen();
 
@@ -1690,10 +2174,12 @@ function showMultiplayerPlaceholder() {
                     👥 Спільна гра
                 </h2>
 
+
                 <p>
                     Онлайн-кімнати підключимо
                     на наступному етапі.
                 </p>
+
 
                 <button
                     id="backToModeButton"
@@ -1794,6 +2280,7 @@ function showNameScreen() {
 
                         <div class="gender-options">
 
+
                             <button
                                 class="
                                     gender-button
@@ -1806,7 +2293,9 @@ function showNameScreen() {
                                 data-gender="boy"
                             >
 
-                                <span>👦</span>
+                                <span>
+                                    👦
+                                </span>
 
                                 <strong>
                                     Я хлопчик
@@ -1827,13 +2316,16 @@ function showNameScreen() {
                                 data-gender="girl"
                             >
 
-                                <span>👧</span>
+                                <span>
+                                    👧
+                                </span>
 
                                 <strong>
                                     Я дівчинка
                                 </strong>
 
                             </button>
+
 
                         </div>
 
@@ -1852,6 +2344,7 @@ function showNameScreen() {
                         id="nameError"
                         class="form-error"
                     ></div>
+
 
                 </div>
 
@@ -1875,35 +2368,38 @@ function showNameScreen() {
         .querySelectorAll(
             ".gender-button"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    gameState.player.gender =
-                        button.dataset.gender;
+                        gameState.player.gender =
+                            button.dataset.gender;
 
 
-                    document
-                        .querySelectorAll(
-                            ".gender-button"
-                        )
-                        .forEach(item =>
-                            item.classList.remove(
-                                "selected"
+                        document
+                            .querySelectorAll(
+                                ".gender-button"
                             )
+                            .forEach(
+                                item =>
+                                    item.classList.remove(
+                                        "selected"
+                                    )
+                            );
+
+
+                        button.classList.add(
+                            "selected"
                         );
 
+                    }
+                );
 
-                    button.classList.add(
-                        "selected"
-                    );
-
-                }
-            );
-
-        });
+            }
+        );
 
 
     document
@@ -1921,8 +2417,7 @@ function showNameScreen() {
         event => {
 
             if (
-                event.key ===
-                "Enter"
+                event.key === "Enter"
             ) {
 
                 savePlayerSetup();
@@ -1973,15 +2468,19 @@ function savePlayerSetup() {
             "Напиши своє ім'я 🙂";
 
         return;
+
     }
 
 
-    if (!gameState.player.gender) {
+    if (
+        !gameState.player.gender
+    ) {
 
         error.textContent =
             "Обери: хлопчик чи дівчинка 🙂";
 
         return;
+
     }
 
 
@@ -2006,32 +2505,36 @@ function showTokenSelection() {
 
     const tokensHTML =
         TOKENS
-            .map(token => `
 
-                <button
-                    class="
-                        token-option
-                        ${
-                            gameState.player.token?.id === token.id
-                            ? "selected"
-                            : ""
-                        }
-                    "
-                    data-token="${token.id}"
-                >
+            .map(
+                token => `
 
-                    <img
-                        src="${token.image}"
-                        alt="${token.name}"
+                    <button
+                        class="
+                            token-option
+                            ${
+                                gameState.player.token?.id === token.id
+                                ? "selected"
+                                : ""
+                            }
+                        "
+                        data-token="${token.id}"
                     >
 
-                    <span>
-                        ${token.name}
-                    </span>
+                        <img
+                            src="${token.image}"
+                            alt="${token.name}"
+                        >
 
-                </button>
+                        <span>
+                            ${token.name}
+                        </span>
 
-            `)
+                    </button>
+
+                `
+            )
+
             .join("");
 
 
@@ -2088,6 +2591,7 @@ function showTokenSelection() {
 
                     </div>
 
+
                 </div>
 
             </div>
@@ -2101,17 +2605,22 @@ function showTokenSelection() {
         .querySelectorAll(
             ".token-option"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () =>
-                    selectToken(
-                        button.dataset.token
-                    )
-            );
+                button.addEventListener(
+                    "click",
+                    () => {
 
-        });
+                        selectToken(
+                            button.dataset.token
+                        );
+
+                    }
+                );
+
+            }
+        );
 
 
     document
@@ -2140,7 +2649,9 @@ function selectToken(tokenId) {
 
 
     if (!token) {
+
         return;
+
     }
 
 
@@ -2165,27 +2676,31 @@ function showCareerRandomScreen() {
 
     const careersHTML =
         CAREER_SECTORS
-            .map(sector => `
 
-                <div class="career-random-option">
+            .map(
+                sector => `
 
-                    <span class="career-random-icon">
-                        ${sector.icon}
-                    </span>
+                    <div class="career-random-option">
 
-                    <strong>
+                        <span class="career-random-icon">
+                            ${sector.icon}
+                        </span>
 
-                        ${
-                            getProfessionName(
-                                sector.levels[0]
-                            )
-                        }
+                        <strong>
 
-                    </strong>
+                            ${
+                                getProfessionName(
+                                    sector.levels[0]
+                                )
+                            }
 
-                </div>
+                        </strong>
 
-            `)
+                    </div>
+
+                `
+            )
+
             .join("");
 
 
@@ -2223,6 +2738,7 @@ function showCareerRandomScreen() {
                     class="career-random-box"
                 >
 
+
                     <div class="career-random-dice">
                         🎲
                     </div>
@@ -2240,6 +2756,7 @@ function showCareerRandomScreen() {
 
                     </span>
 
+
                 </div>
 
 
@@ -2256,6 +2773,7 @@ function showCareerRandomScreen() {
                     ${careersHTML}
 
                 </div>
+
 
             </div>
 
@@ -2288,30 +2806,91 @@ function showCareerRandomScreen() {
 
 /* =========================================================
    21. ВИПАДКОВА ПРОФЕСІЯ
+
+   ВАЖЛИВЕ ВИПРАВЛЕННЯ:
+
+   На початку гри баланс грошей
+   дорівнює зарплаті першого
+   професійного рівня.
+
+   У попередньому коді:
+   salary записувалась,
+   а money залишалось 0.
 ========================================================= */
+
 function assignRandomCareer() {
+
     const sector =
         randomItem(
             CAREER_SECTORS
         );
+
+
+    if (!sector) {
+
+        return;
+
+    }
+
+
     gameState.player.sector =
         sector;
+
+
     gameState.player.careerLevel =
         0;
+
+
     const stats =
-       getCareerStats(sector.id,1);
-        gameState.player.salary =
+        getCareerStats(
+            sector.id,
+            1
+        );
+
+
+    if (!stats) {
+
+        return;
+
+    }
+
+
+    gameState.player.salary =
         stats.salary;
+
+
+    /* =====================================================
+       СТАРТОВИЙ БАЛАНС
+    ===================================================== */
+
+    gameState.player.money =
+        stats.salary;
+
+
     gameState.player.reputation =
         stats.reputation;
+
+
     gameState.player.knowledge =
         stats.knowledge;
+
+
     gameState.player.energy =
         stats.energy;
+
+
+    clampPlayerResources(
+        gameState.player
+    );
+
+
     showCareerResult();
+
 }
+
+
 /* =========================================================
-   22. ПОКАЗ ПРОФЕСІЇ
+   22. ПОКАЗ ОТРИМАНОЇ ПРОФЕСІЇ
 ========================================================= */
 
 function showCareerResult() {
@@ -2322,6 +2901,13 @@ function showCareerResult() {
 
     const sector =
         player.sector;
+
+
+    if (!sector) {
+
+        return;
+
+    }
 
 
     const profession =
@@ -2342,9 +2928,20 @@ function showCareerResult() {
         );
 
 
+    if (
+        !box ||
+        !oldButton
+    ) {
+
+        return;
+
+    }
+
+
     box.innerHTML = `
 
         <div class="career-result-reveal">
+
 
             <div class="career-result-label">
                 🎉 ТВОЯ ПРОФЕСІЯ
@@ -2373,6 +2970,17 @@ function showCareerResult() {
 
             </div>
 
+
+            <div class="career-result-start-money">
+
+                💰 Стартовий баланс:
+                <strong>
+                    ${formatMoney(player.money)} грн
+                </strong>
+
+            </div>
+
+
         </div>
 
     `;
@@ -2400,7 +3008,7 @@ function showCareerResult() {
 
 
 /* =========================================================
-   23. ЖИТТЄВИЙ ШЛЯХ
+   23. ЖИТТЄВИЙ ШЛЯХ / КАР'ЄРНІ РІВНІ
 ========================================================= */
 
 function showCareerReveal() {
@@ -2417,108 +3025,143 @@ function showCareerReveal() {
         player.sector;
 
 
+    if (!sector) {
+
+        return;
+
+    }
+
+
     const levels =
         sector.levels
+
             .map(
-                (profession, index) => ({
+                (
                     profession,
                     index
+                ) => ({
+
+                    profession,
+                    index
+
                 })
             )
+
             .reverse();
 
 
     const careerHTML =
         levels
-            .map(item => {
 
-                const index =
-                    item.index;
+            .map(
+                item => {
 
-
-                const stats =
-                   getCareerStats(sector.id, index + 1);
+                    const index =
+                        item.index;
 
 
-                const profession =
-                    getProfessionName(
-                        item.profession
-                    );
+                    const stats =
+                        getCareerStats(
+                            sector.id,
+                            index + 1
+                        );
 
 
-                const current =
-                    index ===
-                    player.careerLevel;
+                    const profession =
+                        getProfessionName(
+                            item.profession
+                        );
 
 
-                return `
+                    const current =
+                        index ===
+                        player.careerLevel;
 
-                    <div
-                        class="
-                            career-path-card
-                            ${
-                                current
-                                ? "career-current"
-                                : "career-future"
-                            }
-                        "
-                    >
 
-                        <div class="career-level-top">
+                    return `
 
-                            <span class="career-level-number">
-                                ${index + 1}
-                            </span>
+                        <div
+                            class="
+                                career-path-card
+                                ${
+                                    current
+                                    ? "career-current"
+                                    : "career-future"
+                                }
+                            "
+                        >
 
-                            ${
-                                current
 
-                                ? `
-                                    <span class="career-current-label">
-                                        ТИ ТУТ
-                                    </span>
-                                  `
+                            <div class="career-level-top">
 
-                                : `
-                                    <span class="career-up-label">
-                                        ↑
-                                    </span>
-                                  `
-                            }
+
+                                <span class="career-level-number">
+                                    ${index + 1}
+                                </span>
+
+
+                                ${
+                                    current
+
+                                    ? `
+
+                                        <span class="career-current-label">
+                                            ТИ ТУТ
+                                        </span>
+
+                                      `
+
+                                    : `
+
+                                        <span class="career-up-label">
+                                            ↑
+                                        </span>
+
+                                      `
+                                }
+
+
+                            </div>
+
+
+                            <div class="career-job-name">
+                                ${profession}
+                            </div>
+
+
+                            <div class="career-level-stats">
+
+
+                                <span>
+                                    💰 ${formatMoney(stats.salary)}
+                                </span>
+
+
+                                <span>
+                                    ⭐ ${stats.reputation}
+                                </span>
+
+
+                                <span>
+                                    🧠 ${stats.knowledge}
+                                </span>
+
+
+                                <span>
+                                    ⚡ ${stats.energy}
+                                </span>
+
+
+                            </div>
+
 
                         </div>
 
+                    `;
 
-                        <div class="career-job-name">
-                            ${profession}
-                        </div>
+                }
+            )
 
-
-                        <div class="career-level-stats">
-
-                            <span>
-                                💰 ${formatMoney(stats.salary)}
-                            </span>
-
-                            <span>
-                                ⭐ ${stats.reputation}
-                            </span>
-
-                            <span>
-                                🧠 ${stats.knowledge}
-                            </span>
-
-                            <span>
-                                ⚡ ${stats.energy}
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            })
             .join("");
 
 
@@ -2545,6 +3188,7 @@ function showCareerReveal() {
 
                 <div class="career-raifik-side">
 
+
                     <img
                         src="assets/raifik.png"
                         class="small-game-logo"
@@ -2554,17 +3198,22 @@ function showCareerReveal() {
 
                     <div class="raifik-career-message">
 
+
                         <strong>
                             Мрія — твоя ціль.
                         </strong>
 
+
                         <br><br>
+
 
                         А кар'єра — шлях,
                         який допоможе тобі
                         до неї дістатися.
 
+
                     </div>
+
 
                 </div>
 
@@ -2591,14 +3240,17 @@ function showCareerReveal() {
                     <p class="career-description">
 
                         Ти починаєш із першої сходинки.
-                        Розвивай знання, репутацію
-                        та фінансові можливості,
-                        щоб підніматися вище.
+
+                        Розвивай знання,
+                        репутацію та енергію,
+                        щоб переходити
+                        на наступні професійні рівні.
 
                     </p>
 
 
                     <div class="career-ladder">
+
 
                         <div class="career-goal-label">
                             🏆 КАР'ЄРНА ВЕРШИНА
@@ -2612,6 +3264,7 @@ function showCareerReveal() {
                             👤 ТИ ПОЧИНАЄШ ТУТ
                         </div>
 
+
                     </div>
 
 
@@ -2621,6 +3274,7 @@ function showCareerReveal() {
                     >
                         ОБРАТИ МРІЮ
                     </button>
+
 
                 </div>
 
@@ -2664,61 +3318,71 @@ function showDreamSelection() {
 
 
     gameState.selectedDreamId =
-        gameState.player.dream?.id ||
+
+        gameState.player.dream?.id
+
+        ||
+
         null;
 
 
     const dreamsHTML =
         DREAMS
-            .map(dream => {
 
-                const visual =
-                    dream.image
+            .map(
+                dream => {
 
-                    ? `
+                    const visual =
+                        dream.image
 
-                        <img
-                            src="${dream.image}"
-                            class="dream-card-image"
-                            alt="${dream.name}"
+                        ? `
+
+                            <img
+                                src="${dream.image}"
+                                class="dream-card-image"
+                                alt="${dream.name}"
+                            >
+
+                          `
+
+                        : `
+
+                            <div class="dream-icon">
+                                ${dream.icon}
+                            </div>
+
+                          `;
+
+
+                    return `
+
+                        <button
+                            class="
+                                dream-option
+                                ${
+                                    gameState.selectedDreamId === dream.id
+                                    ? "selected"
+                                    : ""
+                                }
+                            "
+                            data-dream="${dream.id}"
                         >
 
-                      `
-
-                    : `
-
-                        <div class="dream-icon">
-                            ${dream.icon}
-                        </div>
-
-                      `;
+                            ${visual}
 
 
-                return `
+                            <div class="dream-name">
+                                ${dream.name}
+                            </div>
 
-                    <button
-                        class="
-                            dream-option
-                            ${
-                                gameState.selectedDreamId === dream.id
-                                ? "selected"
-                                : ""
-                            }
-                        "
-                        data-dream="${dream.id}"
-                    >
 
-                        ${visual}
+                        </button>
 
-                        <div class="dream-name">
-                            ${dream.name}
-                        </div>
+                    `;
 
-                    </button>
+                }
+            )
 
-                `;
-
-            })
             .join("");
 
 
@@ -2778,6 +3442,7 @@ function showDreamSelection() {
                         class="dream-details"
                     ></div>
 
+
                 </div>
 
             </div>
@@ -2791,17 +3456,22 @@ function showDreamSelection() {
         .querySelectorAll(
             ".dream-option"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () =>
-                    previewDream(
-                        button.dataset.dream
-                    )
-            );
+                button.addEventListener(
+                    "click",
+                    () => {
 
-        });
+                        previewDream(
+                            button.dataset.dream
+                        );
+
+                    }
+                );
+
+            }
+        );
 
 
     document
@@ -2845,7 +3515,9 @@ function previewDream(
 
 
     if (!dream) {
+
         return;
+
     }
 
 
@@ -2857,15 +3529,20 @@ function previewDream(
         .querySelectorAll(
             ".dream-option"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.classList.toggle(
-                "selected",
-                button.dataset.dream ===
-                dreamId
-            );
+                button.classList.toggle(
 
-        });
+                    "selected",
+
+                    button.dataset.dream ===
+                        dreamId
+
+                );
+
+            }
+        );
 
 
     const details =
@@ -2874,9 +3551,17 @@ function previewDream(
         );
 
 
+    if (!details) {
+
+        return;
+
+    }
+
+
     details.innerHTML = `
 
         <div class="dream-details-card">
+
 
             <h3>
 
@@ -2887,27 +3572,41 @@ function previewDream(
 
 
             <p>
-                Для досягнення цієї Мрії потрібно:
+                Для реалізації цієї Мрії потрібно:
             </p>
 
 
             <div class="dream-requirements">
 
+
                 <span>
                     💰 ${formatMoney(dream.requirements.money)}
                 </span>
+
 
                 <span>
                     ⭐ ${dream.requirements.reputation}
                 </span>
 
+
                 <span>
                     🧠 ${dream.requirements.knowledge}
                 </span>
 
+
                 <span>
                     ⚡ ${dream.requirements.energy}
                 </span>
+
+
+            </div>
+
+
+            <div class="dream-final-career-note">
+
+                🏆 Також потрібно досягти
+                фінального,
+                4-го професійного рівня.
 
             </div>
 
@@ -2918,6 +3617,7 @@ function previewDream(
             >
                 ОБРАТИ ЦЮ МРІЮ
             </button>
+
 
         </div>
 
@@ -2930,18 +3630,24 @@ function previewDream(
         )
         .addEventListener(
             "click",
-            () =>
+            () => {
+
                 selectDream(
                     dreamId
-                )
+                );
+
+            }
         );
 
 
     if (scroll) {
 
         details.scrollIntoView({
+
             behavior: "smooth",
+
             block: "nearest"
+
         });
 
     }
@@ -2963,7 +3669,9 @@ function selectDream(dreamId) {
 
 
     if (!dream) {
+
         return;
+
     }
 
 
@@ -2981,11 +3689,22 @@ function selectDream(dreamId) {
 
 /* =========================================================
    27. СТВОРЕННЯ AI
+
+   AI стартують за тими ж
+   базовими правилами:
+
+   - професійний рівень 1;
+   - стартовий баланс =
+     зарплата 1 рівня;
+   - починають на малому колі;
+   - мають 3 звернення до Банку;
+   - проходять ті ж кола.
 ========================================================= */
 
 function createAIPlayers() {
 
-    gameState.opponents = [];
+    gameState.opponents =
+        [];
 
 
     const availableTokens =
@@ -3027,6 +3746,7 @@ function createAIPlayers() {
         i++
     ) {
 
+
         const profile =
             profiles[i];
 
@@ -3045,15 +3765,11 @@ function createAIPlayers() {
             )[0];
 
 
-        /* Випадкова професійна сфера AI */
-
         const sector =
             randomItem(
                 CAREER_SECTORS
             );
 
-
-        /* Стартові параметри 1 рівня цієї професії */
 
         const stats =
             getCareerStats(
@@ -3064,7 +3780,8 @@ function createAIPlayers() {
 
         const ai = {
 
-            id: `ai-${i + 1}`,
+            id:
+                `ai-${i + 1}`,
 
             name:
                 profile.name,
@@ -3076,6 +3793,11 @@ function createAIPlayers() {
 
             sector,
 
+
+            /* =============================================
+               КАР'ЄРА
+            ============================================= */
+
             careerLevel: 0,
 
             dream:
@@ -3083,11 +3805,23 @@ function createAIPlayers() {
                     DREAMS
                 ),
 
+
+            /* =============================================
+               ФІНАНСИ
+            ============================================= */
+
             salary:
                 stats.salary,
 
             money:
                 stats.salary,
+
+            passiveIncome: 0,
+
+
+            /* =============================================
+               РЕСУРСИ
+            ============================================= */
 
             reputation:
                 stats.reputation,
@@ -3098,11 +3832,90 @@ function createAIPlayers() {
             energy:
                 stats.energy,
 
+
+            /* =============================================
+               ПОЛЕ
+            ============================================= */
+
             board: "inner",
 
-            position: 1
+            position: 1,
+
+            innerLaps: 0,
+
+            outerLaps: 0,
+
+            pendingOuterTransition:
+                false,
+
+
+            /* =============================================
+               ПРОПУСК ХОДУ
+            ============================================= */
+
+            skipTurns: 0,
+
+
+            /* =============================================
+               БАНК
+            ============================================= */
+
+            bank: {
+
+                extraVisits:
+                    GAME_CONFIG
+                        .startingBankTokens,
+
+                premium: false,
+
+                premiumExtraGranted:
+                    false,
+
+                products: [],
+
+                debts: []
+
+            },
+
+
+            /* =============================================
+               ЕФЕКТИ
+            ============================================= */
+
+            effects: {
+
+                protectEnergyForLap:
+                    false,
+
+                protectedEnergyBoard:
+                    null,
+
+                protectedEnergyLap:
+                    null,
+
+                familyHearth:
+                    false,
+
+                energyPerTurn:
+                    0,
+
+                energyPerTurnTurnsLeft:
+                    0,
+
+                incomePerTurn:
+                    0,
+
+                delayedPayments:
+                    []
+
+            }
 
         };
+
+
+        clampPlayerResources(
+            ai
+        );
 
 
         gameState.opponents.push(
@@ -3112,6 +3925,8 @@ function createAIPlayers() {
     }
 
 }
+
+
 /* =========================================================
    28. ЕКРАН ПЕРЕД СТАРТОМ
 ========================================================= */
@@ -3125,6 +3940,7 @@ function showBeforeGameScreen() {
     const participants = [
 
         gameState.player,
+
         ...gameState.opponents
 
     ];
@@ -3132,95 +3948,120 @@ function showBeforeGameScreen() {
 
     const participantsHTML =
         participants
-            .map(participant => {
 
-                const profession =
-                    getProfessionName(
-
-                        participant
-                            .sector
-                            .levels[
-                                participant.careerLevel
-                            ],
-
-                        participant.gender
-
-                    );
+            .map(
+                participant => {
 
 
-                const isPlayer =
-                    participant.id ===
-                    "player";
+                    const profession =
+                        getProfessionName(
+
+                            participant
+                                .sector
+                                .levels[
+                                    participant.careerLevel
+                                ],
+
+                            participant.gender
+
+                        );
 
 
-                return `
-
-                    <div
-                        class="
-                            participant-preview-card
-                            ${
-                                isPlayer
-                                ? "participant-is-player"
-                                : ""
-                            }
-                        "
-                    >
-
-                        ${
-                            isPlayer
-
-                            ? `
-                                <span class="participant-you-label">
-                                    ЦЕ ТИ
-                                </span>
-                              `
-
-                            : ""
-                        }
+                    const isPlayer =
+                        participant.id ===
+                        "player";
 
 
-                        <img
-                            src="${participant.token.image}"
-                            class="participant-preview-token"
-                            alt="${participant.name}"
+                    return `
+
+                        <div
+                            class="
+                                participant-preview-card
+                                ${
+                                    isPlayer
+                                    ? "participant-is-player"
+                                    : ""
+                                }
+                            "
                         >
 
 
-                        <div class="participant-preview-name">
-                            ${participant.name}
+                            ${
+                                isPlayer
+
+                                ? `
+
+                                    <span class="participant-you-label">
+                                        ЦЕ ТИ
+                                    </span>
+
+                                  `
+
+                                : ""
+                            }
+
+
+                            <img
+                                src="${participant.token.image}"
+                                class="participant-preview-token"
+                                alt="${participant.name}"
+                            >
+
+
+                            <div class="participant-preview-name">
+
+                                ${participant.name}
+
+                            </div>
+
+
+                            <div class="participant-preview-profession">
+
+                                ${participant.sector.icon}
+
+                                ${profession}
+
+                            </div>
+
+
+                            <div class="participant-preview-level">
+
+                                Професійний рівень:
+                                <strong>
+                                    ${
+                                        getDisplayedCareerLevel(
+                                            participant
+                                        )
+                                    }
+                                </strong>
+
+                            </div>
+
+
+                            <div class="participant-preview-dream">
+
+                                <span>
+                                    Мрія
+                                </span>
+
+                                <strong>
+
+                                    ${participant.dream.icon}
+
+                                    ${participant.dream.name}
+
+                                </strong>
+
+                            </div>
+
+
                         </div>
 
+                    `;
 
-                        <div class="participant-preview-profession">
+                }
+            )
 
-                            ${participant.sector.icon}
-
-                            ${profession}
-
-                        </div>
-
-
-                        <div class="participant-preview-dream">
-
-                            <span>
-                                Мрія
-                            </span>
-
-                            <strong>
-
-                                ${participant.dream.icon}
-
-                                ${participant.dream.name}
-
-                            </strong>
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            })
             .join("");
 
 
@@ -3261,12 +4102,30 @@ function showBeforeGameScreen() {
                 </div>
 
 
+                <div class="before-game-rules-note">
+
+                    <strong>
+                        🏁 Починаємо з маленького кола.
+                    </strong>
+
+                    <br>
+
+                    Щоб перейти на велике,
+                    потрібно пройти маленьке коло
+                    щонайменше один раз
+                    і досягти мінімум
+                    2-го професійного рівня.
+
+                </div>
+
+
                 <button
                     id="goToBoardButton"
                     class="main-game-btn"
                 >
                     ВИЙТИ НА СТАРТ
                 </button>
+
 
             </div>
 
@@ -3298,139 +4157,47 @@ function showBeforeGameScreen() {
 
 
 /* =========================================================
-   29. ГОЛОВНИЙ ЕКРАН
+   КІНЕЦЬ ЧАСТИНИ 2
 
-   ЛІВА ПАНЕЛЬ:
-   - велике лого
-   - профіль
-   - показники
-   - мрія
-   - типи комірок
+   НАСТУПНА ЧАСТИНА ПОЧИНАЄТЬСЯ:
 
-   ЦЕНТР:
-   - квадратне поле
+   29. ГОЛОВНИЙ ЕКРАН ГРИ
 
-   ПРАВА:
-   - кубик
-   - Райфик
-   - поточна картка
-   - гравці
-========================================================= */
-/* =========================================================
-   29. БАНК — ПРОДУКТИ
+   Там уже будуть:
 
-   ПОКИ ЗАКЛАДАЄМО АРХІТЕКТУРУ.
-
-   Гравець може обрати продукти,
-   якими хоче користуватися у грі.
-
-   Реальний фінансовий вплив продуктів
-   підключимо окремо.
+   - саме поле;
+   - 28 + 56 клітинок;
+   - правильний рух;
+   - START;
+   - повторні кола;
+   - перехід на велике коло;
+   - кубик;
+   - AI;
+   - HUD показників;
+   - журнал;
+   - модалки;
+   - фінансові періоди.
 ========================================================= */
 
-const BANK_PRODUCTS = [
-
-    {
-        id: "deposit",
-        icon: "💰",
-        name: "Депозит",
-        description:
-            "Розміщуй частину коштів та отримуй додатковий дохід."
-    },
-
-    {
-        id: "savings",
-        icon: "🐷",
-        name: "Накопичення",
-        description:
-            "Відкладай гроші для великих покупок та своєї Мрії."
-    },
-
-    {
-        id: "credit",
-        icon: "💳",
-        name: "Кредит",
-        description:
-            "Отримуй додаткові кошти для важливих цілей."
-    },
-
-    {
-        id: "insurance",
-        icon: "🛡️",
-        name: "Страхування",
-        description:
-            "Зменшуй вплив окремих непередбачених життєвих подій."
-    },
-
-    {
-        id: "cashback",
-        icon: "🪙",
-        name: "Кешбек",
-        description:
-            "Повертай частину коштів після певних витрат."
-    },
-
-    {
-        id: "investment",
-        icon: "📈",
-        name: "Інвестиції",
-        description:
-            "Використовуй гроші для потенційного зростання капіталу."
-    },
-
-    {
-        id: "currency",
-        icon: "💱",
-        name: "Обмін валют",
-        description:
-            "Користуйся валютними операціями у відповідних ситуаціях."
-    },
-
-    {
-        id: "card",
-        icon: "💳",
-        name: "Банківська картка",
-        description:
-            "Отримуй доступ до додаткових банківських можливостей."
-    }
-
-];
-
-
 /* =========================================================
-   30. СТАН БАНКУ ГРАВЦЯ
-========================================================= */
+   29. ГОЛОВНИЙ ЕКРАН ГРИ
 
-function ensurePlayerBankState() {
-
-    if (!gameState.player.bank) {
-
-        gameState.player.bank = {
-
-            products: []
-
-        };
-
-    }
-
-}
-
-
-/* =========================================================
-   31. ГОЛОВНИЙ ІГРОВИЙ ЕКРАН
-
-   КОМПОЗИЦІЯ:
-
-   - великий ігровий фон
-   - зовнішній маршрут 56
-   - внутрішній маршрут 28
-   - CV ЖИТТЯ у лівому верхньому кутку
-   - нижній HUD
+   ЛІВА / НИЖНЯ ЧАСТИНА:
    - професія
    - показники
    - Мрія
    - Банк
-   - панель ходу справа
+
+   ЦЕНТР:
+   - мале коло
+   - велике коло
+
+   ПРАВА ПАНЕЛЬ:
+   - кубик
+   - Райфик
+   - картки
+   - AI
+   - журнал
 ========================================================= */
 
 function showGameBoard() {
@@ -3468,25 +4235,29 @@ function showGameBoard() {
 
     const opponentsHTML =
         gameState.opponents
-            .map(ai => `
 
-                <button
-                    class="mini-opponent-button"
-                    data-player-id="${ai.id}"
-                >
+            .map(
+                ai => `
 
-                    <img
-                        src="${ai.token.image}"
-                        alt="${ai.name}"
+                    <button
+                        class="mini-opponent-button"
+                        data-player-id="${ai.id}"
                     >
 
-                    <span>
-                        ${ai.name}
-                    </span>
+                        <img
+                            src="${ai.token.image}"
+                            alt="${ai.name}"
+                        >
 
-                </button>
+                        <span>
+                            ${ai.name}
+                        </span>
 
-            `)
+                    </button>
+
+                `
+            )
+
             .join("");
 
 
@@ -3505,23 +4276,29 @@ function showGameBoard() {
             >
 
 
-                <!-- ЗОВНІШНІЙ ШЛЯХ -->
+                <!-- ЗОВНІШНЄ КОЛО -->
 
                 <div
                     id="outerBoard"
-                    class="rectangle-board outer-rectangle-board"
+                    class="
+                        rectangle-board
+                        outer-rectangle-board
+                    "
                 ></div>
 
 
-                <!-- ВНУТРІШНІЙ ШЛЯХ -->
+                <!-- ВНУТРІШНЄ КОЛО -->
 
                 <div
                     id="innerBoard"
-                    class="rectangle-board inner-rectangle-board"
+                    class="
+                        rectangle-board
+                        inner-rectangle-board
+                    "
                 ></div>
 
 
-                <!-- CV ЖИТТЯ — ЛІВИЙ ВЕРХ -->
+                <!-- ЛОГО -->
 
                 <div class="board-corner-brand">
 
@@ -3561,7 +4338,10 @@ function showGameBoard() {
                                 ${player.name}
                             </span>
 
-                            <span class="hud-player-profession">
+                            <span
+                                id="hudPlayerProfession"
+                                class="hud-player-profession"
+                            >
                                 ${profession}
                             </span>
 
@@ -3741,6 +4521,8 @@ function showGameBoard() {
             <aside class="game-work-panel">
 
 
+                <!-- КУБИК -->
+
                 <div class="dice-section">
 
 
@@ -3785,7 +4567,7 @@ function showGameBoard() {
                 </div>
 
 
-                <!-- РАЙФИК / ПОТОЧНА КАРТКА -->
+                <!-- РАЙФИК / КАРТКА -->
 
                 <div
                     id="currentCardPanel"
@@ -3842,52 +4624,72 @@ function showGameBoard() {
                 </div>
 
 
-                <!-- ЯК ГРАТИ -->
-                
-<div class="work-panel-actions">
+                <!-- ДОДАТКОВІ ДІЇ -->
 
-    <button
-        id="cellInfoButton"
-        class="work-panel-button"
-    >
-        <span>
-            ℹ️ Типи полів
-        </span>
-
-        <span>
-            →
-        </span>
-    </button>
+                <div class="work-panel-actions">
 
 
-    <button
-        id="journalButton"
-        class="work-panel-button"
-    >
-        <span>
-            📜 Журнал ходів
-        </span>
+                    <button
+                        id="cellInfoButton"
+                        class="work-panel-button"
+                    >
 
-        <span id="journalCount">
-            ${gameState.history ? gameState.history.length : 0}
-        </span>
-    </button>
+                        <span>
+                            ℹ️ Типи полів
+                        </span>
+
+                        <span>
+                            →
+                        </span>
+
+                    </button>
 
 
-    <button
-        id="finishGameButton"
-        class="work-panel-button finish-game-button"
-    >
-        <span>
-            ⏹ Завершити гру
-        </span>
+                    <button
+                        id="journalButton"
+                        class="work-panel-button"
+                    >
 
-        <span>
-            →
-        </span>
-    </button>
+                        <span>
+                            📜 Журнал ходів
+                        </span>
 
-</div>
+                        <span id="journalCount">
+
+                            ${
+                                gameState.history
+                                    ? gameState.history.length
+                                    : 0
+                            }
+
+                        </span>
+
+                    </button>
+
+
+                    <button
+                        id="finishGameButton"
+                        class="
+                            work-panel-button
+                            finish-game-button
+                        "
+                    >
+
+                        <span>
+                            ⏹ Завершити гру
+                        </span>
+
+                        <span>
+                            →
+                        </span>
+
+                    </button>
+
+
+                </div>
+
+
+            </aside>
 
 
             <!-- =====================================
@@ -3910,7 +4712,9 @@ function showGameBoard() {
                     </button>
 
 
-                    <div id="gameInfoContent"></div>
+                    <div
+                        id="gameInfoContent"
+                    ></div>
 
                 </div>
 
@@ -3922,22 +4726,22 @@ function showGameBoard() {
     `);
 
 
-    /* ================================================
-       СТВОРЮЄМО ПОЛЕ
-    ================================================= */
+    /* =====================================================
+       СТВОРЕННЯ ПОЛЯ
+    ===================================================== */
 
     createBoard();
 
+placeAllPieces();
 
-    placeAllPieces();
+updatePlayerStatsUI();
+
+initializeGameCycle();
 
 
-    updatePlayerStatsUI();
-
-
-    /* ================================================
+    /* =====================================================
        КУБИК
-    ================================================= */
+    ===================================================== */
 
     document
         .getElementById(
@@ -3949,9 +4753,9 @@ function showGameBoard() {
         );
 
 
-    /* ================================================
+    /* =====================================================
        ПРОФЕСІЯ
-    ================================================= */
+    ===================================================== */
 
     document
         .getElementById(
@@ -3963,9 +4767,9 @@ function showGameBoard() {
         );
 
 
-    /* ================================================
+    /* =====================================================
        МРІЯ
-    ================================================= */
+    ===================================================== */
 
     document
         .getElementById(
@@ -3977,9 +4781,9 @@ function showGameBoard() {
         );
 
 
-    /* ================================================
+    /* =====================================================
        БАНК
-    ================================================= */
+    ===================================================== */
 
     document
         .getElementById(
@@ -3991,33 +4795,35 @@ function showGameBoard() {
         );
 
 
-    /* ================================================
+    /* =====================================================
        AI
-    ================================================= */
+    ===================================================== */
 
     document
         .querySelectorAll(
             ".mini-opponent-button"
         )
-        .forEach(button => {
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    () => {
 
-                    showParticipantInfo(
-                        button.dataset.playerId
-                    );
+                        showParticipantInfo(
+                            button.dataset.playerId
+                        );
 
-                }
-            );
+                    }
+                );
 
-        });
+            }
+        );
 
 
-    /* ================================================
+    /* =====================================================
        ТИПИ ПОЛІВ
-    ================================================= */
+    ===================================================== */
 
     document
         .getElementById(
@@ -4028,36 +4834,38 @@ function showGameBoard() {
             showAllCellTypes
         );
 
-/* ================================================
-   ЖУРНАЛ ХОДІВ
-================================================= */
 
-document
-    .getElementById(
-        "journalButton"
-    )
-    .addEventListener(
-        "click",
-        showGameJournal
-    );
+    /* =====================================================
+       ЖУРНАЛ
+    ===================================================== */
+
+    document
+        .getElementById(
+            "journalButton"
+        )
+        .addEventListener(
+            "click",
+            showGameJournal
+        );
 
 
-/* ================================================
-   ЗАВЕРШИТИ ГРУ
-================================================= */
+    /* =====================================================
+       ЗАВЕРШИТИ ГРУ
+    ===================================================== */
 
-document
-    .getElementById(
-        "finishGameButton"
-    )
-    .addEventListener(
-        "click",
-        showFinishGameModal
-    );
+    document
+        .getElementById(
+            "finishGameButton"
+        )
+        .addEventListener(
+            "click",
+            showFinishGameModal
+        );
 
-    /* ================================================
-       CLOSE MODAL
-    ================================================= */
+
+    /* =====================================================
+       ЗАКРИТИ МОДАЛКУ
+    ===================================================== */
 
     document
         .getElementById(
@@ -4079,7 +4887,7 @@ document
 
 
 /* =========================================================
-   32. СТВОРЕННЯ ПОЛЯ
+   30. СТВОРЕННЯ ПОЛЯ
 ========================================================= */
 
 function createBoard() {
@@ -4113,13 +4921,13 @@ function createBoard() {
 
 
 /* =========================================================
-   32.1 КООРДИНАТИ ПРЯМОКУТНОГО МАРШРУТУ
+   31. КООРДИНАТИ ПРЯМОКУТНОГО МАРШРУТУ
 
-   ОБИДВА МАРШРУТИ СТАРТУЮТЬ
-   З ВЕРХНЬОЇ ЧАСТИНИ.
+   INNER:
+   рух за годинниковою.
 
-   INNER — за годинниковою
-   OUTER — проти годинникової
+   OUTER:
+   рух проти годинникової.
 ========================================================= */
 
 function getRectanglePosition(
@@ -4139,7 +4947,8 @@ function getRectanglePosition(
     ) {
 
         normalized =
-            1 - normalized;
+            1 -
+            normalized;
 
     }
 
@@ -4157,10 +4966,8 @@ function getRectanglePosition(
         height * 2;
 
 
-    /*
-       Початок маршруту —
-       середина верхньої сторони.
-    */
+    /* Починаємо
+       із середини верхньої сторони */
 
     let distance =
         normalized *
@@ -4180,17 +4987,16 @@ function getRectanglePosition(
 
 
     let x = 0;
+
     let y = 0;
 
+
+    /* ВЕРХ */
 
     if (
         distance <=
         width
     ) {
-
-        /*
-           ВЕРХ
-        */
 
         x =
             (
@@ -4205,15 +5011,13 @@ function getRectanglePosition(
     }
 
 
+    /* ПРАВА СТОРОНА */
+
     else if (
         distance <=
         width +
         height
     ) {
-
-        /*
-           ПРАВА СТОРОНА
-        */
 
         x =
             100;
@@ -4231,15 +5035,13 @@ function getRectanglePosition(
     }
 
 
+    /* НИЗ */
+
     else if (
         distance <=
         width * 2 +
         height
     ) {
-
-        /*
-           НИЗ
-        */
 
         x =
             100 -
@@ -4259,11 +5061,9 @@ function getRectanglePosition(
     }
 
 
-    else {
+    /* ЛІВА СТОРОНА */
 
-        /*
-           ЛІВА СТОРОНА
-        */
+    else {
 
         x =
             0;
@@ -4292,7 +5092,7 @@ function getRectanglePosition(
 
 
 /* =========================================================
-   32.2 СТВОРЕННЯ ОДНОГО МАРШРУТУ
+   32. СТВОРЕННЯ ОДНОГО КОЛА
 ========================================================= */
 
 function createRectangleBoard(
@@ -4302,7 +5102,9 @@ function createRectangleBoard(
 ) {
 
     if (!container) {
+
         return;
+
     }
 
 
@@ -4311,8 +5113,7 @@ function createRectangleBoard(
 
 
     const direction =
-        boardName ===
-        "inner"
+        boardName === "inner"
 
         ? "clockwise"
 
@@ -4324,6 +5125,7 @@ function createRectangleBoard(
         i <= amount;
         i++
     ) {
+
 
         const typeId =
             boardData[
@@ -4337,15 +5139,27 @@ function createRectangleBoard(
             ];
 
 
+        if (!type) {
+
+            continue;
+
+        }
+
+
         const cell =
             document.createElement(
                 "div"
             );
 
 
+        /* =================================================
+           START Є І НА МАЛОМУ,
+           І НА ВЕЛИКОМУ КОЛІ
+        ================================================= */
+
         const isStart =
-            boardName === "inner" &&
-            i === 1;
+            typeId ===
+            "start";
 
 
         cell.className =
@@ -4364,9 +5178,7 @@ function createRectangleBoard(
             typeId;
 
 
-        /* ================================================
-           START
-        ================================================= */
+        /* START */
 
         if (isStart) {
 
@@ -4377,20 +5189,19 @@ function createRectangleBoard(
         }
 
 
-        /* ================================================
-           СПЕЦІАЛЬНІ ПОЛЯ
-        ================================================= */
+        /* СПЕЦІАЛЬНІ ПОЛЯ */
 
         if (
             [
-                "income",
+                "start",
                 "lounge",
                 "academy",
                 "transition",
                 "dreamCheck"
-            ].includes(
-                typeId
-            )
+            ]
+                .includes(
+                    typeId
+                )
         ) {
 
             cell.classList.add(
@@ -4407,6 +5218,18 @@ function createRectangleBoard(
 
             cell.classList.add(
                 "transition-board-cell"
+            );
+
+        }
+
+
+        if (
+            typeId ===
+            "dreamCheck"
+        ) {
+
+            cell.classList.add(
+                "dream-check-board-cell"
             );
 
         }
@@ -4448,9 +5271,11 @@ function createRectangleBoard(
                 isStart
 
                 ? `
+
                     <span class="cell-special-label">
                         START
                     </span>
+
                   `
 
                 : ""
@@ -4462,9 +5287,27 @@ function createRectangleBoard(
                 "transition"
 
                 ? `
+
                     <span class="cell-special-label">
                         ПЕРЕХІД
                     </span>
+
+                  `
+
+                : ""
+            }
+
+
+            ${
+                typeId ===
+                "dreamCheck"
+
+                ? `
+
+                    <span class="cell-special-label">
+                        МРІЯ
+                    </span>
+
                   `
 
                 : ""
@@ -4473,36 +5316,18 @@ function createRectangleBoard(
         `;
 
 
+        /* =================================================
+           КЛІК ПО ПОЛЮ
+
+           Залишаємо для перегляду
+           інформації про клітинку.
+        ================================================= */
+
         cell.addEventListener(
             "click",
             () => {
 
                 handleBoardCellClick(
-                    cell
-                );
-
-            }
-        );
-
-
-        cell.addEventListener(
-            "dragover",
-            event => {
-
-                event.preventDefault();
-
-            }
-        );
-
-
-        cell.addEventListener(
-            "drop",
-            event => {
-
-                event.preventDefault();
-
-
-                tryMovePlayerToCell(
                     cell
                 );
 
@@ -4520,623 +5345,54 @@ function createRectangleBoard(
 
 
 /* =========================================================
-   32.3 БАНК — ГОЛОВНЕ МОДАЛЬНЕ ВІКНО
+   33. ІНФОРМАЦІЯ ПРО КЛІТИНКУ
 ========================================================= */
 
-function showBankHub() {
-
-    ensurePlayerBankState();
-
-
-    const selectedProducts =
-        gameState.player.bank.products;
-
-
-    const productsHTML =
-        BANK_PRODUCTS
-            .map(product => {
-
-                const selected =
-                    selectedProducts.includes(
-                        product.id
-                    );
-
-
-                return `
-
-                    <button
-                        class="
-                            bank-product-card
-                            ${
-                                selected
-                                ? "bank-product-selected"
-                                : ""
-                            }
-                        "
-                        data-bank-product="${product.id}"
-                    >
-
-                        <span class="bank-product-icon">
-                            ${product.icon}
-                        </span>
-
-
-                        <div class="bank-product-text">
-
-                            <strong>
-                                ${product.name}
-                            </strong>
-
-                            <small>
-                                ${product.description}
-                            </small>
-
-                        </div>
-
-
-                        <span class="bank-product-status">
-
-                            ${
-                                selected
-                                ? "✓ ВИКОРИСТОВУЄТЬСЯ"
-                                : "+ ДОДАТИ"
-                            }
-
-                        </span>
-
-                    </button>
-
-                `;
-
-            })
-            .join("");
-
-
-    openGameInfoModal(`
-
-        <div class="bank-hub-popup">
-
-
-            <div class="bank-hub-header">
-
-                <div class="bank-hub-main-icon">
-                    🏦
-                </div>
-
-
-                <div>
-
-                    <span class="bank-hub-label">
-                        CV ЖИТТЯ
-                    </span>
-
-                    <h2>
-                        БАНК
-                    </h2>
-
-                </div>
-
-            </div>
-
-
-            <p class="bank-hub-description">
-
-                Обирай банківські продукти,
-                якими хочеш користуватися
-                протягом гри.
-
-            </p>
-
-
-            <div class="bank-products-grid">
-
-                ${productsHTML}
-
-            </div>
-
-
-            <div class="bank-hub-note">
-
-                💡 Зараз ми формуємо набір продуктів.
-
-                Пізніше кожному продукту
-                підключимо власну фінансову механіку
-                та вплив на гру.
-
-            </div>
-
-        </div>
-
-    `);
-
-
-    document
-        .querySelectorAll(
-            ".bank-product-card"
-        )
-        .forEach(button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    toggleBankProduct(
-                        button.dataset.bankProduct
-                    );
-
-                }
-            );
-
-        });
-
-}
-
-
-/* =========================================================
-   32.4 ДОДАТИ / ПРИБРАТИ ПРОДУКТ
-========================================================= */
-
-function toggleBankProduct(
-    productId
+function handleBoardCellClick(
+    cell
 ) {
 
-    ensurePlayerBankState();
-
-
-    const products =
-        gameState.player.bank.products;
-
-
-    const index =
-        products.indexOf(
-            productId
-        );
-
-
-    if (
-        index === -1
-    ) {
-
-        products.push(
-            productId
-        );
-
-    }
-
-    else {
-
-        products.splice(
-            index,
-            1
-        );
-
-    }
-
-
-    showBankHub();
-
-}
-
-
-/* =========================================================
-   32.5 КАР'ЄРНИЙ ПРОГРЕС У МОДАЛЦІ
-========================================================= */
-function showCareerProgressModal(
-    oldProfession = null,
-    newProfession = null,
-    promotedStats = null
-) {
-
-    const player =
-        gameState.player;
-
-
-    /* =====================================================
-       ВАРІАНТ 1 — ГРАВЕЦЬ ЩОЙНО ОТРИМАВ ПІДВИЩЕННЯ
-    ===================================================== */
-
-    if (
-        oldProfession &&
-        newProfession &&
-        promotedStats
-    ) {
-
-        openGameInfoModal(`
-
-            <div class="career-progress-popup">
-
-                <div class="career-popup-profile">
-
-                    <img
-                        src="assets/raifik.png"
-                        class="career-popup-token"
-                        alt="Райфик"
-                    >
-
-
-                    <div>
-
-                        <h2>
-                            🎉 НОВА КАР'ЄРНА СХОДИНКА!
-                        </h2>
-
-                        <p>
-                            Вітаю, ${player.name}!
-                            Ти піднялася на нову
-                            кар'єрну сходинку.
-                            Так тримати!
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                <div class="next-career-level">
-
-                    <span>
-                        ТВОЄ ПІДВИЩЕННЯ
-                    </span>
-
-                    <strong>
-                        ${oldProfession}
-                        →
-                        ${newProfession}
-                    </strong>
-
-                </div>
-
-
-                <div class="participant-popup-stats">
-
-                    <span>
-                        💰 Твоя зарплата:
-                        ${formatMoney(promotedStats.salary)} грн
-                    </span>
-
-                    <span>
-                        ⭐ Репутація:
-                        ${promotedStats.reputation}
-                    </span>
-
-                    <span>
-                        🧠 Знання:
-                        ${promotedStats.knowledge}
-                    </span>
-
-                    <span>
-                        ⚡ Енергія:
-                        ${promotedStats.energy}
-                    </span>
-
-                </div>
-
-
-                <p class="progress-help-text">
-
-                    Наступне нарахування зарплати
-                    вже буде відповідати
-                    твоїй новій кар'єрній сходинці.
-
-                </p>
-
-            </div>
-
-        `);
+    if (!cell) {
 
         return;
+
     }
 
 
-    /* =====================================================
-       ВАРІАНТ 2 — ПРОСТО ДИВИМОСЯ КАР'ЄРНИЙ ПРОГРЕС
-    ===================================================== */
-
-    const currentProfession =
-        getProfessionName(
-
-            player
-                .sector
-                .levels[
-                    player.careerLevel
-                ],
-
-            player.gender
-
-        );
+    const typeId =
+        cell.dataset.type;
 
 
-    const nextLevel =
-        player.careerLevel + 1;
+    const type =
+        CELL_TYPES[
+            typeId
+        ];
 
 
-    let nextHTML = `
+    if (!type) {
 
-        <div class="career-max-level">
-
-            🏆 Ти вже на найвищій
-            кар'єрній сходинці.
-
-        </div>
-
-    `;
-
-
-    if (
-        nextLevel <
-        player.sector.levels.length
-    ) {
-
-        const nextProfession =
-            getProfessionName(
-
-                player
-                    .sector
-                    .levels[
-                        nextLevel
-                    ],
-
-                player.gender
-
-            );
-
-
-        const required =
-            getCareerStats(
-                player.sector.id,
-                nextLevel + 1
-            );
-
-
-        nextHTML = `
-
-            <div class="next-career-level">
-
-                <span>
-                    НАСТУПНА СХОДИНКА
-                </span>
-
-                <strong>
-                    ${nextProfession}
-                </strong>
-
-            </div>
-
-
-            <div class="participant-popup-stats">
-
-                <span>
-                    💰 Зарплата на цьому рівні:
-                    ${formatMoney(required.salary)} грн
-                </span>
-
-                <span>
-                    ⭐ Репутація:
-                    ${required.reputation}
-                </span>
-
-                <span>
-                    🧠 Знання:
-                    ${required.knowledge}
-                </span>
-
-                <span>
-                    ⚡ Енергія:
-                    ${required.energy}
-                </span>
-
-            </div>
-
-        `;
+        return;
 
     }
 
 
     openGameInfoModal(`
 
-        <div class="career-progress-popup">
+        <div class="cell-info-modal">
 
-
-            <div class="career-popup-profile">
-
-                <img
-                    src="${player.token.image}"
-                    class="career-popup-token"
-                    alt="${player.name}"
-                >
-
-
-                <div>
-
-                    <h2>
-                        ${player.name}
-                    </h2>
-
-                    <p>
-                        ${player.sector.icon}
-                        ${currentProfession}
-                    </p>
-
-                </div>
-
+            <div class="cell-info-big-icon">
+                ${type.icon}
             </div>
 
-
-            ${nextHTML}
-
-
-            <p class="progress-help-text">
-
-                Розвивай репутацію,
-                знання та енергію,
-                щоб рухатися
-                кар'єрним шляхом.
-
-            </p>
-
-
-        </div>
-
-    `);
-
-}
-
-/* =========================================================
-   32.6 УСІ ТИПИ ПОЛІВ
-========================================================= */
-
-function showAllCellTypes() {
-
-    const types = [
-
-        CELL_TYPES.income,
-        CELL_TYPES.bank,
-        CELL_TYPES.event,
-        CELL_TYPES.life,
-        CELL_TYPES.fate,
-        CELL_TYPES.lounge,
-        CELL_TYPES.academy,
-        CELL_TYPES.transition,
-        CELL_TYPES.dreamCheck
-
-    ];
-
-
-    const rows =
-        types
-            .map(type => `
-
-                <div class="all-cell-type-row">
-
-                    <span>
-                        ${type.icon}
-                    </span>
-
-                    <div>
-
-                        <strong>
-                            ${type.name}
-                        </strong>
-
-                        <small>
-                            ${type.description}
-                        </small>
-
-                    </div>
-
-                </div>
-
-            `)
-            .join("");
-
-
-    openGameInfoModal(`
-
-        <div class="all-cell-types-popup">
 
             <h2>
-                Поля гри
-            </h2>
-
-            <p>
-                Кожен тип поля запускає
-                окрему життєву або фінансову ситуацію.
-            </p>
-
-            <div class="all-cell-types-list">
-                ${rows}
-            </div>
-
-        </div>
-
-    `);
-
-}
-/* =========================================================
-   ЖУРНАЛ ХОДІВ
-========================================================= */
-
-function showGameJournal() {
-
-    const history =
-        gameState.history || [];
-
-
-    const journalHTML =
-        history.length
-
-        ? history
-            .slice()
-            .reverse()
-            .map((item, index) => {
-
-                const text =
-                    typeof item === "string"
-                    ? item
-                    : item.text || item.action || "Подія гри";
-
-
-                return `
-
-                    <div class="journal-entry">
-
-                        <div class="journal-entry-head">
-
-                            <strong>
-                                Хід ${history.length - index}
-                            </strong>
-
-                        </div>
-
-
-                        <div class="journal-entry-action">
-
-                            ${text}
-
-                        </div>
-
-                    </div>
-
-                `;
-
-            })
-            .join("")
-
-        : `
-
-            <div class="journal-empty">
-
-                Поки що журнал порожній.
-
-                <br><br>
-
-                Зроби перший хід 🎲
-
-            </div>
-
-        `;
-
-
-    openGameInfoModal(`
-
-        <div class="game-journal-popup">
-
-            <h2>
-                📜 Журнал ходів
+                ${type.name}
             </h2>
 
 
             <p>
-                Тут зберігається історія
-                твоїх ходів та подій у грі.
+                ${type.description}
             </p>
-
-
-            <div class="journal-list">
-
-                ${journalHTML}
-
-            </div>
 
         </div>
 
@@ -5146,75 +5402,72 @@ function showGameJournal() {
 
 
 /* =========================================================
-   33. КЛІК ПО КОМІРЦІ
-========================================================= */
-
-function handleBoardCellClick(cell) {
-
-    const board =
-        cell.dataset.board;
-
-
-    const position =
-        Number(
-            cell.dataset.position
-        );
-
-
-    if (
-        gameState.target &&
-        gameState.target.board === board &&
-        gameState.target.position === position
-    ) {
-
-        tryMovePlayerToCell(
-            cell
-        );
-
-        return;
-    }
-
-
-    showCellTypeInfo(
-        cell.dataset.type
-    );
-
-}
-
-
-/* =========================================================
-   34. ФІШКИ
+   34. РОЗМІЩЕННЯ ВСІХ ФІШОК
 ========================================================= */
 
 function placeAllPieces() {
 
     placePiece(
-        gameState.player,
-        true
+        gameState.player
     );
 
 
     gameState.opponents
-        .forEach(ai => {
+        .forEach(
+            ai => {
 
-            placePiece(
-                ai,
-                false
-            );
+                placePiece(
+                    ai
+                );
 
-        });
+            }
+        );
 
 }
 
 
 /* =========================================================
    35. РОЗМІЩЕННЯ ОДНІЄЇ ФІШКИ
+
+   ВИПРАВЛЕННЯ:
+
+   У старому коді селектор
+   був зламаний:
+
+   {participant.position}
+
+   Тепер використовуємо
+   нормальний template string.
 ========================================================= */
 
 function placePiece(
-    participant,
-    draggable
+    participant
 ) {
+
+    if (
+        !participant ||
+        !participant.token
+    ) {
+
+        return;
+
+    }
+
+
+    const oldPiece =
+        document.querySelector(
+
+            `[data-player-id="${participant.id}"]`
+
+        );
+
+
+    if (oldPiece) {
+
+        oldPiece.remove();
+
+    }
+
 
     const cell =
         document.querySelector(
@@ -5225,56 +5478,38 @@ function placePiece(
 
 
     if (!cell) {
+
         return;
+
     }
 
 
     const piece =
         document.createElement(
-            "img"
+            "div"
         );
 
 
-    piece.src =
-        participant.token.image;
+    piece.className =
+        participant.id === "player"
 
+        ? "board-player-piece"
 
-    piece.alt =
-        participant.name;
+        : "board-player-piece ai-board-piece";
 
 
     piece.dataset.playerId =
         participant.id;
 
 
-    piece.className =
-        participant.id ===
-        "player"
+    piece.innerHTML = `
 
-        ? "board-piece player-piece"
+        <img
+            src="${participant.token.image}"
+            alt="${participant.name}"
+        >
 
-        : "board-piece ai-piece";
-
-
-    if (draggable) {
-
-        piece.draggable =
-            true;
-
-
-        piece.addEventListener(
-            "dragstart",
-            event => {
-
-                event.dataTransfer.setData(
-                    "text/plain",
-                    participant.id
-                );
-
-            }
-        );
-
-    }
+    `;
 
 
     cell.appendChild(
@@ -5285,7 +5520,7 @@ function placePiece(
 
 
 /* =========================================================
-   36. КУБИК
+   36. ЗНАЧКИ КУБИКА
 ========================================================= */
 
 const DICE_FACES = [
@@ -5300,21 +5535,24 @@ const DICE_FACES = [
 ];
 
 
+/* =========================================================
+   37. КИДОК КУБИКА ГРАВЦЯ
+========================================================= */
+
 async function rollDice() {
 
     if (
         gameState.currentTurn !==
         "player"
     ) {
+
         return;
+
     }
 
 
-    if (
-        gameState.target
-    ) {
-        return;
-    }
+    const player =
+        gameState.player;
 
 
     const button =
@@ -5323,36 +5561,132 @@ async function rollDice() {
         );
 
 
+    /* =====================================================
+       ПРОПУСК ХОДУ
+    ===================================================== */
+
+    if (
+        player.skipTurns > 0
+    ) {
+
+        player.skipTurns -=
+            1;
+
+
+        addLog(
+            `⏭ ${player.name} пропускає хід.`
+        );
+
+
+        showRaifikCurrentCardMessage(
+
+            "⏭ Цей хід ти пропускаєш."
+
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+        }
+
+
+        await delay(
+            1200
+        );
+
+
+        startAITurns();
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ПЕРЕХІД НА ВЕЛИКЕ КОЛО
+
+       За правилами:
+
+       якщо мале коло вже пройдене
+       і 2-й професійний рівень
+       отримано під час повторного
+       проходження —
+
+       завершувати поточне коло
+       не потрібно.
+
+       Перед наступним ходом
+       переміщаємо гравця
+       на START великого кола.
+    ===================================================== */
+
+    if (
+        player.pendingOuterTransition
+    ) {
+
+        await moveParticipantToOuterStart(
+            player
+        );
+
+    }
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+    }
+
+
+    gameState.currentTurn =
+        "moving";
+
+
     const dice =
         document.getElementById(
             "dice"
         );
 
 
-    button.disabled =
-        true;
+    const message =
+        document.getElementById(
+            "diceMessage"
+        );
 
 
-    showRaifikCurrentCardMessage(
-
-        "Кидаємо кубик... 🎲"
-
-    );
-
+    /* Анімація кубика */
 
     for (
         let i = 0;
-        i < 10;
+        i < 8;
         i++
     ) {
 
-        dice.textContent =
-            randomItem(
-                DICE_FACES
+        const randomFace =
+            randomNumber(
+                1,
+                6
             );
 
 
-        await delay(70);
+        if (dice) {
+
+            dice.textContent =
+                DICE_FACES[
+                    randomFace - 1
+                ];
+
+        }
+
+
+        await delay(
+            70
+        );
 
     }
 
@@ -5368,45 +5702,55 @@ async function rollDice() {
         value;
 
 
-    dice.textContent =
-        DICE_FACES[
-            value - 1
-        ];
+    if (dice) {
+
+        dice.textContent =
+            DICE_FACES[
+                value - 1
+            ];
+
+    }
 
 
-    calculateTargetCell(
-        value
+    if (message) {
+
+        message.textContent =
+            `Випало: ${value}`;
+
+    }
+
+
+    addLog(
+
+        `🎲 ${player.name}: випало ${value}`
+
     );
 
 
-    document
-        .getElementById(
-            "diceMessage"
-        )
-        .innerHTML = `
-
-            Випало
-            <strong>${value}</strong>.
-
-            <br>
-
-            Перенеси фішку
-            на підсвічену комірку.
-
-        `;
+    await delay(
+        450
+    );
 
 
-    showRaifikCurrentCardMessage(
-
-        `Випало ${value}! Натисни на підсвічену комірку або перенеси туди свою фішку.`
-
+    await movePlayerStepByStep(
+        value
     );
 
 }
 
 
 /* =========================================================
-   37. РОЗРАХУНОК ПРИЗНАЧЕННЯ
+   38. РОЗРАХУНОК РУХУ
+
+   ВАЖЛИВО:
+
+   Тут більше НЕМАЄ
+   автоматичного:
+
+   28 → велике коло.
+
+   Гравець може проходити
+   мале коло декілька разів.
 ========================================================= */
 
 function calculateDestination(
@@ -5414,236 +5758,212 @@ function calculateDestination(
     steps
 ) {
 
-    /*
-       ВНУТРІШНЄ ПОЛЕ
-    */
-
-    if (
-        participant.board ===
-        "inner"
-    ) {
-
-        const rawTarget =
-            participant.position +
-            steps;
+    const boardName =
+        participant.board;
 
 
-        /*
-           ЩЕ НЕ ДОЙШЛИ ДО 28
-        */
+    const boardLength =
+        boardName === "inner"
 
-        if (
-            rawTarget <
-            GAME_CONFIG.innerCells
-        ) {
+        ? GAME_CONFIG.innerCells
 
-            return {
-                board: "inner",
-                position: rawTarget
-            };
-
-        }
+        : GAME_CONFIG.outerCells;
 
 
-        /*
-           ТОЧНО НА 28
-        */
-
-        if (
-            rawTarget ===
-            GAME_CONFIG.innerCells
-        ) {
-
-            return {
-                board: "inner",
-                position:
-                    GAME_CONFIG.innerCells
-            };
-
-        }
+    const currentPosition =
+        participant.position;
 
 
-        /*
-           ПЕРЕЙШЛИ ЧЕРЕЗ 28
-
-           Наприклад:
-           стоїмо 27,
-           випало 4.
-
-           28 = останній крок внутрішнього,
-           решта 3 → зовнішнє.
-        */
-
-        const overflow =
-            rawTarget -
-            GAME_CONFIG.innerCells;
-
-
-        return {
-            board: "outer",
-            position:
-                Math.max(
-                    1,
-                    overflow
-                )
-        };
-
-    }
-
-
-    /*
-       ЗОВНІШНЄ ПОЛЕ
-    */
-
-    let target =
-        participant.position +
+    const rawTarget =
+        currentPosition +
         steps;
 
 
-    while (
-        target >
-        GAME_CONFIG.outerCells
-    ) {
+    const crossedStart =
+        rawTarget >
+        boardLength;
 
-        target -=
-            GAME_CONFIG.outerCells;
 
-    }
+    const destinationPosition =
+        crossedStart
+
+        ? (
+            (
+                rawTarget - 1
+            ) %
+            boardLength
+        ) + 1
+
+        : rawTarget;
 
 
     return {
-        board: "outer",
-        position: target
+
+        board:
+            boardName,
+
+        position:
+            destinationPosition,
+
+        crossedStart,
+
+        landedExactlyOnStart:
+            crossedStart &&
+            destinationPosition === 1
+
     };
 
 }
 
 
 /* =========================================================
-   38. ПІДСВІЧЕННЯ ЦІЛІ
+   39. ПОКРОКОВИЙ РУХ ГРАВЦЯ
 ========================================================= */
 
-function calculateTargetCell(
+async function movePlayerStepByStep(
     steps
 ) {
-
-    clearTargetCells();
-
-
-    const destination =
-        calculateDestination(
-            gameState.player,
-            steps
-        );
-
-
-    gameState.target =
-        destination;
-
-
-    const cell =
-        document.querySelector(
-
-            `.${destination.board}-cell[data-position="${destination.position}"]`
-
-        );
-
-
-    if (cell) {
-
-        cell.classList.add(
-            "target-cell"
-        );
-
-    }
-
-}
-
-
-/* =========================================================
-   39. РУХ ГРАВЦЯ
-========================================================= */
-
-async function tryMovePlayerToCell(
-    cell
-) {
-
-    if (
-        !gameState.target
-    ) {
-        return;
-    }
-
-
-    const board =
-        cell.dataset.board;
-
-
-    const position =
-        Number(
-            cell.dataset.position
-        );
-
-
-    if (
-        board !==
-        gameState.target.board ||
-        position !==
-        gameState.target.position
-    ) {
-        return;
-    }
-
 
     const player =
         gameState.player;
 
 
-    player.board =
-        board;
+    const startBoard =
+        player.board;
 
 
-    player.position =
-        position;
+    const boardLength =
+        startBoard === "inner"
+
+        ? GAME_CONFIG.innerCells
+
+        : GAME_CONFIG.outerCells;
 
 
-    movePieceDOM(
-        player.id,
-        cell
-    );
+    let crossedStart =
+        false;
 
 
-    clearTargetCells();
+    let landedExactlyOnStart =
+        false;
 
 
-    gameState.target =
-        null;
-
-
-    addLog(
-
-        `${player.name} → ${board === "inner" ? "внутрішнє" : "зовнішнє"} поле, комірка ${position}`
-
-    );
-
-
-    /*
-       ПОТРАПИЛИ НА 28.
-    */
-
-    if (
-        board === "inner" &&
-        position ===
-        GAME_CONFIG.innerCells
+    for (
+        let step = 0;
+        step < steps;
+        step++
     ) {
 
-        await handleInnerToOuterTransition(
-            player
+
+        let nextPosition =
+            player.position + 1;
+
+
+        /* =================================================
+           ПЕРЕТИН START
+        ================================================= */
+
+        if (
+            nextPosition >
+            boardLength
+        ) {
+
+            nextPosition =
+                1;
+
+
+            crossedStart =
+                true;
+
+
+            /* =================================================
+               ЗАВЕРШЕНО ПОВНЕ КОЛО
+            ================================================= */
+
+            if (
+                player.board ===
+                "inner"
+            ) {
+
+                player.innerLaps +=
+                    1;
+
+            }
+
+            else {
+
+                player.outerLaps +=
+                    1;
+
+            }
+
+        }
+
+
+        player.position =
+            nextPosition;
+
+
+        const cell =
+            document.querySelector(
+
+                `.${player.board}-cell[data-position="${player.position}"]`
+
+            );
+
+
+        if (cell) {
+
+            movePieceDOM(
+                player.id,
+                cell
+            );
+
+        }
+
+
+        await delay(
+            180
         );
 
-        return;
+    }
+
+
+    /* =====================================================
+       ТОЧНА ЗУПИНКА НА START
+    ===================================================== */
+
+    landedExactlyOnStart =
+        crossedStart &&
+        player.position === 1;
+
+
+    /* =====================================================
+       ОБРОБКА ЗАВЕРШЕННЯ КОЛА
+    ===================================================== */
+
+    if (crossedStart) {
+
+        await handleCompletedLap(
+
+            player,
+
+            landedExactlyOnStart
+
+        );
 
     }
+
+
+    gameState.target = {
+
+        board:
+            player.board,
+
+        position:
+            player.position
+
+    };
 
 
     await resolvePlayerCell();
@@ -5652,67 +5972,20 @@ async function tryMovePlayerToCell(
 
 
 /* =========================================================
-   40. ПЕРЕХІД ВНУТРІШНЄ → ЗОВНІШНЄ
-========================================================= */
-
-async function handleInnerToOuterTransition(
-    participant
-) {
-
-    showRaifikCurrentCardMessage(
-
-        "🎉 Перший етап пройдено! Тепер переходимо на великий життєвий шлях."
-
-    );
-
-
-    await delay(1400);
-
-
-    participant.board =
-        "outer";
-
-
-    participant.position =
-        1;
-
-
-    const cell =
-        document.querySelector(
-            `.outer-cell[data-position="1"]`
-        );
-
-
-    if (cell) {
-
-        movePieceDOM(
-            participant.id,
-            cell
-        );
-
-    }
-
-
-    addLog(
-
-        `${participant.name} переходить на зовнішнє поле.`
-
-    );
-
-
-    await resolvePlayerCell();
-
-}
-
-
-/* =========================================================
-   41. DOM РУХ ФІШКИ
+   40. РУХ DOM-ФІШКИ
 ========================================================= */
 
 function movePieceDOM(
     participantId,
     cell
 ) {
+
+    if (!cell) {
+
+        return;
+
+    }
+
 
     const piece =
         document.querySelector(
@@ -5734,7 +6007,446 @@ function movePieceDOM(
 
 
 /* =========================================================
-   42. ТИП ПОТОЧНОЇ КОМІРКИ
+   41. ЗАВЕРШЕННЯ ПОВНОГО КОЛА
+
+   INNER:
+
+   Якщо після проходження
+   малого кола вже є
+   професійний рівень 2+:
+
+   → ставимо перехід
+     на велике коло
+     перед наступним ходом.
+
+   Якщо рівня 2 ще немає:
+
+   → гравець залишається
+     на малому колі
+   → отримує бонус START.
+
+   OUTER:
+
+   → гравець продовжує
+     велике коло
+   → отримує бонус START.
+========================================================= */
+
+async function handleCompletedLap(
+    participant,
+    exactStart
+) {
+
+    if (!participant) {
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       МАЛЕНЬКЕ КОЛО
+    ===================================================== */
+
+    if (
+        participant.board ===
+        "inner"
+    ) {
+
+
+        const canMoveToOuter =
+            participant.innerLaps >= 1
+            &&
+            participant.careerLevel >=
+                GAME_CONFIG
+                    .outerUnlockCareerLevel;
+
+
+        /* =================================================
+           УМОВИ ПЕРЕХОДУ ВИКОНАНІ
+
+           Людина НЕ отримує
+           бонус повторного START,
+           бо вона вже не залишається
+           проходити мале коло знову.
+        ================================================= */
+
+        if (canMoveToOuter) {
+
+            participant.pendingOuterTransition =
+                true;
+
+
+            addLog(
+
+                `➡️ ${participant.name} виконав(ла) умови переходу на велике коло.`
+
+            );
+
+
+            if (
+                participant.id ===
+                "player"
+            ) {
+
+                showRaifikCurrentCardMessage(
+
+                    "🎉 Маленьке коло пройдено, а 2-й професійний рівень уже досягнуто. Перед наступним ходом ти переходиш на START великого кола."
+
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        /* =================================================
+           ЗАЛИШАЄМОСЯ НА МАЛОМУ КОЛІ
+
+           ТУТ ДАЄМО БОНУС START.
+        ================================================= */
+
+        applyInnerStartBonus(
+
+            participant,
+
+            exactStart
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                "🔄 Перше коло завершено, але для переходу потрібен щонайменше 2-й професійний рівень. Продовжуємо мале коло."
+
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ВЕЛИКЕ КОЛО
+    ===================================================== */
+
+    if (
+        participant.board ===
+        "outer"
+    ) {
+
+        applyOuterStartBonus(
+
+            participant,
+
+            exactStart
+
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   42. БОНУС START — МАЛЕ КОЛО
+
+   ЗА ПРАВИЛАМИ:
+
+   точна зупинка:
+   +50 000 грн
+
+   перетин:
+   +5 репутації
+   +5 знань
+
+   За один START —
+   лише один бонус.
+========================================================= */
+
+function applyInnerStartBonus(
+    participant,
+    exactStart
+) {
+
+    if (exactStart) {
+
+        participant.money +=
+            GAME_CONFIG
+                .innerExactStartMoney;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: точна зупинка на START малого кола +${formatMoney(GAME_CONFIG.innerExactStartMoney)} грн`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Точна зупинка на START! +${formatMoney(GAME_CONFIG.innerExactStartMoney)} грн.`
+
+            );
+
+        }
+
+    }
+
+    else {
+
+        participant.reputation +=
+            GAME_CONFIG
+                .innerPassedStartReputation;
+
+
+        participant.knowledge +=
+            GAME_CONFIG
+                .innerPassedStartKnowledge;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: перетин START малого кола +${GAME_CONFIG.innerPassedStartReputation} репутації, +${GAME_CONFIG.innerPassedStartKnowledge} знань`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Ти перетнув(ла) START: +${GAME_CONFIG.innerPassedStartReputation} репутації та +${GAME_CONFIG.innerPassedStartKnowledge} знань.`
+
+            );
+
+        }
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   43. БОНУС START — ВЕЛИКЕ КОЛО
+
+   ЗА ПРАВИЛАМИ:
+
+   точна зупинка:
+   +100 000 грн
+
+   перетин:
+   +10 репутації
+   +10 знань.
+========================================================= */
+
+function applyOuterStartBonus(
+    participant,
+    exactStart
+) {
+
+    if (exactStart) {
+
+        participant.money +=
+            GAME_CONFIG
+                .outerExactStartMoney;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: точна зупинка на START великого кола +${formatMoney(GAME_CONFIG.outerExactStartMoney)} грн`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Точна зупинка на START великого кола! +${formatMoney(GAME_CONFIG.outerExactStartMoney)} грн.`
+
+            );
+
+        }
+
+    }
+
+    else {
+
+        participant.reputation +=
+            GAME_CONFIG
+                .outerPassedStartReputation;
+
+
+        participant.knowledge +=
+            GAME_CONFIG
+                .outerPassedStartKnowledge;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: перетин START великого кола +${GAME_CONFIG.outerPassedStartReputation} репутації, +${GAME_CONFIG.outerPassedStartKnowledge} знань`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Перетин START великого кола: +${GAME_CONFIG.outerPassedStartReputation} репутації та +${GAME_CONFIG.outerPassedStartKnowledge} знань.`
+
+            );
+
+        }
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   44. ПЕРЕХІД НА START ВЕЛИКОГО КОЛА
+
+   Виконується ПЕРЕД наступним ходом.
+========================================================= */
+
+async function moveParticipantToOuterStart(
+    participant
+) {
+
+    if (!participant) {
+
+        return;
+
+    }
+
+
+    participant.board =
+        "outer";
+
+
+    participant.position =
+        1;
+
+
+    participant.pendingOuterTransition =
+        false;
+
+
+    const cell =
+        document.querySelector(
+
+            `.outer-cell[data-position="1"]`
+
+        );
+
+
+    if (cell) {
+
+        movePieceDOM(
+            participant.id,
+            cell
+        );
+
+    }
+
+
+    addLog(
+
+        `➡️ ${participant.name} переходить на START великого кола.`
+
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        showRaifikCurrentCardMessage(
+
+            "➡️ Ти переходиш на START великого кола. Тепер починається наступний етап твого життя!"
+
+        );
+
+
+        await delay(
+            700
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   45. ТИП ПОТОЧНОЇ КЛІТИНКИ
 ========================================================= */
 
 function getParticipantCellType(
@@ -5758,7 +6470,10 @@ function getParticipantCellType(
 
 
 /* =========================================================
-   43. ОБРОБКА КОМІРКИ ГРАВЦЯ
+   46. ОБРОБКА КЛІТИНКИ ГРАВЦЯ
+
+   КАРТКИ ПІДКЛЮЧИМО
+   В НАСТУПНІЙ ЧАСТИНІ.
 ========================================================= */
 
 async function resolvePlayerCell() {
@@ -5779,140 +6494,164 @@ async function resolvePlayerCell() {
         ];
 
 
+    if (!type) {
+
+        startAITurns();
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       START
+
+       Сам факт стояння на START
+       НЕ дає зарплату.
+
+       START-бонус уже був
+       оброблений під час
+       проходження кола.
+    ===================================================== */
+
+    if (
+        typeId ===
+        "start"
+    ) {
+
+        showRaifikCurrentCardMessage(
+
+            "🏁 START. Зарплата виплачується окремо кожні 3 твої ходи."
+
+        );
+
+
+        await delay(
+            1000
+        );
+
+
+        startAITurns();
+
+
+        return;
+
+    }
+
+
     showRaifikCurrentCardMessage(
 
-        `${type.icon} Ти потрапив на «${type.name}».`
+        `${type.icon} ${getLandedText(player)} на «${type.name}».`
 
     );
 
 
-    switch (typeId) {
-
-        case "income":
-
-            applyEffects(
-                player,
-                {
-                    money:
-                        GAME_CONFIG.incomeAmount
-                }
-            );
+    switch (
+        typeId
+    ) {
 
 
-            showResultCard(
-                type,
-                "Отримання доходу",
-                "Ти отримуєш свій дохід.",
-                {
-                    money:
-                        GAME_CONFIG.incomeAmount
-                }
-            );
-
-
-            await delay(1600);
-
-            startAITurns();
-
-            break;
-
+        /* =================================================
+           ПОДІЯ
+        ================================================= */
 
         case "event":
 
-            showThreeCardChoice(
+            startCardTurn(
                 "event"
             );
 
             break;
 
 
+        /* =================================================
+           БАНК
+        ================================================= */
+
         case "bank":
 
-            showThreeCardChoice(
+            startCardTurn(
                 "bank"
             );
 
             break;
 
 
+        /* =================================================
+           ЖИТТЯ
+        ================================================= */
+
         case "life":
 
-            showLifeNumberChoice();
+            startCardTurn(
+                "life"
+            );
 
             break;
 
+
+        /* =================================================
+           ДОЛЯ
+        ================================================= */
 
         case "fate":
 
-            await showRandomFateCard();
+            startCardTurn(
+                "fate"
+            );
 
             break;
 
+
+        /* =================================================
+           LOUNGE
+        ================================================= */
 
         case "lounge":
 
-            applyEffects(
-                player,
-                {
-                    energy: 15
-                }
+            handleLoungeCell(
+                player
             );
-
-
-            showResultCard(
-                type,
-                "Lounge & Хобі",
-                "Ти відпочив і відновив свої сили.",
-                {
-                    energy: 15
-                }
-            );
-
-
-            await delay(1600);
-
-            startAITurns();
 
             break;
 
+
+        /* =================================================
+           АКАДЕМІЯ
+        ================================================= */
 
         case "academy":
 
-            applyEffects(
-                player,
-                {
-                    knowledge: 15,
-                    reputation: 5
-                }
-            );
-
-
-            showResultCard(
-                type,
-                "Академія & Soft Skills",
-                "Нові знання допомагають тобі рухатися вперед.",
-                {
-                    knowledge: 15,
-                    reputation: 5
-                }
-            );
-
-
-            await delay(1600);
-
-            startAITurns();
+            showAcademyChoice();
 
             break;
 
 
+        /* =================================================
+           ПОЛЕ ПЕРЕХОДУ
+
+           Саме поле 28
+           більше НЕ переносить
+           автоматично на outer.
+        ================================================= */
+
+        case "transition":
+
+            await handleTransitionCell(
+                player
+            );
+
+            break;
+
+
+        /* =================================================
+           МРІЯ
+        ================================================= */
+
         case "dreamCheck":
 
-            showDreamProgress();
-
-
-            setTimeout(
-                startAITurns,
-                1800
+            handleDreamCheckCell(
+                player
             );
 
             break;
@@ -5922,13 +6661,88 @@ async function resolvePlayerCell() {
 
             startAITurns();
 
+            break;
+
     }
 
 }
 
 
 /* =========================================================
-   44. РАЙФИК СПРАВА
+   47. КЛІТИНКА ПЕРЕХОДУ МАЛОГО КОЛА
+
+   Це інформаційна зона.
+
+   Сам факт попадання на 28
+   НЕ означає автоматичний перехід.
+
+   Треба:
+   - пройти мале коло;
+   - мати 2-й професійний рівень.
+========================================================= */
+
+async function handleTransitionCell(
+    participant
+) {
+
+    const ready =
+        participant.innerLaps >= 1
+        &&
+        participant.careerLevel >=
+            GAME_CONFIG
+                .outerUnlockCareerLevel;
+
+
+    if (ready) {
+
+        participant.pendingOuterTransition =
+            true;
+
+
+        showRaifikCurrentCardMessage(
+
+            "➡️ Умови переходу виконані. Перед наступним ходом ти перейдеш на START великого кола."
+
+        );
+
+
+        addLog(
+
+            `➡️ ${participant.name}: готовий(а) до переходу на велике коло.`
+
+        );
+
+    }
+
+    else {
+
+        const level =
+            getDisplayedCareerLevel(
+                participant
+            );
+
+
+        showRaifikCurrentCardMessage(
+
+            `➡️ Для переходу потрібно пройти мале коло щонайменше один раз і досягти 2-го професійного рівня. Зараз твій рівень: ${level}.`
+
+        );
+
+    }
+
+
+    await delay(
+        1300
+    );
+
+
+    startAITurns();
+
+}
+
+
+/* =========================================================
+   48. РАЙФИК — ПОВІДОМЛЕННЯ
 ========================================================= */
 
 function showRaifikCurrentCardMessage(
@@ -5942,7 +6756,9 @@ function showRaifikCurrentCardMessage(
 
 
     if (!panel) {
+
         return;
+
     }
 
 
@@ -5976,37 +6792,1778 @@ function showRaifikCurrentCardMessage(
 
 
 /* =========================================================
-   45. ПОДІЯ / БАНК — 3 КАРТКИ
+   КІНЕЦЬ ЧАСТИНИ 3
+
+   НАСТУПНА ЧАСТИНА:
+
+   - КАРТКИ ПОДІЯ
+   - окремо Коло 1 / Коло 2
+   - другий кидок кубика = номер картки
+   - БАНК
+   - ЖИТТЯ
+   - ДОЛЯ
+   - Lounge за правилами
+   - Академія з 3 варіантами
+   - ефекти карток
+   - кнопка "ЗАВЕРШИТИ ХІД"
 ========================================================= */
 
-function showThreeCardChoice(
+/* =========================================================
+   49. СИСТЕМА КАРТОК
+
+   ВАЖЛИВО:
+
+   Картки тепер залежать від кола.
+
+   INNER:
+   - Подія
+   - Банк
+
+   OUTER:
+   - Подія
+   - Банк
+   - Життя
+   - Доля
+
+   Старі тестові CARD_DECKS
+   більше не використовуємо.
+========================================================= */
+
+
+/* =========================================================
+   49.1 ПОДІЇ — МАЛЕНЬКЕ КОЛО
+
+   Джерело:
+   актуальний файл карток Подій.
+
+   У документі зазначено:
+   "Картки 1–25",
+
+   але фактично після картки №24
+   одразу починається Коло 2.
+
+   Тому тут 24 картки.
+   Нічого не додаємо від себе.
+========================================================= */
+
+INNER_CARD_DECKS.event = [
+
+    /* =====================================================
+       КАРТКА 1
+    ===================================================== */
+
+    {
+        id: "inner-event-01",
+        number: 1,
+
+        title:
+            "Перший фріланс-замовник",
+
+        story:
+            "Тобі довірили невелике тестове комерційне замовлення. Це чудовий шанс заробити перші реальні гроші для старту та заявити про себе як про надійного виконавця.",
+
+        requirementText:
+            "Без вимог (Стартовий рівень)",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "quality",
+
+                title:
+                    "Виконати замовлення якісно та вчасно",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "💰 +10 000 грн | 🧠 +10 знань | ⭐ +10 репутації",
+
+                effects: {
+                    money: 10000,
+                    energy: -10,
+                    knowledge: 10,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "fast",
+
+                title:
+                    "Зробити швидко та без перевірки",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "💰 +5 000 грн | ⭐ -5 репутації",
+
+                effects: {
+                    money: 5000,
+                    energy: -5,
+                    reputation: -5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 2
+    ===================================================== */
+
+    {
+        id: "inner-event-02",
+        number: 2,
+
+        title:
+            "Онлайн-інтенсив із професії",
+
+        story:
+            "З'явилася можливість пройти актуальний практичний курс від практиків ринку для прокачування фундаментальних професійних навичок.",
+
+        requirementText:
+            "💰 5 000 грн",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "paid-course",
+
+                title:
+                    "Оплатити та пройти повний інтенсив",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +15 знань | ⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -10,
+                    knowledge: 15,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "self-study",
+
+                title:
+                    "Вчитися самостійно за відкритими відео",
+
+                costText:
+                    "⚡ -15 енергії",
+
+                resultText:
+                    "🧠 +5 знань",
+
+                effects: {
+                    energy: -15,
+                    knowledge: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 3
+    ===================================================== */
+
+    {
+        id: "inner-event-03",
+        number: 3,
+
+        title:
+            "Молодіжний бізнес-нетворкінг",
+
+        story:
+            "У місті проходить масштабна офлайн-зустріч активної молоді та молодих підприємців. Час активно заводити корисні ділові знайомства!",
+
+        requirementText:
+            "⚡ 15+ енергії",
+
+        requirements: {
+            energy: 15
+        },
+
+        choices: [
+
+            {
+                id: "network",
+
+                title:
+                    "Презентувати себе та обмінюватися контактами",
+
+                costText:
+                    "⚡ -10 енергії | 💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +15 репутації | 🧠 +15 знань",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    energy: -10,
+                    money: -5000,
+                    reputation: 15,
+                    knowledge: 15
+                }
+            },
+
+            {
+                id: "listen",
+
+                title:
+                    "Бути пасивним слухачем у залі",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "🧠 +5 знань",
+
+                effects: {
+                    energy: -5,
+                    knowledge: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 4
+    ===================================================== */
+
+    {
+        id: "inner-event-04",
+        number: 4,
+
+        title:
+            "Підвищення на першій роботі",
+
+        story:
+            "Керівництво високо оцінило твою сумлінну щоденну працю і пропонує відчутне підвищення посадового окладу з розширенням повноважень.",
+
+        requirementText:
+            "🧠 15+ знань, ⭐ 15+ репутації",
+
+        requirements: {
+            knowledge: 15,
+            reputation: 15
+        },
+
+        choices: [
+
+            {
+                id: "accept",
+
+                title:
+                    "Прийняти нові відповідальні обов'язки",
+
+                costText:
+                    "⚡ -10 регулярної енергії",
+
+                resultText:
+                    "💰 +5 000 грн до регулярного доходу | ⭐ +5 репутації",
+
+                effects: {
+                    reputation: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000,
+                    energyPerPeriod: -10
+                }
+            },
+
+            {
+                id: "keep-schedule",
+
+                title:
+                    "Зберегти поточний вільний графік",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження вільного часу для розвитку власного стартапу",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 5
+    ===================================================== */
+
+    {
+        id: "inner-event-05",
+        number: 5,
+
+        title:
+            "Вірусний запуск у соцмережах",
+
+        story:
+            "Ти знімаєш перший креативний промо-ролик про свої комерційні послуги чи міні-стартап для залучення нових клієнтів.",
+
+        requirementText:
+            "⚡ 10+ енергії",
+
+        requirements: {
+            energy: 10
+        },
+
+        choices: [
+
+            {
+                id: "launch",
+
+                title:
+                    "Запустити таргетовану рекламну кампанію",
+
+                costText:
+                    "⚡ -10 енергії | 💰 -5 000 грн на рекламу",
+
+                resultText:
+                    "Після вибору кидаємо кубик на охоплення",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    energy: -10,
+                    money: -5000
+                },
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Мале охоплення: 🧠 +5 знань",
+
+                        effects: {
+                            knowledge: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Чудовий відгук: ⭐ +10 репутації, 💰 +5 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 5000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Вірусний тренд: ⭐ +15 репутації, 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 6
+    ===================================================== */
+
+    {
+        id: "inner-event-06",
+        number: 6,
+
+        title:
+            "Дисципліна та режим дня",
+
+        story:
+            "Поєднання навчання, кар'єри та бізнесу вимагає чіткого балансу. Час оптимізувати свій щоденний графік та подолати втому.",
+
+        requirementText:
+            "Без вимог",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "healthy",
+
+                title:
+                    "Налагодити здоровий сон та тайм-менеджмент",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⚡ +15 регулярної енергії | 🧠 +5 знань",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    knowledge: 5
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 15
+                }
+            },
+
+            {
+                id: "overwork",
+
+                title:
+                    "Працювати без відпочинку та вихідних",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "Без бонусів",
+
+                effects: {
+                    energy: -10
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 7
+    ===================================================== */
+
+    {
+        id: "inner-event-07",
+        number: 7,
+
+        title:
+            "Локальний міський фестиваль-ярмарок",
+
+        story:
+            "З'явилася вигідна нагода представити власні крафтові товари чи сервісні послуги на популярному міському фестивалі їжі та хендмейду.",
+
+        requirementText:
+            "💰 5 000 грн",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "festival",
+
+                title:
+                    "Орендувати фірмовий стенд та провести розпродаж",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -15 енергії",
+
+                resultText:
+                    "Через 1 хід 💰 +15 000 грн | ⭐ +10 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -15,
+                    reputation: 10
+                },
+
+                delayedEffect: {
+                    turns: 1,
+                    effects: {
+                        money: 15000
+                    },
+                    text:
+                        "Прибуток із фестивалю"
+                }
+            },
+
+            {
+                id: "skip",
+
+                title:
+                    "Пропустити участь у фестивалі",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження сил та енергії",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 8
+    ===================================================== */
+
+    {
+        id: "inner-event-08",
+        number: 8,
+
+        title:
+            "Постійний задоволений клієнт",
+
+        story:
+            "Ключовий клієнт залишився надзвичайно вражений якістю сервісу і пропонує підписати довгостроковий договір на щомісячне абонентське обслуговування.",
+
+        requirementText:
+            "🧠 20+ знань, ⭐ 20+ репутації",
+
+        requirements: {
+            knowledge: 20,
+            reputation: 20
+        },
+
+        choices: [
+
+            {
+                id: "contract",
+
+                title:
+                    "Укласти довгостроковий абонентський контракт",
+
+                costText:
+                    "⚡ -5 регулярної енергії",
+
+                resultText:
+                    "💰 +5 000 грн регулярного доходу | ⭐ +10 репутації",
+
+                effects: {
+                    reputation: 10
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000,
+                    energyPerPeriod: -5
+                }
+            },
+
+            {
+                id: "single-orders",
+
+                title:
+                    "Обслуговувати лише за разовими заявками",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "💰 +5 000 грн",
+
+                effects: {
+                    money: 5000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 9
+    ===================================================== */
+
+    {
+        id: "inner-event-09",
+        number: 9,
+
+        title:
+            "Оновлення робочого гаджета",
+
+        story:
+            "Застарілий ноутбук та повільний смартфон гальмують розвиток справи. Купівля швидкої техніки суттєво підвищить твою особисту швидкість роботи.",
+
+        requirementText:
+            "💰 10 000 грн",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "new-device",
+
+                title:
+                    "Придбати сучасний швидкий робочий ноутбук",
+
+                costText:
+                    "💰 -10 000 грн",
+
+                resultText:
+                    "⚡ +15 регулярної енергії | 🧠 +10 знань",
+
+                minimum: {
+                    money: 10000
+                },
+
+                effects: {
+                    money: -10000,
+                    knowledge: 10
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 15
+                }
+            },
+
+            {
+                id: "repair",
+
+                title:
+                    "Зробити недорогий сервісний ремонт старого",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "⚡ +5 регулярної енергії",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 10
+    ===================================================== */
+
+    {
+        id: "inner-event-10",
+        number: 10,
+
+        title:
+            "Молодіжний стартап-грант",
+
+        story:
+            "Міжнародний фонд підтримки молоді оголосив відкритий конкурс мікрогрантів для фінансування перших перспективних бізнес-ідей молодих українців.",
+
+        requirementText:
+            "🧠 25+ знань",
+
+        requirements: {
+            knowledge: 25
+        },
+
+        taskText:
+            "🗣 1 хвилина пітчу перед гравцями",
+
+        choices: [
+
+            {
+                id: "apply",
+
+                title:
+                    "Подати структурований бізнес-план на конкурс",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "Кидок кубика визначить результат захисту",
+
+                effects: {
+                    energy: -10
+                },
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Заявку відхилено: 🧠 +5 знань",
+
+                        effects: {
+                            knowledge: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "2-ге місце: 💰 +10 000 грн | ⭐ +10 репутації",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 10
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Переможець: 💰 +15 000 грн | ⭐ +15 репутації | 🧠 +10 знань",
+
+                        effects: {
+                            money: 15000,
+                            reputation: 15,
+                            knowledge: 10
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 11
+    ===================================================== */
+
+    {
+        id: "inner-event-11",
+        number: 11,
+
+        title:
+            "Конфлікт із вибагливим клієнтом",
+
+        story:
+            "Через непорозуміння у технічному завданні клієнт висловлює претензії та вимагає або переробити все заново, або терміново повернути сплачені гроші.",
+
+        requirementText:
+            "Без вимог",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "diplomacy",
+
+                title:
+                    "Дипломатично доопрацювати та узгодити деталі",
+
+                costText:
+                    "⚡ -10 енергії | 💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +10 репутації | 🧠 +5 знань",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    energy: -10,
+                    money: -5000,
+                    reputation: 10,
+                    knowledge: 5
+                }
+            },
+
+            {
+                id: "refund",
+
+                title:
+                    "Повернути кошти без зайвих розмов",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "conflict",
+
+                title:
+                    "Піти на різкий відкритий конфлікт",
+
+                costText:
+                    "⭐ -10 репутації",
+
+                resultText:
+                    "Гроші та енергія збережені",
+
+                effects: {
+                    reputation: -10
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 12
+    ===================================================== */
+
+    {
+        id: "inner-event-12",
+        number: 12,
+
+        title:
+            "Вступ до професійного бізнес-клубу",
+
+        story:
+            "Тобі пропонують стати дійсним членом закритого клубу молодих підприємців та лідерів думок твоєї галузі для щомісячного обміну досвідом.",
+
+        requirementText:
+            "⭐ 20+ репутації",
+
+        requirements: {
+            reputation: 20
+        },
+
+        choices: [
+
+            {
+                id: "join",
+
+                title:
+                    "Сплатити членський внесок та активно відвідувати зустрічі",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +10 знань | ⭐ +10 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -10,
+                    knowledge: 10,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "decline",
+
+                title:
+                    "Відмовитися від вступу до клубу",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження бюджету",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 13
+    ===================================================== */
+
+    {
+        id: "inner-event-13",
+        number: 13,
+
+        title:
+            "Кар'єрне підвищення до Рівня 2",
+
+        story:
+            "Ти здобув вагомий практичний досвід і готовий зробити наступний кар'єрний крок. Щоб отримати підвищення, презентуй іншим учасникам свою діяльність.",
+
+        requirementText:
+            "Відповідність вимогам Рівня 2: ⭐ min 25, 🧠 min 25",
+
+        requirements: {
+            reputation: 25,
+            knowledge: 25
+        },
+
+        taskText:
+            "🗣 Презентуй іншим учасникам свою діяльність",
+
+        choices: [
+
+            {
+                id: "promotion",
+
+                title:
+                    "Успішно презентувати свою діяльність",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "Перехід на 2-й кар'єрний рівень | ⭐ +10 репутації",
+
+                effects: {
+                    energy: -10,
+                    reputation: 10
+                },
+
+                specialAction:
+                    "promoteToLevel2"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 14
+    ===================================================== */
+
+    {
+        id: "inner-event-14",
+        number: 14,
+
+        title:
+            "Галузева олімпіада",
+
+        story:
+            "Тобі випала честь представити свій навчальний заклад або команду на престижній всеукраїнській олімпіаді з підприємництва та інновацій.",
+
+        requirementText:
+            "🧠 20+ знань",
+
+        requirements: {
+            knowledge: 20
+        },
+
+        choices: [
+
+            {
+                id: "participate",
+
+                title:
+                    "Взяти активну участь у турнірі інноваторів",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "Кидок кубика визначить результат",
+
+                effects: {
+                    energy: -10
+                },
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Сертифікат фіналіста: 🧠 +5 знань",
+
+                        effects: {
+                            knowledge: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Призове місце: 🧠 +10 | ⭐ +10 | 💰 +5 000 грн",
+
+                        effects: {
+                            knowledge: 10,
+                            reputation: 10,
+                            money: 5000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "1-ше місце: 🧠 +16 | ⭐ +15 | 💰 +10 000 грн",
+
+                        effects: {
+                            knowledge: 16,
+                            reputation: 15,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 15
+    ===================================================== */
+
+    {
+        id: "inner-event-15",
+        number: 15,
+
+        title:
+            "Брак сировини та робота над помилками",
+
+        story:
+            "Через брак досвіду перша партія матеріалів від ненадійного постачальника виявилася дефектною. Час зробити правильні фінансові висновки.",
+
+        requirementText:
+            "Без вимог",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "analysis",
+
+                title:
+                    "Провести аналіз та укласти договір із сертифікованим партнером",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +10 знань",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -10,
+                    knowledge: 10
+                }
+            },
+
+            {
+                id: "loss",
+
+                title:
+                    "Списати бракований товар у прямі збитки",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "Без бонусів",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 16
+    ===================================================== */
+
+    {
+        id: "inner-event-16",
+        number: 16,
+
+        title:
+            "ДТП та пошкодження авто",
+
+        story:
+            "На парковці пошкодили бампер та крило твоєї автівки, а винуватець зник. Час оцінити наявність страховки!",
+
+        requirementText:
+            "Несподівана дорожня пригода",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "insured",
+
+                title:
+                    "Якщо придбано Автоцивілку",
+
+                conditionProduct:
+                    "auto_insurance",
+
+                costText:
+                    "💰 0 грн",
+
+                resultText:
+                    "🧠 +10 знань про автострахування",
+
+                effects: {
+                    knowledge: 10
+                }
+            },
+
+            {
+                id: "not-insured",
+
+                title:
+                    "Якщо немає полісу страхування",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +5 знань",
+
+                effects: {
+                    money: -5000,
+                    energy: -10,
+                    knowledge: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 17
+    ===================================================== */
+
+    {
+        id: "inner-event-17",
+        number: 17,
+
+        title:
+            "Затоплення оселі",
+
+        story:
+            "У сусідній оселі вночі прорвало трубу — вода частково пошкодила меблі та робочу документацію.",
+
+        requirementText:
+            "Комунальна аварія в будівлі",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "home-insurance",
+
+                title:
+                    "Якщо є страхування оселі",
+
+                conditionProduct:
+                    "home_insurance",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +10 репутації",
+
+                effects: {
+                    money: -5000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "repair",
+
+                title:
+                    "Якщо захисту немає: екстрений ремонт власним коштом",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +5 знань",
+
+                effects: {
+                    money: -5000,
+                    energy: -10,
+                    knowledge: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 18
+    ===================================================== */
+
+    {
+        id: "inner-event-18",
+        number: 18,
+
+        title:
+            "Втрата смартфона та шахрайство",
+
+        story:
+            "Ти випадково загубив робочий смартфон із незаблокованими банківськими додатками. Час швидко реагувати на кіберзагрозу!",
+
+        requirementText:
+            "Ризик кібершахрайства",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "fast-block",
+
+                title:
+                    "Миттєво заблокувати рахунки та увімкнути 2FA",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "🧠 +10 знань | ⭐ +5 репутації",
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    knowledge: 10,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "late",
+
+                title:
+                    "Запізніла реакція на блокування карт",
+
+                costText:
+                    "💰 -10 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +15 знань",
+
+                effects: {
+                    money: -10000,
+                    energy: -10,
+                    knowledge: 15
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 19
+    ===================================================== */
+
+    {
+        id: "inner-event-19",
+        number: 19,
+
+        title:
+            "Фінал Кола 1: Підсумковий річний звіт",
+
+        story:
+            "Твій перший повноцінний фінансовий рік завершено! Час проаналізувати здобуті навички, підбити сальдо та вийти на масштабний рівень гри.",
+
+        requirementText:
+            "Завершення Кола 1",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "report",
+
+                title:
+                    "Підбити річний баланс та реінвестувати накопичений капітал",
+
+                costText:
+                    "Безкоштовно",
+
+                resultText:
+                    "Якщо ⭐ Репутація + 🧠 Знання ≥ 60 → 💰 +15 000 грн",
+
+                effects: {},
+
+                specialAction:
+                    "circleOneReport"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 20
+    ===================================================== */
+
+    {
+        id: "inner-event-20",
+        number: 20,
+
+        title:
+            "Підвищення зарплати",
+
+        story:
+            "Керівництво високо оцінило результати твоєї роботи та лояльність! Тобі пропонують суттєве підвищення зарплати та нові відповідальні обов'язки.",
+
+        requirementText:
+            "🧠 20+ знань, ⭐ 30+ репутації",
+
+        requirements: {
+            knowledge: 20,
+            reputation: 30
+        },
+
+        choices: [
+
+            {
+                id: "salary-up",
+
+                title:
+                    "Прийняти заохочення",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "💰 +5 000 грн до регулярного доходу | ⭐ +5 репутації",
+
+                effects: {
+                    energy: -5,
+                    reputation: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 21
+    ===================================================== */
+
+    {
+        id: "inner-event-21",
+        number: 21,
+
+        title:
+            "Кар'єрне підвищення",
+
+        story:
+            "Твоя наполеглива праця та високі результати принесли свої плоди — тобі пропонують нову, більш відповідальну посаду. Підвищення можливе лише на 1 рівень.",
+
+        requirementText:
+            "Виконати вимоги наступної професійної сходинки",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "career-up",
+
+                title:
+                    "Прийняти кар'єрне підвищення",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "Перехід на наступний рівень | 💰 +10 000 грн | ⭐ +10 репутації",
+
+                effects: {
+                    energy: -10,
+                    money: 10000,
+                    reputation: 10
+                },
+
+                specialAction:
+                    "promoteOneLevelIfReady"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 22
+    ===================================================== */
+
+    {
+        id: "inner-event-22",
+        number: 22,
+
+        title:
+            "Запрошення до великої компанії",
+
+        story:
+            "Твої унікальні навички та висока репутація привернули увагу хедхантерів відомої компанії. Тобі пропонують вигідний контракт та можливість спробувати себе в новій професії!",
+
+        requirementText:
+            "🧠 20+ знань, ⭐ 40+ репутації",
+
+        requirements: {
+            knowledge: 20,
+            reputation: 40
+        },
+
+        choices: [
+
+            {
+                id: "accept-company",
+
+                title:
+                    "Прийняти запрошення",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "Зміна посади/професії без зміни ресурсів | 💰 +15 000 грн | ⭐ +10 репутації",
+
+                effects: {
+                    energy: -5,
+                    money: 15000,
+                    reputation: 10
+                },
+
+                specialAction:
+                    "changeCareerSector"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 23
+    ===================================================== */
+
+    {
+        id: "inner-event-23",
+        number: 23,
+
+        title:
+            "Вдале професійне знайомство",
+
+        story:
+            "Під час важливої події ти встановив корисний контакт із впливовою людиною. Інвестуй час у підтримку стосунків — і це відкриє перед тобою нові двері.",
+
+        requirementText:
+            "⭐ 25+ репутації",
+
+        requirements: {
+            reputation: 25
+        },
+
+        choices: [
+
+            {
+                id: "keep-contact",
+
+                title:
+                    "Підтримувати контакт",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "Наступна кар'єрна подія: додатково 💰 +10 000 грн та ⭐ +10 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000
+                },
+
+                specialAction:
+                    "grantNextCareerEventBonus"
+            },
+
+            {
+                id: "stop-contact",
+
+                title:
+                    "Не продовжувати спілкування",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 24
+    ===================================================== */
+
+    {
+        id: "inner-event-24",
+        number: 24,
+
+        title:
+            "Рік особистого розвитку",
+
+        story:
+            "Ти вирішуєш зробити стратегічну паузу, щоб інвестувати час і гроші у власний розвиток. Це вимагає ресурсів сьогодні заради масштабних здобутків завтра.",
+
+        requirementText:
+            "Без вимог",
+
+        requirements: {},
+
+        choices: [
+
+            {
+                id: "development",
+
+                title:
+                    "Інвестувати у розвиток",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "🧠 +10 знань. Якщо після цього 🧠 80+ → ⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    knowledge: 10
+                },
+
+                specialAction:
+                    "personalDevelopmentBonus"
+            },
+
+            {
+                id: "nothing",
+
+                title:
+                    "Нічого не змінювати",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            }
+
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   50. ЗАПУСК КАРТКОВОГО ХОДУ
+
+   За правилами:
+
+   1-й кидок — рух.
+   2-й кидок — визначає картку.
+
+   У веб-версії колоди мають
+   більше ніж 6 карток.
+
+   Тому цифровий "другий кидок"
+   генерує номер у межах
+   кількості карток конкретної колоди.
+
+   Це дозволяє використати
+   всі картки документа.
+========================================================= */
+
+function startCardTurn(
     deckName
 ) {
 
-    const panel =
-        document.getElementById(
-            "currentCardPanel"
-        );
+    const player =
+        gameState.player;
 
 
     const deck =
-        CARD_DECKS[
+        getDeckForParticipant(
+            player,
             deckName
-        ];
+        );
 
 
-    const choices =
-        [...deck]
-            .sort(
-                () =>
-                    Math.random() -
-                    0.5
-            )
-            .slice(
-                0,
-                3
-            );
+    if (
+        !deck ||
+        deck.length === 0
+    ) {
 
+        showRaifikCurrentCardMessage(
+
+            "Ця колода ще не підключена."
+
+        );
+
+
+        setTimeout(
+            startAITurns,
+            1000
+        );
+
+
+        return;
+
+    }
+
+
+    showSecondCardRoll(
+        deckName,
+        deck
+    );
+
+}
+
+
+/* =========================================================
+   51. ОТРИМАТИ КОЛОДУ ДЛЯ КОЛА
+========================================================= */
+
+function getDeckForParticipant(
+    participant,
+    deckName
+) {
+
+    if (
+        participant.board ===
+        "inner"
+    ) {
+
+        return (
+            INNER_CARD_DECKS[
+                deckName
+            ] || []
+        );
+
+    }
+
+
+    return (
+        OUTER_CARD_DECKS[
+            deckName
+        ] || []
+    );
+
+}
+
+
+/* =========================================================
+   52. ДРУГИЙ КИДОК —
+   ВИЗНАЧЕННЯ НОМЕРА КАРТКИ
+========================================================= */
+
+function showSecondCardRoll(
+    deckName,
+    deck
+) {
 
     const type =
         CELL_TYPES[
@@ -6014,246 +8571,177 @@ function showThreeCardChoice(
         ];
 
 
-    panel.innerHTML = `
+    openGameInfoModal(`
 
-        <div class="current-card-choice">
-
-
-            <div class="current-card-raifik-line">
-
-                <img
-                    src="assets/raifik.png"
-                    alt="Райфик"
-                >
+        <div class="card-roll-modal">
 
 
-                <div>
+            <div class="card-roll-icon">
 
-                    <strong>
-
-                        ${type.icon}
-                        ${type.name}
-
-                    </strong>
-
-                    <p>
-                        Обери одну з трьох карток.
-                    </p>
-
-                </div>
+                ${type.icon}
 
             </div>
 
 
-            <div class="three-card-choice">
+            <h2>
 
-                ${
-                    choices
-                        .map(
-                            (card, index) => `
+                ${type.name}
 
-                                <button
-                                    class="hidden-game-card"
-                                    data-choice="${index}"
-                                >
-                                    ?
-                                </button>
-
-                            `
-                        )
-                        .join("")
-                }
-
-            </div>
-
-        </div>
-
-    `;
+            </h2>
 
 
-    document
-        .querySelectorAll(
-            ".hidden-game-card"
-        )
-        .forEach(button => {
+            <p>
 
-            button.addEventListener(
-                "click",
-                () => {
+                Перший кидок визначив,
+                куди ти потрапив.
 
-                    const card =
-                        choices[
-                            Number(
-                                button.dataset.choice
-                            )
-                        ];
+            </p>
 
 
-                    resolveChosenPlayerCard(
-                        deckName,
-                        card
-                    );
+            <p>
 
-                }
-            );
+                Тепер другий кидок
+                визначить номер картки.
 
-        });
-
-}
-
-
-/* =========================================================
-   46. ЖИТТЯ — ЧИСЛО 1–20
-========================================================= */
-
-function showLifeNumberChoice() {
-
-    const panel =
-        document.getElementById(
-            "currentCardPanel"
-        );
-
-
-    panel.innerHTML = `
-
-        <div class="life-number-card">
-
-
-            <div class="current-card-raifik-line">
-
-                <img
-                    src="assets/raifik.png"
-                    alt="Райфик"
-                >
-
-
-                <div>
-
-                    <strong>
-                        ❤️ ЖИТТЯ
-                    </strong>
-
-                    <p>
-                        Загадай число від 1 до 20.
-                    </p>
-
-                </div>
-
-            </div>
-
-
-            <input
-                id="lifeNumberInput"
-                type="number"
-                min="1"
-                max="20"
-                placeholder="1–20"
-            >
-
-
-            <button
-                id="lifeNumberButton"
-                class="main-game-btn"
-            >
-                ВІДКРИТИ КАРТКУ
-            </button>
+            </p>
 
 
             <div
-                id="lifeNumberError"
-                class="form-error"
-            ></div>
+                id="secondCardDice"
+                class="second-card-dice"
+            >
+
+                ?
+
+            </div>
+
+
+            <button
+                id="secondCardRollButton"
+                class="main-game-btn"
+            >
+
+                🎲 КИНУТИ ЩЕ РАЗ
+
+            </button>
+
 
         </div>
 
-    `;
+    `);
 
 
     document
         .getElementById(
-            "lifeNumberButton"
+            "secondCardRollButton"
         )
         .addEventListener(
             "click",
-            resolveLifeNumber
+            () => {
+
+                rollForCardNumber(
+                    deckName,
+                    deck
+                );
+
+            }
         );
 
 }
 
 
 /* =========================================================
-   47. РЕЗУЛЬТАТ ЧИСЛА
+   53. РАНДОМНИЙ НОМЕР КАРТКИ
 ========================================================= */
 
-function resolveLifeNumber() {
+async function rollForCardNumber(
+    deckName,
+    deck
+) {
 
-    const value =
-        Number(
-            document
-                .getElementById(
-                    "lifeNumberInput"
-                )
-                .value
+    const button =
+        document.getElementById(
+            "secondCardRollButton"
         );
 
 
-    if (
-        value < 1 ||
-        value > 20
-    ) {
+    const display =
+        document.getElementById(
+            "secondCardDice"
+        );
 
-        document
-            .getElementById(
-                "lifeNumberError"
-            )
-            .textContent =
-            "Введи число від 1 до 20 🙂";
 
-        return;
+    if (button) {
+
+        button.disabled =
+            true;
+
     }
 
 
-    const deck =
-        CARD_DECKS.life;
+    for (
+        let i = 0;
+        i < 9;
+        i++
+    ) {
+
+        const temp =
+            randomNumber(
+                1,
+                deck.length
+            );
 
 
-    const index =
-        (value - 1) %
-        deck.length;
+        if (display) {
+
+            display.textContent =
+                temp;
+
+        }
 
 
-    resolveChosenPlayerCard(
-        "life",
-        deck[index]
-    );
+        await delay(
+            70
+        );
 
-}
-
-
-/* =========================================================
-   48. ДОЛЯ
-========================================================= */
-
-async function showRandomFateCard() {
-
-    showRaifikCurrentCardMessage(
-
-        "⚡ Доля вирішить сама... Відкриваємо випадкову картку."
-
-    );
+    }
 
 
-    await delay(1200);
-
-
-    const card =
-        randomItem(
-            CARD_DECKS.fate
+    const number =
+        randomNumber(
+            1,
+            deck.length
         );
 
 
-    resolveChosenPlayerCard(
-        "fate",
+    if (display) {
+
+        display.textContent =
+            number;
+
+    }
+
+
+    await delay(
+        450
+    );
+
+
+    const card =
+        deck[
+            number - 1
+        ];
+
+
+    addLog(
+
+        `${CELL_TYPES[deckName].icon} ${CELL_TYPES[deckName].name}: картка №${card.number}`
+
+    );
+
+
+    showDecisionCard(
+        deckName,
         card
     );
 
@@ -6261,53 +8749,7980 @@ async function showRandomFateCard() {
 
 
 /* =========================================================
-   49. ОБРАНА КАРТКА
+   54. ПЕРЕВІРКА УМОВ КАРТКИ
 ========================================================= */
 
-function resolveChosenPlayerCard(
+function checkCardRequirements(
+    participant,
+    requirements = {}
+) {
+
+    const failed = [];
+
+
+    if (
+        requirements.money &&
+        participant.money <
+            requirements.money
+    ) {
+
+        failed.push(
+            `💰 ${formatMoney(requirements.money)} грн`
+        );
+
+    }
+
+
+    if (
+        requirements.reputation &&
+        participant.reputation <
+            requirements.reputation
+    ) {
+
+        failed.push(
+            `⭐ ${requirements.reputation}`
+        );
+
+    }
+
+
+    if (
+        requirements.knowledge &&
+        participant.knowledge <
+            requirements.knowledge
+    ) {
+
+        failed.push(
+            `🧠 ${requirements.knowledge}`
+        );
+
+    }
+
+
+    if (
+        requirements.energy &&
+        participant.energy <
+            requirements.energy
+    ) {
+
+        failed.push(
+            `⚡ ${requirements.energy}`
+        );
+
+    }
+
+
+    return {
+
+        passed:
+            failed.length === 0,
+
+        failed
+
+    };
+
+}
+
+
+/* =========================================================
+   55. ПОКАЗ КАРТКИ З РІШЕННЯМИ
+========================================================= */
+
+function showDecisionCard(
     deckName,
     card
 ) {
 
+    const player =
+        gameState.player;
+
+
+    const requirementCheck =
+        checkCardRequirements(
+
+            player,
+
+            card.requirements
+
+        );
+
+
+    const choicesHTML =
+        card.choices
+
+            .map(
+                (
+                    choice,
+                    index
+                ) => {
+
+
+                    const minimumCheck =
+                        checkCardRequirements(
+
+                            player,
+
+                            choice.minimum ||
+                            {}
+
+                        );
+
+
+                    const disabled =
+                        !minimumCheck.passed;
+
+
+                    return `
+
+                        <button
+                            class="
+                                card-decision-button
+                                ${
+                                    disabled
+                                    ? "card-decision-disabled"
+                                    : ""
+                                }
+                            "
+                            data-choice-index="${index}"
+                            ${
+                                disabled
+                                ? "disabled"
+                                : ""
+                            }
+                        >
+
+
+                            <strong>
+
+                                ${choice.title}
+
+                            </strong>
+
+
+                            <span class="card-decision-cost">
+
+                                ${
+                                    choice.costText ||
+                                    "Без витрат"
+                                }
+
+                            </span>
+
+
+                            <span class="card-decision-result">
+
+                                ${
+                                    choice.resultText ||
+                                    ""
+                                }
+
+                            </span>
+
+
+                        </button>
+
+                    `;
+
+                }
+            )
+
+            .join("");
+
+
+    openGameInfoModal(`
+
+        <div class="decision-card-modal">
+
+
+            <div class="decision-card-number">
+
+                Картка №${card.number}
+
+            </div>
+
+
+            <div class="decision-card-type">
+
+                ${CELL_TYPES[deckName].icon}
+                ${CELL_TYPES[deckName].name}
+
+            </div>
+
+
+            <h2>
+
+                ${card.title}
+
+            </h2>
+
+
+            <p class="decision-card-story">
+
+                ${card.story}
+
+            </p>
+
+
+            <div class="decision-card-requirement">
+
+                <strong>
+                    🎯 Умова:
+                </strong>
+
+                ${card.requirementText}
+
+            </div>
+
+
+            ${
+                card.taskText
+
+                ? `
+
+                    <div class="decision-card-task">
+
+                        ${card.taskText}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            ${
+                !requirementCheck.passed
+
+                ? `
+
+                    <div class="card-requirement-warning">
+
+                        ⚠️ Для повної активації
+                        не вистачає:
+
+                        <strong>
+
+                            ${requirementCheck.failed.join(", ")}
+
+                        </strong>
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <div class="card-decisions-list">
+
+                ${choicesHTML}
+
+            </div>
+
+
+        </div>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            ".card-decision-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const index =
+                            Number(
+                                button.dataset.choiceIndex
+                            );
+
+
+                        resolveCardChoice(
+
+                            deckName,
+
+                            card,
+
+                            card.choices[index]
+
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   56. ОБРОБКА ВИБОРУ
+========================================================= */
+
+async function resolveCardChoice(
+    deckName,
+    card,
+    choice
+) {
+
+    const player =
+        gameState.player;
+
+
+    /* ОСНОВНІ ЕФЕКТИ */
+
     applyEffects(
-        gameState.player,
-        card.effects
+
+        player,
+
+        choice.effects ||
+        {}
+
     );
 
 
-    showResultCard(
-        CELL_TYPES[
-            deckName
-        ],
-        card.title,
-        card.text,
-        card.effects
+    /* ПОСТІЙНІ ЕФЕКТИ */
+
+    applyPersistentEffects(
+
+        player,
+
+        choice.persistentEffects
+
     );
+
+
+    /* ВІДКЛАДЕНИЙ ЕФЕКТ */
+
+    if (
+        choice.delayedEffect
+    ) {
+
+        addDelayedEffect(
+
+            player,
+
+            choice.delayedEffect
+
+        );
+
+    }
+
+
+    /* СПЕЦІАЛЬНА ДІЯ */
+
+    if (
+        choice.specialAction
+    ) {
+
+        applyCardSpecialAction(
+
+            player,
+
+            choice.specialAction
+
+        );
+
+    }
+
+
+    /* КИДОК КУБИКА ВСЕРЕДИНІ КАРТКИ */
+
+    if (
+        choice.diceOutcomes
+    ) {
+
+        await resolveCardDiceOutcome(
+
+            card,
+
+            choice
+
+        );
+
+
+        return;
+
+    }
 
 
     addLog(
 
-        `${gameState.player.name}: ${card.title}`
+        `${player.name}: ${card.title} → ${choice.title}`
 
     );
 
 
-    setTimeout(
-        startAITurns,
-        2100
+    showCardFinalResult(
+
+        deckName,
+
+        card,
+
+        choice,
+
+        choice.resultText
+
     );
 
 }
 
 
 /* =========================================================
-   50. ЕФЕКТИ
+   57. ПОСТІЙНІ ЕФЕКТИ КАРТКИ
+========================================================= */
+
+function applyPersistentEffects(
+    participant,
+    persistentEffects
+) {
+
+    if (
+        !persistentEffects
+    ) {
+
+        return;
+
+    }
+
+
+    if (
+        persistentEffects.passiveIncome
+    ) {
+
+        participant.passiveIncome +=
+            persistentEffects.passiveIncome;
+
+    }
+
+
+    if (
+        persistentEffects.energyPerPeriod
+    ) {
+
+        participant.effects.energyPerTurn +=
+            persistentEffects.energyPerPeriod;
+
+    }
+
+}
+
+
+/* =========================================================
+   58. ВІДКЛАДЕНІ ВИПЛАТИ
+========================================================= */
+
+function addDelayedEffect(
+    participant,
+    delayedEffect
+) {
+
+    participant
+        .effects
+        .delayedPayments
+        .push({
+
+            turnsLeft:
+                delayedEffect.turns,
+
+            effects:
+                delayedEffect.effects,
+
+            text:
+                delayedEffect.text ||
+                "Відкладений ефект"
+
+        });
+
+}
+
+
+/* =========================================================
+   59. КИДОК КУБИКА УСЕРЕДИНІ КАРТКИ
+========================================================= */
+
+async function resolveCardDiceOutcome(
+    card,
+    choice
+) {
+
+    const player =
+        gameState.player;
+
+
+    openGameInfoModal(`
+
+        <div class="card-extra-roll">
+
+            <h2>
+                🎲 Кидок кубика
+            </h2>
+
+            <p>
+                Результат визначить,
+                що станеться далі.
+            </p>
+
+            <div
+                id="cardExtraDice"
+                class="second-card-dice"
+            >
+                ⚀
+            </div>
+
+        </div>
+
+    `);
+
+
+    const display =
+        document.getElementById(
+            "cardExtraDice"
+        );
+
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const temp =
+            randomNumber(
+                1,
+                6
+            );
+
+
+        if (display) {
+
+            display.textContent =
+                DICE_FACES[
+                    temp - 1
+                ];
+
+        }
+
+
+        await delay(
+            80
+        );
+
+    }
+
+
+    const value =
+        randomNumber(
+            1,
+            6
+        );
+
+
+    if (display) {
+
+        display.textContent =
+            DICE_FACES[
+                value - 1
+            ];
+
+    }
+
+
+    await delay(
+        450
+    );
+
+
+    const outcome =
+        choice
+            .diceOutcomes
+            .find(
+                item =>
+
+                    value >= item.min
+                    &&
+                    value <= item.max
+            );
+
+
+    if (outcome) {
+
+        applyEffects(
+
+            player,
+
+            outcome.effects ||
+            {}
+
+        );
+
+    }
+
+
+    addLog(
+
+        `🎲 ${card.title}: випало ${value}`
+
+    );
+
+
+    showCardFinalResult(
+
+        "event",
+
+        card,
+
+        choice,
+
+        outcome
+            ? outcome.text
+            : "Без додаткових змін"
+
+    );
+
+}
+
+
+/* =========================================================
+   60. СПЕЦІАЛЬНІ ДІЇ
+========================================================= */
+
+function applyCardSpecialAction(
+    participant,
+    action
+) {
+
+    switch (
+        action
+    ) {
+
+
+        /* =================================================
+           КАРТКА 13
+        ================================================= */
+
+        case "promoteToLevel2":
+
+            if (
+                participant.careerLevel < 1
+            ) {
+
+                participant.careerLevel =
+                    1;
+
+
+                const stats =
+                    getCareerStats(
+
+                        participant.sector.id,
+
+                        2
+
+                    );
+
+
+                participant.salary =
+                    stats.salary;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           КАРТКА 19
+        ================================================= */
+
+        case "circleOneReport":
+
+            if (
+                participant.reputation +
+                participant.knowledge >=
+                60
+            ) {
+
+                participant.money +=
+                    15000;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           КАРТКА 21
+        ================================================= */
+
+        case "promoteOneLevelIfReady":
+
+            promoteParticipantOneLevelIfReady(
+                participant
+            );
+
+            break;
+
+
+        /* =================================================
+           КАРТКА 22
+
+           Документ говорить про
+           "зміну посади/професії",
+           але не визначає,
+           ЯКУ саме професію обрати.
+
+           Тому автоматично
+           професію НЕ змінюємо.
+
+           Грошовий та репутаційний
+           ефект уже застосовано.
+        ================================================= */
+
+        case "changeCareerSector":
+
+            addLog(
+
+                "ℹ️ Картка передбачає зміну професії, але конкретний механізм вибору професії у файлі не визначений."
+
+            );
+
+            break;
+
+
+        /* =================================================
+           КАРТКА 23
+        ================================================= */
+
+        case "grantNextCareerEventBonus":
+
+            participant.effects
+                .nextCareerEventBonus = {
+
+                    money: 10000,
+                    reputation: 10
+
+                };
+
+            break;
+
+
+        /* =================================================
+           КАРТКА 24
+        ================================================= */
+
+        case "personalDevelopmentBonus":
+
+            if (
+                participant.knowledge >=
+                80
+            ) {
+
+                participant.reputation +=
+                    5;
+
+            }
+
+            break;
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+    }
+
+}
+
+
+/* =========================================================
+   61. ПІДВИЩЕННЯ НА 1 РІВЕНЬ
+   ЛИШЕ ЯКЩО ВИКОНАНІ УМОВИ
+========================================================= */
+
+function promoteParticipantOneLevelIfReady(
+    participant
+) {
+
+    const sector =
+        participant.sector;
+
+
+    if (!sector) {
+
+        return false;
+
+    }
+
+
+    if (
+        participant.careerLevel >=
+        sector.levels.length - 1
+    ) {
+
+        return false;
+
+    }
+
+
+    const nextLevel =
+        participant.careerLevel +
+        1;
+
+
+    const nextStats =
+        getCareerStats(
+
+            sector.id,
+
+            nextLevel + 1
+
+        );
+
+
+    const ready =
+
+        participant.reputation >=
+            nextStats.reputation
+
+        &&
+
+        participant.knowledge >=
+            nextStats.knowledge
+
+        &&
+
+        participant.energy >=
+            nextStats.energy;
+
+
+    if (!ready) {
+
+        return false;
+
+    }
+
+
+    participant.careerLevel =
+        nextLevel;
+
+
+    participant.salary =
+        nextStats.salary;
+
+
+    addLog(
+
+        `🎉 ${participant.name}: професійний рівень ${nextLevel + 1}`
+
+    );
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   62. ФІНАЛ КАРТКИ
+
+   Хід НЕ переходить до AI
+   автоматично.
+
+   Гравець сам натискає:
+   "ЗАВЕРШИТИ ХІД".
+========================================================= */
+
+function showCardFinalResult(
+    deckName,
+    card,
+    choice,
+    resultText
+) {
+
+    const type =
+        CELL_TYPES[
+            deckName
+        ];
+
+
+    openGameInfoModal(`
+
+        <div class="card-final-result">
+
+
+            <div class="decision-card-type">
+
+                ${type.icon}
+                ${type.name}
+
+            </div>
+
+
+            <h2>
+
+                ${card.title}
+
+            </h2>
+
+
+            <div class="card-result-choice">
+
+                Твоє рішення:
+
+                <strong>
+
+                    ${choice.title}
+
+                </strong>
+
+            </div>
+
+
+            <div class="card-result-text">
+
+                ${resultText || "Без змін"}
+
+            </div>
+
+
+            <button
+                id="finishCardTurnButton"
+                class="main-game-btn"
+            >
+
+                ЗАВЕРШИТИ ХІД
+
+            </button>
+
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishCardTurnButton"
+        )
+        .addEventListener(
+            "click",
+            finishPlayerCardTurn
+        );
+
+}
+
+
+/* =========================================================
+   63. ЗАВЕРШИТИ КАРТКОВИЙ ХІД
+========================================================= */
+
+function finishPlayerCardTurn() {
+
+    closeGameInfoModal();
+
+
+    startAITurns();
+
+}
+
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 4А
+
+   ДАЛІ — ЧАСТИНА 4Б:
+
+   - Події ВЕЛИКОГО кола
+   - 29 карток Кола 2
+   - умови банківських продуктів
+   - інтернет-еквайринг
+   - валютний рахунок
+   - інвестиції
+   - масштабування
+   - AI
+========================================================= */
+
+   /* =====================================================
+       КАРТКА 6
+    ===================================================== */
+
+    {
+        id: "outer-event-06",
+        number: 6,
+
+        title:
+            "Грант на розвиток",
+
+        story:
+            "Твій проєкт отримав можливість виграти грант — безповоротне фінансування на розвиток власної справи без віддачі частки інвесторам! Це твоя нагода прискорити зростання.",
+
+        requirementText:
+            "🧠 55+ знань та наявність активного проєкту",
+
+        requirements: {
+            knowledge: 55
+        },
+
+        taskText:
+            "🗣 Маєш 2 хвилини, щоб описати свій грант перед іншими гравцями. Якщо 51%+ проголосують «за» — проєкт реалізовано. При 50/50 вирішує ведучий.",
+
+        choices: [
+
+            {
+                id: "grant-success",
+
+                title:
+                    "Отримати грант при успішному голосуванні",
+
+                costText:
+                    "🗣 2 хвилини презентації проєкту",
+
+                resultText:
+                    "💰 +20 000 грн | ⭐ +10 репутації",
+
+                effects: {
+                    money: 20000,
+                    reputation: 10
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 7
+    ===================================================== */
+
+    {
+        id: "outer-event-07",
+        number: 7,
+
+        title:
+            "Авторська методика",
+
+        story:
+            "Твоя унікальна авторська методика роботи була успішно протестована й готова до широкого впровадження. Це справжній тріумф твого інтелекту та професіоналізму!",
+
+        requirementText:
+            "🧠 70+ знань",
+
+        requirements: {
+            knowledge: 70
+        },
+
+        choices: [
+
+            {
+                id: "launch-method",
+
+                title:
+                    "Прийняти заохочення та запустити методику",
+
+                costText:
+                    "Без додаткових витрат",
+
+                resultText:
+                    "💰 +10 000 грн | 💰 +5 000 грн регулярного доходу | ⭐ +10 репутації | 🧠 +5 знань",
+
+                effects: {
+                    money: 10000,
+                    reputation: 10,
+                    knowledge: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 8
+    ===================================================== */
+
+    {
+        id: "outer-event-08",
+        number: 8,
+
+        title:
+            "Наставник року",
+
+        story:
+            "Тебе запросили стати ментором для молодих спеціалістів. Це чудова нагода поділитися досвідом та укріпити свій статус експерта, хоч це й потребуватиме твоїх сил.",
+
+        requirementText:
+            "⭐ 35+ репутації",
+
+        requirements: {
+            reputation: 35
+        },
+
+        choices: [
+
+            {
+                id: "mentor",
+
+                title:
+                    "Прийняти роль наставника",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +5 репутації | 🧠 +10 знань | наступне підвищення знань коштує на 50% дешевше",
+
+                effects: {
+                    energy: -5,
+                    reputation: 5,
+                    knowledge: 10
+                },
+
+                specialAction:
+                    "knowledgeDiscount"
+            },
+
+            {
+                id: "mentor-decline",
+
+                title:
+                    "Відмовитися",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "mentor-risk",
+
+                title:
+                    "Альтернатива з ризиком",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Учні втратили інтерес: ⭐ +5 репутації",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Успішне менторство: ⭐ +10 репутації | 🧠 +10 знань",
+
+                        effects: {
+                            reputation: 10,
+                            knowledge: 10
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Зірковий випускник: ⭐ +15 репутації | 💰 +5 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 5000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 9
+    ===================================================== */
+
+    {
+        id: "outer-event-09",
+        number: 9,
+
+        title:
+            "Публікація в професійному виданні",
+
+        story:
+            "Твою аналітичну статтю прийняли до публікації в престижному журналі! Ти можеш одразу випустити матеріал для швидкого визнання або доопрацювати його заради ще більшого ефекту.",
+
+        requirementText:
+            "🧠 50+ знань",
+
+        requirements: {
+            knowledge: 50
+        },
+
+        choices: [
+
+            {
+                id: "publish-now",
+
+                title:
+                    "Опублікувати одразу",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +10 репутації",
+
+                effects: {
+                    energy: -5,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "improve",
+
+                title:
+                    "Доопрацювати матеріал",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +10 знань | ⭐ +15 репутації",
+
+                effects: {
+                    energy: -10,
+                    knowledge: 10,
+                    reputation: 15
+                }
+            },
+
+            {
+                id: "publication-risk",
+
+                title:
+                    "Випробувати вдачу",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Стаття залишилася непоміченою: ⭐ +5 репутації",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Спільнота тепло прийняла статтю: ⭐ +10 репутації",
+
+                        effects: {
+                            reputation: 10
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Публікація стала хітом: ⭐ +15 репутації | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 10
+    ===================================================== */
+
+    {
+        id: "outer-event-10",
+        number: 10,
+
+        title:
+            "Запуск власного курсу",
+
+        story:
+            "Ти створив власний навчальний курс! Це важливий крок до монетизації твоєї експертизи. Ти можеш інвестувати кошти в його негайний запуск або трохи зачекати.",
+
+        requirementText:
+            "🧠 60+ знань",
+
+        requirements: {
+            knowledge: 60
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "course-launch",
+
+                title:
+                    "Запустити курс",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "💰 +5 000 грн регулярного доходу | ⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    reputation: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000
+                }
+            },
+
+            {
+                id: "course-delay",
+
+                title:
+                    "Відкласти запуск",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "course-risk",
+
+                title:
+                    "Ризикнути із запуском",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Проєкт не окупився.",
+
+                        effects: {}
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Курс має стабільний попит: 💰 +10 000 грн | ⭐ +5 репутації",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Абсолютний успіх: 💰 +10 000 грн | ⭐ +10 репутації | отримай картку Доля",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 10
+                        },
+
+                        specialAction:
+                            "drawFateCard"
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 11
+    ===================================================== */
+
+    {
+        id: "outer-event-11",
+        number: 11,
+
+        title:
+            "Запрошення до експертної ради",
+
+        story:
+            "Завдяки твоєму авторитету тебе запросили стати членом експертної ради. Це почесна місія, яка зміцнить твою репутацію, хоча й вимагатиме сил.",
+
+        requirementText:
+            "⭐ 45+ репутації",
+
+        requirements: {
+            reputation: 45
+        },
+
+        choices: [
+
+            {
+                id: "expert-board",
+
+                title:
+                    "Приєднатися до експертної ради",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +10 репутації | один раз можна перекинути кубик",
+
+                effects: {
+                    energy: -5,
+                    reputation: 10
+                },
+
+                specialAction:
+                    "grantReroll"
+            },
+
+            {
+                id: "expert-decline",
+
+                title:
+                    "Відмовитися",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "💰 +5 000 грн | ⚡ +5 енергії",
+
+                effects: {
+                    money: 5000,
+                    energy: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 12
+    ===================================================== */
+
+    {
+        id: "outer-event-12",
+        number: 12,
+
+        title:
+            "Автоматизація роботи",
+
+        story:
+            "Ти знайшов дієвий спосіб автоматизувати свою щоденну рутину. Впровадження системи вимагає вкладень зараз, зате звільнить час та енергію в майбутньому.",
+
+        requirementText:
+            "🧠 55+ знань",
+
+        requirements: {
+            knowledge: 55
+        },
+
+        choices: [
+
+            {
+                id: "automation",
+
+                title:
+                    "Впровадити зміни",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⚡ +10 регулярної енергії",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 10
+                }
+            },
+
+            {
+                id: "automation-risk",
+
+                title:
+                    "Тестування системи",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 3,
+
+                        text:
+                            "Помилка системи: 💰 -10 000 грн | ⚡ -15 енергії",
+
+                        effects: {
+                            money: -10000,
+                            energy: -15
+                        }
+                    },
+
+                    {
+                        min: 4,
+                        max: 6,
+
+                        text:
+                            "Ідеальна інтеграція: ⚡ +15 енергії | 💰 +15 000 грн",
+
+                        effects: {
+                            energy: 15,
+                            money: 15000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 13
+    ===================================================== */
+
+    {
+        id: "outer-event-13",
+        number: 13,
+
+        title:
+            "Успішний виступ у медіа",
+
+        story:
+            "Тебе запросили стати гостем популярного подкасту чи телеефіру. Це нагода заявити про себе на широку аудиторію.",
+
+        requirementText:
+            "⭐ 40+ репутації",
+
+        requirements: {
+            reputation: 40
+        },
+
+        choices: [
+
+            {
+                id: "media",
+
+                title:
+                    "Погодитися на виступ",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +5 репутації",
+
+                effects: {
+                    energy: -5,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "media-risk",
+
+                title:
+                    "Спонтанний ефір",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Нейтральний результат.",
+
+                        effects: {}
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Вдалий виступ: ⭐ +5 репутації",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Вірусний успіх: ⭐ +10 репутації | 💰 +5 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 5000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 14
+    ===================================================== */
+
+    {
+        id: "outer-event-14",
+        number: 14,
+
+        title:
+            "Міжнародний проєкт",
+
+        story:
+            "У тебе з'явилася можливість попрацювати з передовою міжнародною командою. Це виклик, який вимагатиме максимуму сил, але дасть цінний досвід та фінансовий бонус.",
+
+        requirementText:
+            "🧠 65+ знань, ⭐ 35+ репутації",
+
+        requirements: {
+            knowledge: 65,
+            reputation: 35
+        },
+
+        bankRequirement: {
+            product:
+                "currency_account",
+
+            text:
+                "🌐 Валютний рахунок"
+        },
+
+        choices: [
+
+            {
+                id: "international",
+
+                title:
+                    "Приєднатися до проєкту",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +5 знань | 💰 +10 000 грн регулярного доходу",
+
+                effects: {
+                    energy: -10,
+                    knowledge: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 10000
+                }
+            },
+
+            {
+                id: "international-decline",
+
+                title:
+                    "Відмовитися",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "⭐ +5 репутації",
+
+                effects: {
+                    reputation: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 15
+    ===================================================== */
+
+    {
+        id: "outer-event-15",
+        number: 15,
+
+        title:
+            "Патент або реєстрація розробки",
+
+        story:
+            "Ти створив авторське рішення й маєш можливість офіційно його зареєструвати. Це потребує вкладень, але юридично закріпить права та підвищить статус.",
+
+        requirementText:
+            "🧠 75+ знань",
+
+        requirements: {
+            knowledge: 75
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "patent",
+
+                title:
+                    "Зареєструвати розробку",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +10 репутації | 💰 +10 000 грн",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: 5000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "patent-risk",
+
+                title:
+                    "Спроба прискореної реєстрації",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Бюрократичні затримки: 💰 -5 000 грн",
+
+                        effects: {
+                            money: -5000
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Патент закріплено: ⭐ +10 репутації | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 10000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Міжнародний патент: ⭐ +15 репутації | 💰 +20 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 20000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 16
+    ===================================================== */
+
+    {
+        id: "outer-event-16",
+        number: 16,
+
+        title:
+            "Кризовий менеджмент",
+
+        story:
+            "Важливий проєкт опинився під загрозою зриву! Тобі пропонують очолити антикризову команду.",
+
+        requirementText:
+            "🧠 50+ знань, ⭐ 30+ репутації",
+
+        requirements: {
+            knowledge: 50,
+            reputation: 30
+        },
+
+        choices: [
+
+            {
+                id: "crisis-lead",
+
+                title:
+                    "Взяти лідерство в проєкті",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "💰 +10 000 грн | ⭐ +10 репутації",
+
+                effects: {
+                    energy: -10,
+                    money: 10000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "crisis-decline",
+
+                title:
+                    "Відмовитися від ризику",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "crisis-risk",
+
+                title:
+                    "Ризикнути",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Не вдалося врятувати проєкт: ⚡ -5 | ⭐ -5",
+
+                        effects: {
+                            energy: -5,
+                            reputation: -5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Кризу частково подолано: ⭐ +5 | 💰 +5 000 грн | ⚡ -5",
+
+                        effects: {
+                            reputation: 5,
+                            money: 5000,
+                            energy: -5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Тріумфальний порятунок: ⭐ +10 | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 17
+    ===================================================== */
+
+    {
+        id: "outer-event-17",
+        number: 17,
+
+        title:
+            "Технологічна олімпіада",
+
+        story:
+            "Твоя команда розробила проривний прототип під час олімпіади. Рішення вразило інвесторів: можна масштабувати розробку або забрати призовий грант.",
+
+        requirementText:
+            "🧠 60+ знань",
+
+        requirements: {
+            knowledge: 60
+        },
+
+        choices: [
+
+            {
+                id: "scale-tech",
+
+                title:
+                    "Масштабувати розробку",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "🧠 +5 знань | ⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    knowledge: 5,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "take-grant",
+
+                title:
+                    "Забрати призовий грант",
+
+                costText:
+                    "Без додаткових витрат",
+
+                resultText:
+                    "💰 +10 000 грн | ⭐ +5 репутації",
+
+                effects: {
+                    money: 10000,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "tech-risk",
+
+                title:
+                    "Випробувати вдачу",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Прототип потребує доопрацювання: ⚡ -5",
+
+                        effects: {
+                            energy: -5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Комерційний грант: 💰 +10 000 грн | ⭐ +5",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Яскрава перемога: 💰 +15 000 грн | ⭐ +10 | 🧠 +5",
+
+                        effects: {
+                            money: 15000,
+                            reputation: 10,
+                            knowledge: 5
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 18
+    ===================================================== */
+
+    {
+        id: "outer-event-18",
+        number: 18,
+
+        title:
+            "Менторська програма для лідерів",
+
+        story:
+            "Тобі запропонували пройти ексклюзивне менторство від міжнародного експерта. Навчання вимагає інвестицій та часу, але розширить стратегічне бачення.",
+
+        requirementText:
+            "⭐ 40+ репутації",
+
+        requirements: {
+            reputation: 40
+        },
+
+        choices: [
+
+            {
+                id: "leader-mentoring",
+
+                title:
+                    "Пройти менторську програму",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "🧠 +10 знань | ⭐ +5 репутації | жетон «Преміум-контакт»",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    knowledge: 10,
+                    reputation: 5
+                },
+
+                specialAction:
+                    "premiumContact"
+            },
+
+            {
+                id: "leader-mentoring-delay",
+
+                title:
+                    "Відкласти навчання",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 19
+    ===================================================== */
+
+    {
+        id: "outer-event-19",
+        number: 19,
+
+        title:
+            "Стратегічний ребрендинг",
+
+        story:
+            "Твій бізнес та персональний бренд вийшли на новий рівень. Ребрендинг дозволить залучити преміальних клієнтів, але вимагатиме інвестицій.",
+
+        requirementText:
+            "⭐ 35+ репутації, 🧠 45+ знань",
+
+        requirements: {
+            reputation: 35,
+            knowledge: 45
+        },
+
+        choices: [
+
+            {
+                id: "rebrand",
+
+                title:
+                    "Провести ребрендинг",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +10 репутації | 💰 +10 000 грн регулярного доходу",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    reputation: 10
+                },
+
+                persistentEffects: {
+                    passiveIncome: 10000
+                }
+            },
+
+            {
+                id: "rebrand-risk",
+
+                title:
+                    "Спроба самостійного ребрендингу",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Стиль сприйнято неоднозначно: 💰 -5 000 грн",
+
+                        effects: {
+                            money: -5000
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Помірне зростання: ⭐ +5 | 💰 +5 000 грн",
+
+                        effects: {
+                            reputation: 5,
+                            money: 5000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Повний захват ринку: ⭐ +10 | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 20
+    ===================================================== */
+
+    {
+        id: "outer-event-20",
+        number: 20,
+
+        title:
+            "Впровадження штучного інтелекту",
+
+        story:
+            "На ринку з'явилися інструменти штучного інтелекту, здатні автоматизувати складні завдання твого бізнесу.",
+
+        requirementText:
+            "🧠 60+ знань",
+
+        requirements: {
+            knowledge: 60
+        },
+
+        choices: [
+
+            {
+                id: "ai-system",
+
+                title:
+                    "Впровадити AI-системи",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "🧠 +5 знань | ⚡ +10 регулярної енергії | 💰 +5 000 грн",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: 0,
+                    knowledge: 5
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 10
+                }
+            },
+
+            {
+                id: "traditional",
+
+                title:
+                    "Зберегти традиційні процеси",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "ai-risk",
+
+                title:
+                    "Інтеграція з ризиком",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Технічні збої: ⚡ -5 | 💰 -5 000 грн",
+
+                        effects: {
+                            energy: -5,
+                            money: -5000
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Часткова автоматизація: ⚡ +5",
+
+                        effects: {
+                            energy: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Технологічний прорив: ⚡ +10 | 💰 +5 000 грн | ⭐ +5",
+
+                        effects: {
+                            energy: 10,
+                            money: 5000,
+                            reputation: 5
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 21
+    ===================================================== */
+
+    {
+        id: "outer-event-21",
+        number: 21,
+
+        title:
+            "Масштабування франшизи",
+
+        story:
+            "Твоя бізнес-модель показала високу ефективність. Підприємці пропонують купувати франшизу твого бренду.",
+
+        requirementText:
+            "⭐ 50+ репутації, 🧠 65+ знань",
+
+        requirements: {
+            reputation: 50,
+            knowledge: 65
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "franchise",
+
+                title:
+                    "Запустити франчайзингову мережу",
+
+                costText:
+                    "⚡ -10 регулярної енергії",
+
+                resultText:
+                    "💰 +15 000 грн | 💰 +5 000 грн регулярного доходу | ⭐ +10 репутації",
+
+                effects: {
+                    money: 15000,
+                    reputation: 10
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000,
+                    energyPerPeriod: -10
+                }
+            },
+
+            {
+                id: "franchise-delay",
+
+                title:
+                    "Відкласти розширення",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 22
+    ===================================================== */
+
+    {
+        id: "outer-event-22",
+        number: 22,
+
+        title:
+            "Стратегічний альянс",
+
+        story:
+            "Сильний гравець ринку пропонує тобі об'єднати зусилля для спільного проєкту. Синергія ресурсів обіцяє високі дивіденди.",
+
+        requirementText:
+            "⭐ 40+ репутації",
+
+        requirements: {
+            reputation: 40
+        },
+
+        choices: [
+
+            {
+                id: "alliance",
+
+                title:
+                    "Укласти стратегічний альянс",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "💰 +10 000 грн | ⭐ +5 репутації",
+
+                effects: {
+                    energy: -5,
+                    money: 10000,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "solo",
+
+                title:
+                    "Обрати самостійний розвиток",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "⭐ +2 репутації",
+
+                effects: {
+                    reputation: 2
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 23
+    ===================================================== */
+
+    {
+        id: "outer-event-23",
+        number: 23,
+
+        title:
+            "Соціальна та екологічна ініціатива",
+
+        story:
+            "Ти вирішуєш впровадити соціально відповідальні практики й підтримати важливий екологічний проєкт.",
+
+        requirementText:
+            "⭐ 30+ репутації",
+
+        requirements: {
+            reputation: 30
+        },
+
+        choices: [
+
+            {
+                id: "social-project",
+
+                title:
+                    "Підтримати соціальний проєкт",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +10 репутації | 💰 +10 000 грн",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: 5000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "social-risk",
+
+                title:
+                    "Оцінити ефективність ініціативи",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 3,
+
+                        text:
+                            "Ініціатива не залучила широкої уваги: ⭐ +5",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 4,
+                        max: 6,
+
+                        text:
+                            "Впливова відзнака: ⭐ +20 | 💰 +15 000 грн",
+
+                        effects: {
+                            reputation: 20,
+                            money: 15000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 24
+    ===================================================== */
+
+    {
+        id: "outer-event-24",
+        number: 24,
+
+        title:
+            "Вихід на новий регіональний ринок",
+
+        story:
+            "У тебе з'явилася можливість відкрити філіал у новому регіоні. Це потребує аналізу ринку, зате розширить базу клієнтів і підвищить стабільність бізнесу.",
+
+        requirementText:
+            "🧠 55+ знань, ⭐ 35+ репутації",
+
+        requirements: {
+            knowledge: 55,
+            reputation: 35
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "regional-branch",
+
+                title:
+                    "Відкрити регіональний філіал",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "💰 +10 000 грн регулярного доходу | ⭐ +5 репутації",
+
+                effects: {
+                    energy: -10,
+                    reputation: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 10000
+                }
+            },
+
+            {
+                id: "regional-test",
+
+                title:
+                    "Протестувати ринок",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Ціновий демпінг конкурентів: 💰 -5 000 грн",
+
+                        effects: {
+                            money: -5000
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Стабільний старт: 💰 +10 000 грн",
+
+                        effects: {
+                            money: 10000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Захоплення ринку: 💰 +15 000 грн | ⭐ +5 репутації",
+
+                        effects: {
+                            money: 15000,
+                            reputation: 5
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   65. ПЕРЕВІРКА БАНКІВСЬКОЇ УМОВИ КАРТКИ
+
+   Деякі Події великого кола
+   потребують конкретного
+   банківського продукту:
+
+   - валютний рахунок;
+   - інтернет-еквайринг.
+
+   Реальні продукти Банку
+   додамо в наступній частині.
+========================================================= */
+
+function hasBankProduct(
+    participant,
+    productId
+) {
+
+    if (
+        !participant ||
+        !participant.bank
+    ) {
+
+        return false;
+
+    }
+
+
+    return participant
+        .bank
+        .products
+        .some(
+            product => {
+
+                if (
+                    typeof product ===
+                    "string"
+                ) {
+
+                    return (
+                        product ===
+                        productId
+                    );
+
+                }
+
+
+                return (
+                    product.id ===
+                    productId
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   66. ПОВНА ПЕРЕВІРКА
+   УМОВ АКТИВАЦІЇ КАРТКИ
+========================================================= */
+
+function checkFullCardRequirements(
+    participant,
+    card
+) {
+
+    const resourceCheck =
+        checkCardRequirements(
+
+            participant,
+
+            card.requirements ||
+            {}
+
+        );
+
+
+    const failed =
+        [
+            ...resourceCheck.failed
+        ];
+
+
+    /* =====================================================
+       БАНКІВСЬКА УМОВА
+    ===================================================== */
+
+    if (
+        card.bankRequirement
+        &&
+        !hasBankProduct(
+
+            participant,
+
+            card.bankRequirement.product
+
+        )
+    ) {
+
+        failed.push(
+
+            `🏦 ${card.bankRequirement.text}`
+
+        );
+
+    }
+
+
+    return {
+
+        passed:
+            failed.length === 0,
+
+        failed
+
+    };
+
+}
+
+
+/* =========================================================
+   67. ОНОВЛЕНА ФУНКЦІЯ
+   ПОКАЗУ КАРТКИ
+
+   ЦЯ ФУНКЦІЯ ЗАМІНЮЄ
+   showDecisionCard()
+   З ЧАСТИНИ 4А.
+
+   НЕ ТРИМАЙ ДВІ ОДНАКОВІ
+   ФУНКЦІЇ У ФІНАЛЬНОМУ ФАЙЛІ.
+
+   У JS остання декларація
+   використається автоматично,
+   тому зараз ця версія
+   перекриє попередню.
+========================================================= */
+
+function showDecisionCard(
+    deckName,
+    card
+) {
+
+    const player =
+        gameState.player;
+
+
+    const requirementCheck =
+        checkFullCardRequirements(
+
+            player,
+
+            card
+
+        );
+
+
+    /* =====================================================
+       ЯКЩО УМОВИ КАРТКИ
+       НЕ ВИКОНАНІ
+    ===================================================== */
+
+    if (
+        !requirementCheck.passed
+    ) {
+
+        openGameInfoModal(`
+
+            <div class="decision-card-modal">
+
+
+                <div class="decision-card-number">
+
+                    Картка №${card.number}
+
+                </div>
+
+
+                <div class="decision-card-type">
+
+                    ${CELL_TYPES[deckName].icon}
+                    ${CELL_TYPES[deckName].name}
+
+                </div>
+
+
+                <h2>
+
+                    ${card.title}
+
+                </h2>
+
+
+                <p class="decision-card-story">
+
+                    ${card.story}
+
+                </p>
+
+
+                <div class="card-requirement-warning">
+
+                    <strong>
+                        ⚠️ Картка не активується
+                    </strong>
+
+                    <br><br>
+
+                    Не виконані умови:
+
+                    <br>
+
+                    ${
+                        requirementCheck
+                            .failed
+                            .join("<br>")
+                    }
+
+                </div>
+
+
+                <button
+                    id="finishUnavailableCardButton"
+                    class="main-game-btn"
+                >
+
+                    ЗАВЕРШИТИ ХІД
+
+                </button>
+
+
+            </div>
+
+        `);
+
+
+        document
+            .getElementById(
+                "finishUnavailableCardButton"
+            )
+            .addEventListener(
+                "click",
+                finishPlayerCardTurn
+            );
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       КАРТКА ДОСТУПНА
+    ===================================================== */
+
+    const choicesHTML =
+        card.choices
+
+            .map(
+                (
+                    choice,
+                    index
+                ) => {
+
+
+                    const minimumCheck =
+                        checkCardRequirements(
+
+                            player,
+
+                            choice.minimum ||
+                            {}
+
+                        );
+
+
+                    const productAllowed =
+                        !choice.conditionProduct
+
+                        ||
+
+                        hasBankProduct(
+
+                            player,
+
+                            choice.conditionProduct
+
+                        );
+
+
+                    const disabled =
+                        !minimumCheck.passed
+                        ||
+                        !productAllowed;
+
+
+                    return `
+
+                        <button
+                            class="
+                                card-decision-button
+                                ${
+                                    disabled
+                                    ? "card-decision-disabled"
+                                    : ""
+                                }
+                            "
+                            data-choice-index="${index}"
+                            ${
+                                disabled
+                                ? "disabled"
+                                : ""
+                            }
+                        >
+
+
+                            <strong>
+
+                                ${choice.title}
+
+                            </strong>
+
+
+                            <span class="card-decision-cost">
+
+                                ${
+                                    choice.costText ||
+                                    "Без витрат"
+                                }
+
+                            </span>
+
+
+                            <span class="card-decision-result">
+
+                                ${
+                                    choice.resultText ||
+                                    ""
+                                }
+
+                            </span>
+
+
+                            ${
+                                !productAllowed
+
+                                ? `
+
+                                    <span class="card-choice-warning">
+
+                                        🏦 Немає необхідного
+                                        банківського продукту
+
+                                    </span>
+
+                                  `
+
+                                : ""
+                            }
+
+
+                        </button>
+
+                    `;
+
+                }
+            )
+
+            .join("");
+
+
+    openGameInfoModal(`
+
+        <div class="decision-card-modal">
+
+
+            <div class="decision-card-number">
+
+                Картка №${card.number}
+
+            </div>
+
+
+            <div class="decision-card-type">
+
+                ${CELL_TYPES[deckName].icon}
+
+                ${CELL_TYPES[deckName].name}
+
+            </div>
+
+
+            <h2>
+
+                ${card.title}
+
+            </h2>
+
+
+            <p class="decision-card-story">
+
+                ${card.story}
+
+            </p>
+
+
+            <div class="decision-card-requirement">
+
+                <strong>
+                    🎯 Умова:
+                </strong>
+
+                ${card.requirementText}
+
+            </div>
+
+
+            ${
+                card.bankRequirement
+
+                ? `
+
+                    <div class="decision-card-bank-requirement">
+
+                        <strong>
+                            🏦 Банківська умова:
+                        </strong>
+
+                        ${card.bankRequirement.text}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            ${
+                card.taskText
+
+                ? `
+
+                    <div class="decision-card-task">
+
+                        ${card.taskText}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <div class="card-decisions-list">
+
+                ${choicesHTML}
+
+            </div>
+
+
+        </div>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            ".card-decision-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const index =
+                            Number(
+                                button.dataset.choiceIndex
+                            );
+
+
+                        resolveCardChoice(
+
+                            deckName,
+
+                            card,
+
+                            card.choices[index]
+
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   68. РОЗШИРЕНІ СПЕЦІАЛЬНІ ЕФЕКТИ
+
+   ЦЯ ФУНКЦІЯ ЗАМІНЮЄ
+   applyCardSpecialAction()
+   З ЧАСТИНИ 4А.
+========================================================= */
+
+function applyCardSpecialAction(
+    participant,
+    action
+) {
+
+    switch (
+        action
+    ) {
+
+
+        /* =================================================
+           ПЕРЕХІД ДО 2 РІВНЯ
+        ================================================= */
+
+        case "promoteToLevel2":
+
+            if (
+                participant.careerLevel < 1
+            ) {
+
+                participant.careerLevel =
+                    1;
+
+
+                const stats =
+                    getCareerStats(
+
+                        participant.sector.id,
+
+                        2
+
+                    );
+
+
+                participant.salary =
+                    stats.salary;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ПІДСУМКОВИЙ ЗВІТ КОЛА 1
+        ================================================= */
+
+        case "circleOneReport":
+
+            if (
+                participant.reputation +
+                participant.knowledge >=
+                60
+            ) {
+
+                participant.money +=
+                    15000;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           КАР'ЄРНЕ ПІДВИЩЕННЯ
+        ================================================= */
+
+        case "promoteOneLevelIfReady":
+
+            promoteParticipantOneLevelIfReady(
+                participant
+            );
+
+            break;
+
+
+        /* =================================================
+           ЗМІНА ПРОФЕСІЇ
+
+           У ДОКУМЕНТІ НЕ ВКАЗАНО,
+           ЯК САМЕ ОБИРАЄМО
+           НОВУ ПРОФЕСІЮ.
+
+           ТОМУ НЕ ВИГАДУЄМО.
+        ================================================= */
+
+        case "changeCareerSector":
+
+            addLog(
+
+                "ℹ️ Отримано можливість змінити професію. Механізм вибору нової професії ще потрібно визначити."
+
+            );
+
+            break;
+
+
+        /* =================================================
+           НАСТУПНА КАР'ЄРНА ПОДІЯ
+        ================================================= */
+
+        case "grantNextCareerEventBonus":
+
+            participant
+                .effects
+                .nextCareerEventBonus = {
+
+                    money: 10000,
+
+                    reputation: 10
+
+                };
+
+            break;
+
+
+        /* =================================================
+           ОСОБИСТИЙ РОЗВИТОК
+        ================================================= */
+
+        case "personalDevelopmentBonus":
+
+            if (
+                participant.knowledge >=
+                80
+            ) {
+
+                participant.reputation +=
+                    5;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ЗНИЖКА НА ЗНАННЯ
+        ================================================= */
+
+        case "knowledgeDiscount":
+
+            participant
+                .effects
+                .knowledgeDiscount =
+                0.5;
+
+            break;
+
+
+        /* =================================================
+           ПЕРЕКИД КУБИКА
+        ================================================= */
+
+        case "grantReroll":
+
+            participant
+                .effects
+                .rerolls =
+                (
+                    participant
+                        .effects
+                        .rerolls ||
+                    0
+                ) + 1;
+
+            break;
+
+
+        /* =================================================
+           ПРЕМІУМ-КОНТАКТ
+        ================================================= */
+
+        case "premiumContact":
+
+            participant
+                .effects
+                .premiumContact =
+                true;
+
+            break;
+
+
+        /* =================================================
+           ОТРИМАТИ КАРТКУ ДОЛЯ
+
+           Саму колоду Долі
+           підключаємо далі.
+        ================================================= */
+
+        case "drawFateCard":
+
+            participant
+                .effects
+                .pendingFateCard =
+                true;
+
+            break;
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayer
+   /* =====================================================
+       КАРТКА 9
+    ===================================================== */
+
+    {
+        id: "outer-event-09",
+        number: 9,
+
+        title:
+            "Публікація в професійному виданні",
+
+        story:
+            "Твою аналітичну статтю прийняли до публікації в престижному журналі! Ти можеш одразу випустити матеріал для швидкого визнання або ж доопрацювати його заради ще більшого ефекту.",
+
+        requirementText:
+            "🧠 50+ знань",
+
+        requirements: {
+            knowledge: 50
+        },
+
+        choices: [
+
+            {
+                id: "publish-now",
+
+                title:
+                    "Опублікувати одразу",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +10 репутації",
+
+                effects: {
+                    energy: -5,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "improve-material",
+
+                title:
+                    "Доопрацювати матеріал",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +10 знань | ⭐ +15 репутації",
+
+                effects: {
+                    energy: -10,
+                    knowledge: 10,
+                    reputation: 15
+                }
+            },
+
+            {
+                id: "publication-risk",
+
+                title:
+                    "Випробувати вдачу",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Стаття залишилася непоміченою: ⭐ +5 репутації",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Спільнота тепло прийняла статтю: ⭐ +10 репутації",
+
+                        effects: {
+                            reputation: 10
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Публікація стала хітом: ⭐ +15 репутації | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 10
+    ===================================================== */
+
+    {
+        id: "outer-event-10",
+        number: 10,
+
+        title:
+            "Запуск власного курсу",
+
+        story:
+            "Ти створив власний навчальний курс! Це важливий крок до монетизації твоєї експертизи. Ти можеш інвестувати кошти в його негайний запуск або трохи зачекати.",
+
+        requirementText:
+            "🧠 60+ знань",
+
+        requirements: {
+            knowledge: 60
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "launch-course",
+
+                title:
+                    "Запустити курс",
+
+                costText:
+                    "💰 -5 000 грн | ⚡ -5 енергії",
+
+                resultText:
+                    "💰 +5 000 грн регулярного доходу | ⭐ +5 репутації",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000,
+                    energy: -5,
+                    reputation: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 5000
+                }
+            },
+
+            {
+                id: "delay-course",
+
+                title:
+                    "Відкласти запуск",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "launch-course-risk",
+
+                title:
+                    "Ризикнути із запуском",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Проєкт не окупився.",
+
+                        effects: {}
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Курс має стабільний попит: 💰 +10 000 грн | ⭐ +5 репутації",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Абсолютний успіх: 💰 +10 000 грн | ⭐ +10 репутації | отримай картку «Доля»",
+
+                        effects: {
+                            money: 10000,
+                            reputation: 10
+                        },
+
+                        specialAction:
+                            "drawFateCard"
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 11
+    ===================================================== */
+
+    {
+        id: "outer-event-11",
+        number: 11,
+
+        title:
+            "Запрошення до експертної ради",
+
+        story:
+            "Завдяки твоєму авторитету тебе запросили стати членом експертної ради. Це почесна місія, яка сильно зміцнить твою репутацію, хоч і вимагатиме твоїх сил на аналітику.",
+
+        requirementText:
+            "⭐ 45+ репутації",
+
+        requirements: {
+            reputation: 45
+        },
+
+        choices: [
+
+            {
+                id: "join-expert-board",
+
+                title:
+                    "Приєднатися до експертної ради",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +10 репутації | один раз можна перекинути кубик",
+
+                effects: {
+                    energy: -5,
+                    reputation: 10
+                },
+
+                specialAction:
+                    "grantReroll"
+            },
+
+            {
+                id: "decline-expert-board",
+
+                title:
+                    "Відмовитися",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "💰 +5 000 грн | ⚡ +5 енергії",
+
+                effects: {
+                    money: 5000,
+                    energy: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 12
+    ===================================================== */
+
+    {
+        id: "outer-event-12",
+        number: 12,
+
+        title:
+            "Автоматизація роботи",
+
+        story:
+            "Ти знайшов дієвий спосіб автоматизувати свою щоденну рутину! Впровадження системи вимагає вкладень зараз, зате звільнить тобі масу часу та енергії в майбутньому.",
+
+        requirementText:
+            "🧠 55+ знань",
+
+        requirements: {
+            knowledge: 55
+        },
+
+        choices: [
+
+            {
+                id: "automation",
+
+                title:
+                    "Впровадити зміни",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⚡ +10 регулярної енергії",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: -5000
+                },
+
+                persistentEffects: {
+                    energyPerPeriod: 10
+                }
+            },
+
+            {
+                id: "automation-test",
+
+                title:
+                    "Тестування системи",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 3,
+
+                        text:
+                            "Помилка системи: 💰 -10 000 грн | ⚡ -15 енергії",
+
+                        effects: {
+                            money: -10000,
+                            energy: -15
+                        }
+                    },
+
+                    {
+                        min: 4,
+                        max: 6,
+
+                        text:
+                            "Ідеальна інтеграція: ⚡ +15 енергії | 💰 +15 000 грн",
+
+                        effects: {
+                            energy: 15,
+                            money: 15000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 13
+    ===================================================== */
+
+    {
+        id: "outer-event-13",
+        number: 13,
+
+        title:
+            "Успішний виступ у медіа",
+
+        story:
+            "Тебе запросили стати гостем популярного подкасту чи телеефіру. Це яскрава нагода заявити про себе на широку аудиторію, хоч підготовка й забере трохи сил.",
+
+        requirementText:
+            "⭐ 40+ репутації",
+
+        requirements: {
+            reputation: 40
+        },
+
+        choices: [
+
+            {
+                id: "media-performance",
+
+                title:
+                    "Погодитися на виступ",
+
+                costText:
+                    "⚡ -5 енергії",
+
+                resultText:
+                    "⭐ +5 репутації",
+
+                effects: {
+                    energy: -5,
+                    reputation: 5
+                }
+            },
+
+            {
+                id: "media-risk",
+
+                title:
+                    "Спонтанний ефір",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Нейтральний результат, ефір пройшов непомітно.",
+
+                        effects: {}
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Вдалий виступ: ⭐ +5 репутації",
+
+                        effects: {
+                            reputation: 5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Вірусний успіх: ⭐ +10 репутації | 💰 +5 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 5000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 14
+    ===================================================== */
+
+    {
+        id: "outer-event-14",
+        number: 14,
+
+        title:
+            "Міжнародний проєкт",
+
+        story:
+            "У тебе з'явилася можливість попрацювати з передовою міжнародною командою. Це виклик, який вимагатиме від тебе максимуму сил, але дасть крутий досвід і фінансовий бонус!",
+
+        requirementText:
+            "🧠 65+ знань, ⭐ 35+ репутації",
+
+        requirements: {
+            knowledge: 65,
+            reputation: 35
+        },
+
+        bankRequirement: {
+            product:
+                "currency_account",
+
+            text:
+                "🌐 Валютний рахунок"
+        },
+
+        choices: [
+
+            {
+                id: "join-international-project",
+
+                title:
+                    "Приєднатися до проєкту",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "🧠 +5 знань | 💰 +10 000 грн регулярного доходу",
+
+                effects: {
+                    energy: -10,
+                    knowledge: 5
+                },
+
+                persistentEffects: {
+                    passiveIncome: 10000
+                }
+            },
+
+            {
+                id: "decline-international-project",
+
+                title:
+                    "Відмовитися",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "⭐ +5 репутації",
+
+                effects: {
+                    reputation: 5
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 15
+    ===================================================== */
+
+    {
+        id: "outer-event-15",
+        number: 15,
+
+        title:
+            "Патент або реєстрація розробки",
+
+        story:
+            "Ти створив авторське рішення й маєш можливість офіційно його зареєструвати. Це потребує грошових вкладень, але юридично закріпить твої права та суттєво підвищить твій статус.",
+
+        requirementText:
+            "🧠 75+ знань",
+
+        requirements: {
+            knowledge: 75
+        },
+
+        bankRequirement: {
+            product:
+                "internet_acquiring",
+
+            text:
+                "💳 Наявність інтернет-еквайрингу"
+        },
+
+        choices: [
+
+            {
+                id: "register-patent",
+
+                title:
+                    "Зареєструвати розробку",
+
+                costText:
+                    "💰 -5 000 грн",
+
+                resultText:
+                    "⭐ +10 репутації | 💰 +10 000 грн",
+
+                minimum: {
+                    money: 5000
+                },
+
+                effects: {
+                    money: 5000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "patent-risk",
+
+                title:
+                    "Спроба прискореної реєстрації",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Бюрократичні затримки: 💰 -5 000 грн",
+
+                        effects: {
+                            money: -5000
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Патент успішно закріплено: ⭐ +10 репутації | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 10000
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Міжнародний патент: ⭐ +15 репутації | 💰 +20 000 грн",
+
+                        effects: {
+                            reputation: 15,
+                            money: 20000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА 16
+    ===================================================== */
+
+    {
+        id: "outer-event-16",
+        number: 16,
+
+        title:
+            "Кризовий менеджмент",
+
+        story:
+            "Важливий проєкт опинився під загрозою зриву! Тобі пропонують очолити антикризову команду. Це вимагатиме рішучих дій, але успіх значно підніме твій авторитет.",
+
+        requirementText:
+            "🧠 50+ знань, ⭐ 30+ репутації",
+
+        requirements: {
+            knowledge: 50,
+            reputation: 30
+        },
+
+        choices: [
+
+            {
+                id: "lead-crisis",
+
+                title:
+                    "Взяти лідерство в проєкті",
+
+                costText:
+                    "⚡ -10 енергії",
+
+                resultText:
+                    "💰 +10 000 грн | ⭐ +10 репутації",
+
+                effects: {
+                    energy: -10,
+                    money: 10000,
+                    reputation: 10
+                }
+            },
+
+            {
+                id: "decline-crisis",
+
+                title:
+                    "Відмовитися від ризику",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного стану",
+
+                effects: {}
+            },
+
+            {
+                id: "crisis-risk",
+
+                title:
+                    "Ризикнути",
+
+                costText:
+                    "Результат визначає кубик",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {},
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 2,
+
+                        text:
+                            "Не вдалося врятувати проєкт: ⚡ -5 енергії | ⭐ -5 репутації",
+
+                        effects: {
+                            energy: -5,
+                            reputation: -5
+                        }
+                    },
+
+                    {
+                        min: 3,
+                        max: 4,
+
+                        text:
+                            "Кризу частково подолано: ⭐ +5 репутації | 💰 +5 000 грн | ⚡ -5 енергії",
+
+                        effects: {
+                            reputation: 5,
+                            money: 5000,
+                            energy: -5
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Тріумфальний порятунок: ⭐ +10 репутації | 💰 +10 000 грн",
+
+                        effects: {
+                            reputation: 10,
+                            money: 10000
+                        }
+                    }
+
+                ]
+            }
+
+        ]
+    },
+/* =========================================================
+   69. КАРТКИ ЖИТТЯ — ВЕЛИКЕ КОЛО
+
+   Усього у файлі:
+   18 карток.
+
+   МЕХАНІКА:
+   - гравець має зробити вибір;
+   - якщо відмовляється —
+     пропускає наступний хід.
+========================================================= */
+
+OUTER_CARD_DECKS.life = [
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 1
+    ===================================================== */
+
+    {
+        id: "life-01",
+        number: 1,
+
+        title:
+            "Благодійна акція та волонтерство",
+
+        story:
+            "Громадська організація запрошує тебе долучитися до масштабної міської благодійної ініціативи з відбудови та підтримки громади. Твоя участь публічна та суттєво зміцнює твій авторитет і довіру у суспільстві.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "charity-money",
+
+                title:
+                    "Фінансова благодійність",
+
+                costText:
+                    "💰 -15 000 грн",
+
+                resultText:
+                    "⭐ +25 репутації | ⚡ енергія відновлюється до 100",
+
+                minimum: {
+                    money: 15000
+                },
+
+                effects: {
+                    money: -15000,
+                    reputation: 25
+                },
+
+                specialAction:
+                    "restoreEnergyTo100"
+            },
+
+            {
+                id: "charity-volunteering",
+
+                title:
+                    "Особисте волонтерство",
+
+                costText:
+                    "Пропусти наступний хід",
+
+                resultText:
+                    "⭐ +25 репутації | 🧠 +15 знань | ⚡ енергія до 100",
+
+                effects: {
+                    reputation: 25,
+                    knowledge: 15
+                },
+
+                specialActions: [
+                    "restoreEnergyTo100",
+                    "skipNextTurn"
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 2
+    ===================================================== */
+
+    {
+        id: "life-02",
+        number: 2,
+
+        title:
+            "Конфлікт у команді / Партнерстві",
+
+        story:
+            "Під час реалізації важливого етапу проєкту виникла гостра суперечка з ключовим партнером щодо розподілу обов'язків та прибутку. Напруга загрожує зупинити роботу всієї справи.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "conflict-pressure",
+
+                title:
+                    "Ігнорувати та тиснути авторитетом",
+
+                costText:
+                    "⭐ -25 репутації | ⚡ -20 енергії",
+
+                resultText:
+                    "Конфлікт залишається прихованим. Прибуток зменшується на 10 000 грн протягом 2 виплат.",
+
+                effects: {
+                    reputation: -25,
+                    energy: -20
+                },
+
+                specialAction:
+                    "reduceIncomeTwoPeriods"
+            },
+
+            {
+                id: "conflict-compromise",
+
+                title:
+                    "Відкриті переговори та компроміс",
+
+                costText:
+                    "⚡ -15 енергії",
+
+                resultText:
+                    "🎲 Кидок кубика",
+
+                effects: {
+                    energy: -15
+                },
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 3,
+
+                        text:
+                            "Важкі поступки: 💰 -10 000 грн | ⭐ -10 репутації",
+
+                        effects: {
+                            money: -10000,
+                            reputation: -10
+                        }
+                    },
+
+                    {
+                        min: 4,
+                        max: 6,
+
+                        text:
+                            "Тріумфальний компроміс: ⭐ +10 репутації | 🧠 +10 знань",
+
+                        effects: {
+                            reputation: 10,
+                            knowledge: 10
+                        }
+                    }
+
+                ]
+            },
+
+            {
+                id: "conflict-presentation",
+
+                title:
+                    "Публічна презентація вирішення",
+
+                costText:
+                    "🗣 1 хвилина аргументації перед іншими гравцями",
+
+                resultText:
+                    "Якщо більшість підтримує: ⭐ +20 репутації | ⚡ +15 енергії",
+
+                effects: {},
+
+                specialAction:
+                    "playerVoteConflict"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 3
+    ===================================================== */
+
+    {
+        id: "life-03",
+        number: 3,
+
+        title:
+            "Кохання та підтримка партнера",
+
+        story:
+            "У твоєму житті з'являється кохана людина, яка щиро вірить у твої амбітні мрії та надає надійну психологічну підтримку у найважчі періоди кар'єри й бізнесу.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "relationship",
+
+                title:
+                    "Інвестувати час та увагу в стосунки",
+
+                costText:
+                    "💰 -15 000 грн",
+
+                resultText:
+                    "⚡ +30 енергії | ⭐ +15 репутації | 🛡️ ефект «Сімейне вогнище»",
+
+                minimum: {
+                    money: 15000
+                },
+
+                effects: {
+                    money: -15000,
+                    energy: 30,
+                    reputation: 15
+                },
+
+                specialAction:
+                    "familyHearth"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 4
+    ===================================================== */
+
+    {
+        id: "life-04",
+        number: 4,
+
+        title:
+            "Міжнародне стажування / Релокація",
+
+        story:
+            "Тобі пропонують вигідний контракт на відкриття філії або проходження експертного стажування в країнах ЄС. Це вихід на міжнародний рівень, але вимагає значних витрат на облаштування.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "relocation",
+
+                title:
+                    "Прийняти міжнародний виклик",
+
+                costText:
+                    "💰 -25 000 грн",
+
+                resultText:
+                    "⭐ +20 репутації | 🧠 +25 знань | за бажанням можна ризикнути кубиком",
+
+                minimum: {
+                    money: 25000
+                },
+
+                effects: {
+                    money: -25000,
+                    reputation: 20,
+                    knowledge: 25
+                },
+
+                optionalRisk: {
+
+                    cost: {
+                        knowledge: -5
+                    },
+
+                    diceOutcomes: [
+
+                        {
+                            min: 1,
+                            max: 3,
+
+                            text:
+                                "Надбавки до доходу немає. +25 знань зберігаються.",
+
+                            effects: {}
+                        },
+
+                        {
+                            min: 4,
+                            max: 6,
+
+                            text:
+                                "💰 +15 000 грн регулярного доходу",
+
+                            persistentEffects: {
+                                passiveIncome: 15000
+                            }
+                        }
+
+                    ]
+                }
+            },
+
+            {
+                id: "stay-ukraine",
+
+                title:
+                    "Залишитися та зміцнювати позиції в Україні",
+
+                costText:
+                    "Без витрат",
+
+                resultText:
+                    "⚡ +15 енергії | 💰 +10 000 грн",
+
+                effects: {
+                    energy: 15,
+                    money: 10000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 5
+    ===================================================== */
+
+    {
+        id: "life-05",
+        number: 5,
+
+        title:
+            "Народження дитини / Поповнення сім'ї",
+
+        story:
+            "У твоїй родині довгоочікувана щаслива подія — народження дитини! Це приносить новий життєвий сенс, величезну радість та водночас вимагає значних фінансових вкладень.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "child-care",
+
+                title:
+                    "Організувати якісний догляд та дитячий фонд",
+
+                costText:
+                    "💰 -30 000 грн",
+
+                resultText:
+                    "⭐ +25 репутації | ⚡ +25 енергії | наступні 3 ходи +10 енергії щоходу",
+
+                minimum: {
+                    money: 30000
+                },
+
+                effects: {
+                    money: -30000,
+                    reputation: 25,
+                    energy: 25
+                },
+
+                specialAction:
+                    "familyEnergyThreeTurns"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 6
+    ===================================================== */
+
+    {
+        id: "life-06",
+        number: 6,
+
+        title:
+            "Неочікувана спадщина / Сімейний капітал",
+
+        story:
+            "Тобі передано у спадок сімейні заощадження та цінні папери на суму 60 000 грн. Це дає можливість суттєво наблизитися до купівлі своєї Мрії або вигідно реінвестувати капітал.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "inheritance-cash",
+
+                title:
+                    "Забрати всю готівку у свій капітал",
+
+                costText:
+                    "Без витрат",
+
+                resultText:
+                    "💰 +60 000 грн | ⚡ +15 енергії",
+
+                effects: {
+                    money: 60000,
+                    energy: 15
+                }
+            },
+
+            {
+                id: "inheritance-invest",
+
+                title:
+                    "Реінвестувати у високоврожайний інвестфонд",
+
+                costText:
+                    "💰 60 000 грн вкладаються на 2 ходи",
+
+                resultText:
+                    "Через 2 ходи 💰 +90 000 грн | ⭐ +15 репутації",
+
+                minimum: {
+                    money: 60000
+                },
+
+                effects: {
+                    money: -60000,
+                    reputation: 15
+                },
+
+                delayedEffect: {
+                    turns: 2,
+
+                    effects: {
+                        money: 90000
+                    },
+
+                    text:
+                        "Повернення інвестиції зі спадщини"
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 7
+    ===================================================== */
+
+    {
+        id: "life-07",
+        number: 7,
+
+        title:
+            "Спільний проривний проєкт",
+
+        story:
+            "Твій проєкт отримав загальнонаціональне визнання. Партнерство з колегами по грі дозволяє масштабувати бізнес у кілька разів та отримати солідний прибуток.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "project-alone",
+
+                title:
+                    "Реалізувати проєкт самостійно",
+
+                costText:
+                    "⚡ -20 енергії",
+
+                resultText:
+                    "💰 +40 000 грн | ⭐ +20 репутації",
+
+                effects: {
+                    energy: -20,
+                    money: 40000,
+                    reputation: 20
+                }
+            },
+
+            {
+                id: "project-partner",
+
+                title:
+                    "Залучити іншого гравця до партнерства",
+
+                costText:
+                    "⚡ -10 енергії тобі та -10 партнеру",
+
+                resultText:
+                    "Ти: 💰 +40 000 | ⭐ +25 | 🧠 +5. Партнер: 💰 +25 000 | ⭐ +10.",
+
+                effects: {
+                    energy: -10,
+                    money: 40000,
+                    reputation: 25,
+                    knowledge: 5
+                },
+
+                specialAction:
+                    "collaborationWithPlayer"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 8
+    ===================================================== */
+
+    {
+        id: "life-08",
+        number: 8,
+
+        title:
+            "Інвестиція у новий ринковий напрямок",
+
+        story:
+            "З'явилася можливість вийти у нову перспективну нішу зі стрімким попитом — AI, біотех, експорт або відновлювальна енергетика. Запуск створить постійний пасивний грошовий потік.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "new-market-invest",
+
+                title:
+                    "Проінвестувати запуск напрямку",
+
+                costText:
+                    "💰 -22 000 грн | ⚡ -15 енергії",
+
+                resultText:
+                    "🧠 +25 знань | через 2 ходи запускається 💰 +15 000 грн кожного ходу",
+
+                minimum: {
+                    money: 22000
+                },
+
+                effects: {
+                    money: -22000,
+                    energy: -15,
+                    knowledge: 25
+                },
+
+                specialAction:
+                    "newMarketTwoTurns"
+            },
+
+            {
+                id: "new-market-decline",
+
+                title:
+                    "Відмовитися від ризику",
+
+                costText:
+                    "Без змін",
+
+                resultText:
+                    "Збереження поточного капіталу",
+
+                effects: {}
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 9
+    ===================================================== */
+
+    {
+        id: "life-09",
+        number: 9,
+
+        title:
+            "Позаплановий державний / податковий аудит",
+
+        story:
+            "У твій бізнес завітала контролююча комісія для повної перевірки ліцензій, трудових договорів та сплати податків. Твоя експертиза та знання вирішують усе.",
+
+        requirementText:
+            "Перевірка рівня знань",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "audit-check",
+
+                title:
+                    "Пройти перевірку",
+
+                costText:
+                    "Результат залежить від рівня 🧠 знань",
+
+                resultText:
+                    "🧠 65+ → ⭐ +15 репутації. Менше 65 → 💰 -15 000 | ⭐ -20 | ⚡ -20.",
+
+                effects: {},
+
+                specialAction:
+                    "taxAudit"
+            }
+
+        ],
+
+        cooperationText:
+            "🤝 Якщо за столом є Фінансист або Юрист, вони можуть за домовленістю додати +20 знань на час цієї перевірки."
+    },
+   /* =====================================================
+       КАРТКА ЖИТТЯ 10
+    ===================================================== */
+
+    {
+        id: "life-10",
+        number: 10,
+
+        title:
+            "Масштабна реферальна / партнерська мережа",
+
+        story:
+            "Ти запускаєш авторську партнерську мережу. Твій авторитет дозволяє запропонувати іншим гравцям взаємовигідну співпрацю з розподілом бонусів.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "referral-network",
+
+                title:
+                    "Запропонувати партнерство від 1 до 3 гравцям",
+
+                costText:
+                    "Кожен гравець сам погоджується або відмовляється",
+
+                resultText:
+                    "За кожного партнера: ти 💰 +8 000 грн та ⭐ +5. Партнер 🧠 +10 та ⚡ +10.",
+
+                effects: {},
+
+                specialAction:
+                    "referralNetwork"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 11
+    ===================================================== */
+
+    {
+        id: "life-11",
+        number: 11,
+
+        title:
+            "Професійне вигорання та стрес",
+
+        story:
+            "Надмірне навантаження, постійні дедлайни та відсутність вихідних виснажили твій організм. Без термінового відновлення продовжувати ефективну роботу неможливо.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "vacation",
+
+                title:
+                    "Організувати повноцінну відпустку",
+
+                costText:
+                    "💰 -10 000 грн | пропуск 1 ходу",
+
+                resultText:
+                    "⚡ енергія до 100 | ⭐ +10 репутації",
+
+                minimum: {
+                    money: 10000
+                },
+
+                effects: {
+                    money: -10000,
+                    reputation: 10
+                },
+
+                specialActions: [
+                    "restoreEnergyTo100",
+                    "skipNextTurn"
+                ]
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 12
+    ===================================================== */
+
+    {
+        id: "life-12",
+        number: 12,
+
+        title:
+            "Зустріч з VIP-ментором / Стратегічним радником",
+
+        story:
+            "На закритому бізнес-форумі ти знайомишся з топ-інвестором, який вражений твоєю стратегією і готовий стати твоїм особистим ментором та лобістом.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "vip-mentor",
+
+                title:
+                    "Укласти угоду про менторство",
+
+                costText:
+                    "💰 -10 000 грн",
+
+                resultText:
+                    "⭐ +25 репутації | 🧠 +25 знань | жетон «Преміум-контакт»",
+
+                minimum: {
+                    money: 10000
+                },
+
+                effects: {
+                    money: -10000,
+                    reputation: 25,
+                    knowledge: 25
+                },
+
+                specialAction:
+                    "premiumContact"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 13
+    ===================================================== */
+
+    {
+        id: "life-13",
+        number: 13,
+
+        title:
+            "Ризикована спекуляція / Фінансова пастка",
+
+        story:
+            "Тобі запропонували сумнівну, але надзвичайно привабливу операцію з обіцянкою швидкого подвоєння капіталу. Жадібність чи обачність?",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "speculation-risk",
+
+                title:
+                    "Ризикнути 25 000 грн",
+
+                costText:
+                    "💰 -25 000 грн",
+
+                resultText:
+                    "🎲 5–6: 💰 +75 000 грн | ⭐ +15. 1–4: гроші втрачено | ⭐ -20 | ⚡ -20.",
+
+                minimum: {
+                    money: 25000
+                },
+
+                effects: {
+                    money: -25000
+                },
+
+                diceOutcomes: [
+
+                    {
+                        min: 1,
+                        max: 4,
+
+                        text:
+                            "Схема прогоріла: вкладені гроші втрачено | ⭐ -20 репутації | ⚡ -20 енергії",
+
+                        effects: {
+                            reputation: -20,
+                            energy: -20
+                        }
+                    },
+
+                    {
+                        min: 5,
+                        max: 6,
+
+                        text:
+                            "Куш! 💰 +75 000 грн | ⭐ +15 репутації",
+
+                        effects: {
+                            money: 75000,
+                            reputation: 15
+                        }
+                    }
+
+                ]
+            },
+
+            {
+                id: "speculation-decline",
+
+                title:
+                    "Відмовитися та слідувати стратегії",
+
+                costText:
+                    "Без витрат",
+
+                resultText:
+                    "🧠 +15 знань | ⭐ +10 репутації",
+
+                effects: {
+                    knowledge: 15,
+                    reputation: 10
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 14
+    ===================================================== */
+
+    {
+        id: "life-14",
+        number: 14,
+
+        title:
+            "Купівля комерційної / житлової нерухомості",
+
+        story:
+            "Ти вирішуєш придбати власне приміщення для бізнесу або статусну квартиру. Це вагомий крок до капіталізації та відчуття впевненості.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "property-full-payment",
+
+                title:
+                    "Повна виплата вартості нерухомості",
+
+                costText:
+                    "💰 -65 000 грн",
+
+                resultText:
+                    "⭐ +30 репутації | ⚡ +25 енергії | капіталізація активів",
+
+                minimum: {
+                    money: 65000
+                },
+
+                effects: {
+                    money: -65000,
+                    reputation: 30,
+                    energy: 25
+                },
+
+                specialAction:
+                    "addPropertyAsset"
+            },
+
+            {
+                id: "property-mortgage",
+
+                title:
+                    "Оформити вигідну бізнес-іпотеку",
+
+                costText:
+                    "💰 -25 000 грн перший внесок + 💰 -10 000 грн протягом 4 ходів",
+
+                resultText:
+                    "⭐ +25 репутації | ⚡ +15 енергії | 🧠 +5 знань",
+
+                minimum: {
+                    money: 25000
+                },
+
+                effects: {
+                    money: -25000,
+                    reputation: 25,
+                    energy: 15,
+                    knowledge: 5
+                },
+
+                specialAction:
+                    "propertyMortgageFourTurns"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 15
+    ===================================================== */
+
+    {
+        id: "life-15",
+        number: 15,
+
+        title:
+            "Запуск франчайзингової мережі",
+
+        story:
+            "Твоя бізнес-концепція настільки успішна, що готова до тиражування по всій Україні. Інші підприємці готові платити за твій бренд.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "life-franchise",
+
+                title:
+                    "Упакувати та продати перші франшизи",
+
+                costText:
+                    "💰 -25 000 грн | ⚡ -20 енергії",
+
+                resultText:
+                    "⭐ +30 репутації | з наступного ходу 💰 +20 000 грн кожного ходу",
+
+                minimum: {
+                    money: 25000
+                },
+
+                effects: {
+                    money: -25000,
+                    energy: -20,
+                    reputation: 30
+                },
+
+                specialAction:
+                    "franchiseIncomeFromNextTurn"
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 16
+    ===================================================== */
+
+    {
+        id: "life-16",
+        number: 16,
+
+        title:
+            "Криза довіри та антикризовий піар",
+
+        story:
+            "В інтернеті розгорнулася масштабна дезінформаційна кампанія проти твого продукту. Клієнти сумніваються, а партнери очікують твоєї реакції.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "anti-crisis-pr",
+
+                title:
+                    "Провести відкриту пресконференцію та аудит",
+
+                costText:
+                    "💰 -12 000 грн | ⚡ -10 енергії",
+
+                resultText:
+                    "⭐ +30 репутації | 🧠 +15 знань | продажі зростають на 30%",
+
+                minimum: {
+                    money: 12000
+                },
+
+                effects: {
+                    money: -12000,
+                    energy: -10,
+                    reputation: 30,
+                    knowledge: 15
+                },
+
+                specialAction:
+                    "salesGrowth30Percent"
+            },
+
+            {
+                id: "ignore-crisis",
+
+                title:
+                    "Проігнорувати хейт у соцмережах",
+
+                costText:
+                    "⭐ -35 репутації | 💰 -20 000 грн",
+
+                resultText:
+                    "Урок про ціну публічної репутації",
+
+                effects: {
+                    reputation: -35,
+                    money: -20000
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 17
+    ===================================================== */
+
+    {
+        id: "life-17",
+        number: 17,
+
+        title:
+            "Створення стратегічного синдикату",
+
+        story:
+            "Тобі пропонують об'єднати капітал із двома найсильнішими гравцями за столом для спільного викупу промислового комплексу або IT-платформи.",
+
+        requirementText:
+            "Свідомий вибір",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "syndicate",
+
+                title:
+                    "Увійти в синдикат з іншими учасниками",
+
+                costText:
+                    "💰 -30 000 грн від кожного учасника",
+
+                resultText:
+                    "Через 2 ходи кожен учасник отримує 💰 +65 000 грн | ⭐ +25 репутації",
+
+                minimum: {
+                    money: 30000
+                },
+
+                effects: {},
+
+                specialAction:
+                    "strategicSyndicate"
+            },
+
+            {
+                id: "syndicate-alone",
+
+                title:
+                    "Працювати на ринку самостійно",
+
+                costText:
+                    "💰 -20 000 грн",
+
+                resultText:
+                    "Через 2 ходи 💰 +35 000 грн",
+
+                minimum: {
+                    money: 20000
+                },
+
+                effects: {
+                    money: -20000
+                },
+
+                delayedEffect: {
+                    turns: 2,
+
+                    effects: {
+                        money: 35000
+                    },
+
+                    text:
+                        "Прибуток від самостійного розвитку"
+                }
+            }
+
+        ]
+    },
+
+
+    /* =====================================================
+       КАРТКА ЖИТТЯ 18
+    ===================================================== */
+
+    {
+        id: "life-18",
+        number: 18,
+
+        title:
+            "Здійснення Головної Мрії",
+
+        story:
+            "Ти зібрав необхідний капітал, здобув колосальний досвід, репутацію та готовий офіційно реалізувати свою заповітну Мрію.",
+
+        requirementText:
+            "Потрібно виконати всі умови своєї Мрії та досягти фінального професійного рівня",
+
+        requirements: {},
+
+        allowRefuse:
+            true,
+
+        choices: [
+
+            {
+                id: "realize-dream",
+
+                title:
+                    "Оплатити вартість своєї Мрії",
+
+                costText:
+                    "💰 Вартість залежить від обраної картки Мрії",
+
+                resultText:
+                    "⭐ +50 репутації | ⚡ енергія до 100 | ✨ МРІЮ ДОСЯГНУТО",
+
+                effects: {},
+
+                specialAction:
+                    "realizeDream"
+            }
+
+        ]
+    }
+
+];
+
+
+/* =========================================================
+   70. ВІДМОВА ВІД КАРТКИ ЖИТТЯ
+
+   За правилами:
+   якщо гравець не приймає
+   жодного рішення —
+
+   пропускає наступний хід.
+========================================================= */
+
+function refuseLifeDecision() {
+
+    const player =
+        gameState.player;
+
+
+    player.skipTurns +=
+        1;
+
+
+    addLog(
+
+        `❤️ ${player.name} відмовився(лася) від рішення картки Життя та пропускає наступний хід.`
+
+    );
+
+
+    openGameInfoModal(`
+
+        <div class="life-refuse-result">
+
+            <div class="cell-info-big-icon">
+                ❤️
+            </div>
+
+
+            <h2>
+                Рішення не прийнято
+            </h2>
+
+
+            <p>
+
+                За правилами карток Життя
+                ти пропускаєш свій
+                наступний хід.
+
+            </p>
+
+
+            <button
+                id="finishLifeRefuseButton"
+                class="main-game-btn"
+            >
+
+                ЗАВЕРШИТИ ХІД
+
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishLifeRefuseButton"
+        )
+        .addEventListener(
+            "click",
+            finishPlayerCardTurn
+        );
+
+}
+
+
+/* =========================================================
+   71. КНОПКА ВІДМОВИ
+   ДЛЯ КАРТКИ ЖИТТЯ
+
+   ЇЇ ДОДАМО В showDecisionCard()
+   У НАСТУПНОМУ СЕРВІСНОМУ БЛОЦІ.
+========================================================= */
+/* =========================================================
+   72. КАРТКИ ДОЛЯ — ВЕЛИКЕ КОЛО
+
+   Доля відрізняється від Життя:
+
+   - гравець НЕ обирає рішення;
+   - подія відбувається автоматично;
+   - відмовитися не можна;
+   - наслідки застосовуються одразу.
+
+   У цьому блоці:
+   картки №1–7.
+========================================================= */
+
+OUTER_CARD_DECKS.fate = [
+
+    /* =====================================================
+       КАРТКА ДОЛІ 1
+    ===================================================== */
+
+    {
+        id: "fate-01",
+        number: 1,
+
+        title:
+            "Колега привласнив вашу ідею",
+
+        story:
+            "Ваша ідея була представлена як чужа, а ваша роль залишилася непоміченою. Це вплинуло на вашу репутацію та мотивацію.",
+
+        advice:
+            "Фіксуйте свої ідеї письмово та діліться ними вчасно. Будьте проактивними та заявляйте про свій внесок.",
+
+        effects: {
+            money: -15000,
+            knowledge: -10,
+            energy: -10,
+            reputation: -7
+        },
+
+        resultText:
+            "💰 -15 000 грн | 🧠 -10 знань | ⚡ -10 енергії | ⭐ -7 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 2
+    ===================================================== */
+
+    {
+        id: "fate-02",
+        number: 2,
+
+        title:
+            "Публікація про вас",
+
+        story:
+            "Місцеве медіа або університет написали про ваш успішний проєкт чи досягнення. Ваша історія надихає інших і відкриває нові можливості.",
+
+        advice:
+            "Публічність посилює довіру до вас і може привести корисні знайомства та нові можливості.",
+
+        effects: {
+            money: 10000,
+            knowledge: 15,
+            energy: 15,
+            reputation: 15
+        },
+
+        resultText:
+            "💰 +10 000 грн | 🧠 +15 знань | ⚡ +15 енергії | ⭐ +15 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 3
+    ===================================================== */
+
+    {
+        id: "fate-03",
+        number: 3,
+
+        title:
+            "HR побачив ваше резюме і запропонував вакансію мрії",
+
+        story:
+            "HR випадково натрапив на ваше резюме в базі чи на LinkedIn через тривалий час. Ваша експертиза і досвід виявилися саме тим, що потрібно для відкритої позиції мрії.",
+
+        advice:
+            "Оновлюйте професійний профіль, підтримуйте нетворк і будьте відкриті до нових можливостей.",
+
+        effects: {
+            money: 25000,
+            knowledge: 10,
+            energy: 10,
+            reputation: 7
+        },
+
+        resultText:
+            "💰 +25 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +7 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 4
+    ===================================================== */
+
+    {
+        id: "fate-04",
+        number: 4,
+
+        title:
+            "Терміновий візит до лікаря",
+
+        story:
+            "Несподіване погіршення самопочуття змусило вас терміново звернутися до лікаря. Доведеться витратити час, гроші та сили.",
+
+        advice:
+            "Слідкуйте за своїм здоров'ям та не ігноруйте симптоми. Профілактика допомагає уникнути більших витрат і проблем.",
+
+        effects: {
+            money: -8000,
+            knowledge: -10,
+            energy: -10,
+            reputation: -5
+        },
+
+        resultText:
+            "💰 -8 000 грн | 🧠 -10 знань | ⚡ -10 енергії | ⭐ -5 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 5
+    ===================================================== */
+
+    {
+        id: "fate-05",
+        number: 5,
+
+        title:
+            "Отримання гранту",
+
+        story:
+            "Ви стали переможцем грантової програми та отримали фінансову підтримку для реалізації свого проєкту або навчання.",
+
+        advice:
+            "Грант відкриває нові можливості, дає ресурси для розвитку та підвищує впевненість у власних силах.",
+
+        effects: {
+            money: 15000,
+            knowledge: 10,
+            energy: 10,
+            reputation: 10
+        },
+
+        resultText:
+            "💰 +15 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +10 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 6
+    ===================================================== */
+
+    {
+        id: "fate-06",
+        number: 6,
+
+        title:
+            "Перевірка",
+
+        story:
+            "Вас або вашу діяльність перевіряють керівництво, банк чи державні органи. Потрібно підготувати документи, витратити час і ресурси, щоб усе було в порядку.",
+
+        advice:
+            "Перевірки забирають час, нерви та ресурси, навіть якщо все в порядку.",
+
+        effects: {
+            money: -10000,
+            knowledge: -10,
+            energy: -15,
+            reputation: -5
+        },
+
+        resultText:
+            "💰 -10 000 грн | 🧠 -10 знань | ⚡ -15 енергії | ⭐ -5 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 7
+    ===================================================== */
+
+    {
+        id: "fate-07",
+        number: 7,
+
+        title:
+            "Рахунки заблоковано",
+
+        story:
+            "Банк заблокував ваші рахунки через підозрілу операцію. Потрібно витратити час на з'ясування обставин та підтвердження особи.",
+
+        advice:
+            "Уважно стежте за операціями та безпекою. Краще попередити проблему, ніж вирішувати її.",
+
+        effects: {
+            money: -20000,
+            knowledge: -10,
+            energy: -10,
+            reputation: -5
+        },
+
+        resultText:
+            "💰 -20 000 грн | 🧠 -10 знань | ⚡ -10 енергії | ⭐ -5 репутації"
+    },
+    /* =====================================================
+       КАРТКА ДОЛІ 8
+    ===================================================== */
+
+    {
+        id: "fate-08",
+        number: 8,
+
+        title:
+            "Затоплення",
+
+        story:
+            "Несподіване затоплення спричинило пошкодження майна та додаткові витрати на відновлення. Вам доведеться витратити гроші, час і сили на вирішення наслідків.",
+
+        advice:
+            "Страхування житла може суттєво зменшити фінансові втрати у випадку непередбачених ситуацій.",
+
+        effects: {
+            money: -20000,
+            knowledge: 5,
+            energy: -10,
+            reputation: -5
+        },
+
+        resultText:
+            "💰 -20 000 грн | 🧠 +5 знань | ⚡ -10 енергії | ⭐ -5 репутації",
+
+        insuranceProtection: {
+            product:
+                "home_insurance",
+
+            refundMoney:
+                20000,
+
+            text:
+                "🏠 Якщо житло застраховане — страхова відшкодовує 20 000 грн."
+        }
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 9
+    ===================================================== */
+
+    {
+        id: "fate-09",
+        number: 9,
+
+        title:
+            "Звільнення близької людини",
+
+        story:
+            "Близька вам людина втратила роботу. Це тимчасово впливає на ваші фінанси та емоційний стан, але разом ви зможете пройти цей етап і знайти нові можливості.",
+
+        advice:
+            "Фінансова подушка та підтримка одне одного допомагають легше пройти тимчасові труднощі.",
+
+        effects: {
+            money: -15000,
+            knowledge: 10,
+            energy: -10,
+            reputation: 0
+        },
+
+        resultText:
+            "💰 -15 000 грн | 🧠 +10 знань | ⚡ -10 енергії | ⭐ без змін"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 10
+    ===================================================== */
+
+    {
+        id: "fate-10",
+        number: 10,
+
+        title:
+            "Пройшли відбір на безкоштовний професійний курс",
+
+        story:
+            "Вас відібрали для участі в програмі професійного розвитку. Навчання повністю оплачене організаторами. Використайте цю можливість для свого зростання!",
+
+        advice:
+            "Нові знання відкривають нові двері та можуть підвищити вашу ефективність і майбутній дохід.",
+
+        effects: {
+            money: 20000,
+            knowledge: 10,
+            energy: 15,
+            reputation: 10
+        },
+
+        resultText:
+            "💰 +20 000 грн економії | 🧠 +10 знань | ⚡ +15 енергії | ⭐ +10 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 11
+    ===================================================== */
+
+    {
+        id: "fate-11",
+        number: 11,
+
+        title:
+            "Захворів колега перед важливою презентацією",
+
+        story:
+            "Ви взяли на себе відповідальність у вирішальний момент і успішно провели презентацію. Керівництво помітило ваш професіоналізм та ініціативність.",
+
+        advice:
+            "Іноді можливості приходять несподівано. Будьте готові проявити себе.",
+
+        effects: {
+            money: 10000,
+            knowledge: 10,
+            energy: 10,
+            reputation: 10
+        },
+
+        resultText:
+            "💰 +10 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +10 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 12
+    ===================================================== */
+
+    {
+        id: "fate-12",
+        number: 12,
+
+        title:
+            "Пост у сторіс",
+
+        story:
+            "Ваш пост у сторіс побачила потрібна людина. Вона запропонувала рішення, яке допомогло вам вийти із ситуації та знайти найкращий варіант.",
+
+        advice:
+            "Цінність мережі контактів зростає з кожним днем. Діліться, просіть поради та будьте відкриті до спілкування.",
+
+        effects: {
+            money: 10000,
+            knowledge: 10,
+            energy: 10,
+            reputation: 10
+        },
+
+        resultText:
+            "💰 +10 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +10 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 13
+    ===================================================== */
+
+    {
+        id: "fate-13",
+        number: 13,
+
+        title:
+            "Діпфейк",
+
+        story:
+            "Зловмисники створили та поширюють діпфейк-відео з неправдивою інформацією про вас. Це шкодить вашій репутації та викликає недовіру оточення. Доведеться витратити час і ресурси, щоб відновити правду.",
+
+        advice:
+            "Перевіряйте інформацію, не довіряйте сумнівному контенту та реагуйте швидко на фейки.",
+
+        effects: {
+            money: -15000,
+            knowledge: -5,
+            energy: -10,
+            reputation: -10
+        },
+
+        resultText:
+            "💰 -15 000 грн | 🧠 -5 знань | ⚡ -10 енергії | ⭐ -10 репутації"
+    },
+
+
+    /* =====================================================
+       КАРТКА ДОЛІ 14
+    ===================================================== */
+
+    {
+        id: "fate-14",
+        number: 14,
+
+        title:
+            "Важливі документи загубились",
+
+        story:
+            "Ви виявили, що загубили важливі документи. Їх потрібно відновити, що займе час і кошти.",
+
+        advice:
+            "Зберігайте копії документів у хмарі та окремо від оригіналів. Це допоможе швидше відновити їх у разі втрати.",
+
+        effects: {
+            money: -10000,
+            knowledge: 10,
+            energy: -10,
+            reputation: -5
+        },
+
+        resultText:
+            "💰 -10 000 грн | 🧠 +10 знань | ⚡ -10 енергії | ⭐ -5 репутації"
+    }
+
+];
+
+
+/* =========================================================
+   73. АВТОМАТИЧНЕ РОЗІГРУВАННЯ ДОЛІ
+
+   У ДОЛІ НЕМАЄ ВИБОРУ.
+   КАРТКА СПРАЦЬОВУЄ ОДРАЗУ.
+========================================================= */
+
+function resolveFateCard(
+    card
+) {
+
+    const player =
+        gameState.player;
+
+
+    if (!card) {
+
+        finishPlayerCardTurn();
+
+        return;
+
+    }
+
+
+    let finalEffects = {
+
+        ...(card.effects || {})
+
+    };
+
+
+    let protectionMessage =
+        "";
+
+
+    /* =====================================================
+       СТРАХУВАННЯ ОСЕЛІ
+
+       Картка №8:
+       якщо є страхування житла,
+       страхова компенсує
+       20 000 грн.
+    ===================================================== */
+
+    if (
+        card.insuranceProtection
+        &&
+        hasBankProduct(
+
+            player,
+
+            card.insuranceProtection.product
+
+        )
+    ) {
+
+        finalEffects.money =
+            (
+                finalEffects.money || 0
+            )
+            +
+            (
+                card
+                    .insuranceProtection
+                    .refundMoney || 0
+            );
+
+
+        protectionMessage =
+            card
+                .insuranceProtection
+                .text;
+
+    }
+
+
+    applyEffects(
+
+        player,
+
+        finalEffects
+
+    );
+
+
+    addLog(
+
+        `⚡ Доля №${card.number}: ${card.title}`
+
+    );
+
+
+    showFateResult(
+
+        card,
+
+        finalEffects,
+
+        protectionMessage
+
+    );
+
+}
+
+
+/* =========================================================
+   74. ПОКАЗ РЕЗУЛЬТАТУ ДОЛІ
+========================================================= */
+
+function showFateResult(
+    card,
+    effects,
+    protectionMessage = ""
+) {
+
+    openGameInfoModal(`
+
+        <div class="fate-result-modal">
+
+
+            <div class="decision-card-number">
+
+                Картка Долі №${card.number}
+
+            </div>
+
+
+            <div class="decision-card-type">
+
+                ⚡ ДОЛЯ
+
+            </div>
+
+
+            <h2>
+
+                ${card.title}
+
+            </h2>
+
+
+            <p class="decision-card-story">
+
+                ${card.story}
+
+            </p>
+
+
+            <div class="revealed-card-effects">
+
+                ${effectsHTML(effects)}
+
+            </div>
+
+
+            ${
+                protectionMessage
+
+                ? `
+
+                    <div class="fate-protection-message">
+
+                        ${protectionMessage}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            ${
+                card.advice
+
+                ? `
+
+                    <div class="fate-advice">
+
+                        <strong>
+                            💡 Порада
+                        </strong>
+
+                        <p>
+                            ${card.advice}
+                        </p>
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <button
+                id="finishFateTurnButton"
+                class="main-game-btn"
+            >
+
+                ЗАВЕРШИТИ ХІД
+
+            </button>
+
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishFateTurnButton"
+        )
+        .addEventListener(
+            "click",
+            finishPlayerCardTurn
+        );
+
+}
+
+
+/* =========================================================
+   75. ДРУГИЙ КИДОК ДЛЯ ДОЛІ
+
+   Після визначення номера
+   картки Долі вона
+   застосовується автоматично.
+========================================================= */
+
+function showFateCardByNumber(
+    number
+) {
+
+    const deck =
+        OUTER_CARD_DECKS.fate;
+
+
+    if (
+        !deck ||
+        deck.length === 0
+    ) {
+
+        return;
+
+    }
+
+
+    const index =
+        (
+            Number(number) - 1
+        )
+        %
+        deck.length;
+
+
+    const card =
+        deck[
+            index
+        ];
+
+
+    resolveFateCard(
+        card
+    );
+
+}
+
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 4Г-2
+
+   ДАЛІ:
+
+   4Д — БАНК
+
+   У НЬОМУ ЗРОБИМО:
+
+   1. окрему велику модалку Банку;
+   2. каталог усіх 24 продуктів;
+   3. короткі пояснення для дітей;
+   4. категорії продуктів;
+   5. позначку "використовується у грі";
+   6. реальні ігрові банківські картки;
+   7. 3 додаткові звернення до Банку;
+   8. +1 звернення за Premium;
+   9. зв'язок із Подіями,
+      Життям та Долею.
+========================================================= */
+/* =========================================================
+   76. СЛУЖБОВИЙ СТАН ЦИКЛУ ГРИ
+
+   ЦЕЙ БЛОК РОБИТЬ ГРУ ЦИКЛІЧНОЮ:
+
+   - початок ходу;
+   - завершення ходу;
+   - зарплата кожні 3 ходи;
+   - регулярні доходи;
+   - відкладені платежі;
+   - регулярна енергія;
+   - кар'єрне зростання;
+   - повідомлення між ходами;
+   - перевірка Мрії.
+========================================================= */
+
+function ensureGameRuntimeState() {
+
+    if (!gameState.runtime) {
+
+        gameState.runtime = {
+
+            noticeQueue: [],
+
+            processingNotice:
+                false,
+
+            gameFinished:
+                false
+
+        };
+
+    }
+
+
+    const participants = [
+
+        gameState.player,
+
+        ...gameState.opponents
+
+    ];
+
+
+    participants.forEach(
+        participant => {
+
+            if (!participant) {
+                return;
+            }
+
+
+            if (
+                typeof participant.turnsCompleted !==
+                "number"
+            ) {
+
+                participant.turnsCompleted =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.financialPeriods !==
+                "number"
+            ) {
+
+                participant.financialPeriods =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.totalSalaryReceived !==
+                "number"
+            ) {
+
+                participant.totalSalaryReceived =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.totalPassiveIncomeReceived !==
+                "number"
+            ) {
+
+                participant.totalPassiveIncomeReceived =
+                    0;
+
+            }
+
+
+            if (!participant.effects) {
+
+                participant.effects = {};
+
+            }
+
+
+            if (
+                !Array.isArray(
+                    participant.effects.delayedPayments
+                )
+            ) {
+
+                participant.effects.delayedPayments =
+                    [];
+
+            }
+
+
+            if (
+                typeof participant.effects.energyPerTurn !==
+                "number"
+            ) {
+
+                participant.effects.energyPerTurn =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.effects.incomePerTurn !==
+                "number"
+            ) {
+
+                participant.effects.incomePerTurn =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.passiveIncome !==
+                "number"
+            ) {
+
+                participant.passiveIncome =
+                    0;
+
+            }
+
+
+            if (
+                typeof participant.skipTurns !==
+                "number"
+            ) {
+
+                participant.skipTurns =
+                    0;
+
+            }
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   77. ЧЕРГА ІГРОВИХ ПОВІДОМЛЕНЬ
+
+   Щоб модалки не накладалися:
+
+   наприклад:
+   1. зарплата;
+   2. кар'єрне підвищення;
+   3. перехід на велике коло.
+
+   Вони показуються одна за одною.
+========================================================= */
+
+function queueGameNotice(
+    notice
+) {
+
+    ensureGameRuntimeState();
+
+
+    gameState
+        .runtime
+        .noticeQueue
+        .push(
+            notice
+        );
+
+}
+
+
+/* =========================================================
+   78. ПОКАЗ НАСТУПНОГО ПОВІДОМЛЕННЯ
+========================================================= */
+
+function showNextGameNotice(
+    onComplete = null
+) {
+
+    ensureGameRuntimeState();
+
+
+    if (
+        gameState.runtime.processingNotice
+    ) {
+
+        return;
+
+    }
+
+
+    const notice =
+        gameState
+            .runtime
+            .noticeQueue
+            .shift();
+
+
+    if (!notice) {
+
+        if (
+            typeof onComplete ===
+            "function"
+        ) {
+
+            onComplete();
+
+        }
+
+
+        return;
+
+    }
+
+
+    gameState.runtime.processingNotice =
+        true;
+
+
+    let html = "";
+
+
+    /* =====================================================
+       ЗАРПЛАТА
+    ===================================================== */
+
+    if (
+        notice.type ===
+        "salary"
+    ) {
+
+        html = `
+
+            <div class="cycle-notice salary-notice">
+
+                <div class="cycle-notice-icon">
+                    💰
+                </div>
+
+
+                <h2>
+                    Зарплата надійшла!
+                </h2>
+
+
+                <p>
+
+                    Завершено ще один
+                    фінансовий період.
+
+                </p>
+
+
+                <div class="cycle-notice-main-value">
+
+                    +${formatMoney(notice.salary)} грн
+
+                </div>
+
+
+                ${
+                    notice.passiveIncome > 0
+
+                    ? `
+
+                        <div class="cycle-notice-extra">
+
+                            Додатковий регулярний дохід:
+
+                            <strong>
+
+                                +${formatMoney(notice.passiveIncome)} грн
+
+                            </strong>
+
+                        </div>
+
+                      `
+
+                    : ""
+                }
+
+
+                <div class="cycle-notice-info">
+
+                    Професійний рівень:
+
+                    <strong>
+                        ${notice.careerLevel}
+                    </strong>
+
+                    <br>
+
+                    ${notice.profession}
+
+                </div>
+
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                >
+
+                    ПРОДОВЖИТИ
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       КАР'ЄРНЕ ЗРОСТАННЯ
+    ===================================================== */
+
+    else if (
+        notice.type ===
+        "career"
+    ) {
+
+        html = `
+
+            <div class="cycle-notice career-notice">
+
+                <div class="cycle-notice-icon">
+                    🎉
+                </div>
+
+
+                <h2>
+                    Вітаємо!
+                </h2>
+
+
+                <p>
+                    Ти переходиш
+                    на наступну кар'єрну сходинку!
+                </p>
+
+
+                <div class="career-notice-change">
+
+                    <span>
+                        ${notice.oldProfession}
+                    </span>
+
+                    <strong>
+                        ↓
+                    </strong>
+
+                    <span>
+                        ${notice.newProfession}
+                    </span>
+
+                </div>
+
+
+                <div class="career-notice-level">
+
+                    Рівень ${notice.level}
+
+                </div>
+
+
+                <div class="career-notice-salary">
+
+                    Нова зарплата:
+
+                    <strong>
+
+                        💰 ${formatMoney(notice.salary)} грн
+
+                    </strong>
+
+                </div>
+
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                >
+
+                    КРУТО! ПРОДОВЖУЄМО
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+    /* =====================================================
+       ВІДКЛАДЕНИЙ ПЛАТІЖ
+    ===================================================== */
+
+    else if (
+        notice.type ===
+        "delayed"
+    ) {
+
+        html = `
+
+            <div class="cycle-notice delayed-notice">
+
+                <div class="cycle-notice-icon">
+                    ⏳
+                </div>
+
+
+                <h2>
+                    Спрацювала попередня подія
+                </h2>
+
+
+                <p>
+                    ${notice.text}
+                </p>
+
+
+                <div class="revealed-card-effects">
+
+                    ${effectsHTML(notice.effects)}
+
+                </div>
+
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                >
+
+                    ПРОДОВЖИТИ
+
+                </button>
+
+            </div>
+
+        `;
+
+    }
+
+
+    else {
+
+        gameState.runtime.processingNotice =
+            false;
+
+
+        showNextGameNotice(
+            onComplete
+        );
+
+
+        return;
+
+    }
+
+
+    openGameInfoModal(
+        html
+    );
+
+
+    const button =
+        document.getElementById(
+            "continueCycleNoticeButton"
+        );
+
+
+    if (!button) {
+
+        gameState.runtime.processingNotice =
+            false;
+
+
+        showNextGameNotice(
+            onComplete
+        );
+
+
+        return;
+
+    }
+
+
+    button.addEventListener(
+        "click",
+        () => {
+
+            closeGameInfoModal();
+
+
+            gameState.runtime.processingNotice =
+                false;
+
+
+            showNextGameNotice(
+                onComplete
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   79. ПОЧАТОК ХОДУ ГРАВЦЯ
+
+   Тут спрацьовують:
+
+   - Сімейне вогнище;
+   - регулярна енергія;
+   - регулярний дохід "кожного ходу";
+   - відкладені ефекти;
+   - перехід на велике коло.
+========================================================= */
+
+async function preparePlayerTurn() {
+
+    ensureGameRuntimeState();
+
+
+    const player =
+        gameState.player;
+
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       СІМЕЙНЕ ВОГНИЩЕ
+
+       Енергія не падає нижче 70.
+    ===================================================== */
+
+    if (
+        player.effects.familyHearth
+        &&
+        player.energy < 70
+    ) {
+
+        player.energy =
+            70;
+
+
+        addLog(
+
+            "🛡️ Сімейне вогнище відновило енергію до 70."
+
+        );
+
+    }
+
+
+    /* =====================================================
+       РЕГУЛЯРНА ЕНЕРГІЯ
+    ===================================================== */
+
+    if (
+        player.effects.energyPerTurn
+    ) {
+
+        applyEffects(
+
+            player,
+
+            {
+                energy:
+                    player
+                        .effects
+                        .energyPerTurn
+            }
+
+        );
+
+
+        addLog(
+
+            `⚡ Регулярна зміна енергії: ${
+                player.effects.energyPerTurn > 0
+                    ? "+"
+                    : ""
+            }${player.effects.energyPerTurn}`
+
+        );
+
+    }
+
+
+    /* =====================================================
+       ДОХІД КОЖНОГО ХОДУ
+
+       Окремий від зарплати.
+    ===================================================== */
+
+    if (
+        player.effects.incomePerTurn > 0
+    ) {
+
+        player.money +=
+            player.effects.incomePerTurn;
+
+
+        player.totalPassiveIncomeReceived +=
+            player.effects.incomePerTurn;
+
+
+        addLog(
+
+            `💰 Регулярний дохід: +${formatMoney(player.effects.incomePerTurn)} грн`
+
+        );
+
+    }
+
+
+    /* =====================================================
+       ВІДКЛАДЕНІ ЕФЕКТИ
+    ===================================================== */
+
+    processDelayedEffects(
+        player
+    );
+
+
+    /* =====================================================
+       ПЕРЕХІД НА ВЕЛИКЕ КОЛО
+    ===================================================== */
+
+    if (
+        player.pendingOuterTransition
+    ) {
+
+        await moveParticipantToOuterStart(
+            player
+        );
+
+    }
+
+
+    clampPlayerResources(
+        player
+    );
+
+
+    updatePlayerStatsUI();
+
+}
+
+
+/* =========================================================
+   80. ВІДКЛАДЕНІ ЕФЕКТИ
+========================================================= */
+
+function processDelayedEffects(
+    participant
+) {
+
+    if (
+        !participant?.effects ||
+        !Array.isArray(
+            participant.effects.delayedPayments
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const remaining = [];
+
+
+    participant
+        .effects
+        .delayedPayments
+        .forEach(
+            item => {
+
+                item.turnsLeft -=
+                    1;
+
+
+                if (
+                    item.turnsLeft <= 0
+                ) {
+
+                    applyEffects(
+
+                        participant,
+
+                        item.effects ||
+                        {}
+
+                    );
+
+
+                    if (
+                        participant.id ===
+                        "player"
+                    ) {
+
+                        queueGameNotice({
+
+                            type:
+                                "delayed",
+
+                            text:
+                                item.text ||
+                                "Відкладений ефект",
+
+                            effects:
+                                item.effects ||
+                                {}
+
+                        });
+
+                    }
+
+
+                    addLog(
+
+                        `⏳ ${item.text || "Відкладений ефект"}`
+
+                    );
+
+                }
+
+                else {
+
+                    remaining.push(
+                        item
+                    );
+
+                }
+
+            }
+        );
+
+
+    participant.effects.delayedPayments =
+        remaining;
+
+}
+
+
+/* =========================================================
+   81. ЗАВЕРШЕННЯ ВЛАСНОГО ХОДУ
+
+   ЦЕ ГОЛОВНА ТОЧКА ЦИКЛУ.
+
+   Один натиск / одна картка /
+   одна дія = один завершений хід.
+========================================================= */
+
+async function completePlayerTurn() {
+
+    ensureGameRuntimeState();
+
+
+    const player =
+        gameState.player;
+
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    player.turnsCompleted +=
+        1;
+
+
+    gameState.playerTurns =
+        player.turnsCompleted;
+
+
+    addLog(
+
+        `🔄 ${player.name}: завершено хід ${player.turnsCompleted}`
+
+    );
+
+
+    /* =====================================================
+       КОЖЕН ТРЕТІЙ ВЛАСНИЙ ХІД —
+       ФІНАНСОВИЙ ПЕРІОД
+    ===================================================== */
+
+    if (
+        player.turnsCompleted %
+            GAME_CONFIG.financialPeriodTurns
+        ===
+        0
+    ) {
+
+        processPlayerFinancialPeriod();
+
+    }
+
+
+    /* =====================================================
+       ПЕРЕВІРЯЄМО КАР'ЄРУ
+
+       Якщо ресурси вже дозволяють
+       перейти на наступний рівень.
+    ===================================================== */
+
+    checkCareerProgress(
+        player
+    );
+
+
+    updatePlayerStatsUI();
+
+
+    /* =====================================================
+       СПОЧАТКУ AI,
+       ПОТІМ ПОВІДОМЛЕННЯ,
+       ПОТІМ НОВИЙ ХІД.
+    ===================================================== */
+
+    await startAITurnsCore();
+
+}
+
+
+/* =========================================================
+   82. ФІНАНСОВИЙ ПЕРІОД ГРАВЦЯ
+
+   Кожні 3 власні ходи.
+
+   Зарплата береться
+   за ПОТОЧНИМ кар'єрним рівнем.
+========================================================= */
+
+function processPlayerFinancialPeriod() {
+
+    const player =
+        gameState.player;
+
+
+    player.financialPeriods +=
+        1;
+
+
+    gameState.financialPeriod =
+        player.financialPeriods;
+
+
+    const salary =
+        Number(
+            player.salary
+        ) || 0;
+
+
+    const passiveIncome =
+        Number(
+            player.passiveIncome
+        ) || 0;
+
+
+    const total =
+        salary +
+        passiveIncome;
+
+
+    player.money +=
+        total;
+
+
+    player.totalSalaryReceived +=
+        salary;
+
+
+    player.totalPassiveIncomeReceived +=
+        passiveIncome;
+
+
+    addLog(
+
+        `💰 Фінансовий період ${player.financialPeriods}: зарплата +${formatMoney(salary)} грн${
+            passiveIncome > 0
+                ? `, регулярний дохід +${formatMoney(passiveIncome)} грн`
+                : ""
+        }`
+
+    );
+
+
+    const profession =
+        getProfessionName(
+
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ],
+
+            player.gender
+
+        );
+
+
+    queueGameNotice({
+
+        type:
+            "salary",
+
+        salary,
+
+        passiveIncome,
+
+        careerLevel:
+            getDisplayedCareerLevel(
+                player
+            ),
+
+        profession
+
+    });
+
+
+    updatePlayerStatsUI();
+
+}
+
+
+/* =========================================================
+   83. НОВА ПЕРЕВІРКА КАР'ЄРИ
+
+   ЗАМІНЮЄ СТАРУ
+   checkCareerProgress().
+
+   Підвищення:
+   - максимум на 1 сходинку
+     за одну перевірку;
+   - одразу змінює зарплату;
+   - показує окреме вікно.
+========================================================= */
+
+function checkCareerProgress(
+    participant
+) {
+
+    if (
+        !participant ||
+        !participant.sector
+    ) {
+
+        return false;
+
+    }
+
+
+    const sector =
+        participant.sector;
+
+
+    if (
+        participant.careerLevel >=
+        sector.levels.length - 1
+    ) {
+
+        return false;
+
+    }
+
+
+    const oldLevel =
+        participant.careerLevel;
+
+
+    const nextLevel =
+        oldLevel + 1;
+
+
+    const nextStats =
+        getCareerStats(
+
+            sector.id,
+
+            nextLevel + 1
+
+        );
+
+
+    if (!nextStats) {
+
+        return false;
+
+    }
+
+
+    const ready =
+
+        participant.reputation >=
+            nextStats.reputation
+
+        &&
+
+        participant.knowledge >=
+            nextStats.knowledge
+
+        &&
+
+        participant.energy >=
+            nextStats.energy;
+
+
+    if (!ready) {
+
+        return false;
+
+    }
+
+
+    const oldProfession =
+        getProfessionName(
+
+            sector.levels[
+                oldLevel
+            ],
+
+            participant.gender
+
+        );
+
+
+    const newProfession =
+        getProfessionName(
+
+            sector.levels[
+                nextLevel
+            ],
+
+            participant.gender
+
+        );
+
+
+    participant.careerLevel =
+        nextLevel;
+
+
+    participant.salary =
+        nextStats.salary;
+
+
+    addLog(
+
+        `🎉 ${participant.name}: ${oldProfession} → ${newProfession}`
+
+    );
+
+
+    /* =====================================================
+       ЯКЩО ГРАВЕЦЬ УЖЕ ПРОЙШОВ
+       МАЛЕ КОЛО І ТЕПЕР СТАВ
+       РІВНЕМ 2 —
+
+       ПЕРЕХІД НА OUTER
+       ВІДБУДЕТЬСЯ ПЕРЕД
+       НАСТУПНИМ ХОДОМ.
+    ===================================================== */
+
+    if (
+        participant.board ===
+            "inner"
+
+        &&
+
+        participant.innerLaps >=
+            1
+
+        &&
+
+        participant.careerLevel >=
+            GAME_CONFIG
+                .outerUnlockCareerLevel
+    ) {
+
+        participant.pendingOuterTransition =
+            true;
+
+    }
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        queueGameNotice({
+
+            type:
+                "career",
+
+            oldProfession,
+
+            newProfession,
+
+            level:
+                nextLevel + 1,
+
+            salary:
+                nextStats.salary
+
+        });
+
+
+        updateCareerHUD(
+            participant
+        );
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   84. ОНОВЛЕННЯ ПРОФЕСІЇ У HUD
+========================================================= */
+
+function updateCareerHUD(
+    participant =
+        gameState.player
+) {
+
+    const element =
+        document.getElementById(
+            "hudPlayerProfession"
+        );
+
+
+    if (
+        !element ||
+        !participant.sector
+    ) {
+
+        return;
+
+    }
+
+
+    element.textContent =
+        getProfessionName(
+
+            participant
+                .sector
+                .levels[
+                    participant.careerLevel
+                ],
+
+            participant.gender
+
+        );
+
+}
+
+
+/* =========================================================
+   85. LOUNGE
+
+   За правилами:
+
+   якщо енергія < 100:
+   → відновлюємо до 100.
+
+   якщо енергія вже 100:
+   → під час наступного
+     повного кола вона
+     не зменшується.
+========================================================= */
+
+function handleLoungeCell(
+    participant
+) {
+
+    const alreadyFull =
+        participant.energy >=
+        GAME_CONFIG.maxEnergy;
+
+
+    if (
+        alreadyFull
+    ) {
+
+        participant
+            .effects
+            .protectEnergyForLap =
+            true;
+
+
+        participant
+            .effects
+            .protectedEnergyBoard =
+            participant.board;
+
+
+        participant
+            .effects
+            .protectedEnergyLap =
+            participant.board ===
+                "inner"
+
+                ? participant.innerLaps
+
+                : participant.outerLaps;
+
+
+        addLog(
+
+            `🎯 ${participant.name}: енергія захищена на наступне повне коло.`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            openGameInfoModal(`
+
+                <div class="lounge-result">
+
+                    <div class="cycle-notice-icon">
+                        🎯
+                    </div>
+
+                    <h2>
+                        Lounge & Хобі
+                    </h2>
+
+                    <p>
+
+                        У тебе вже максимальна
+                        енергія — 100.
+
+                    </p>
+
+                    <p>
+
+                        Тому під час наступного
+                        повного кола
+                        енергія не буде зменшуватися.
+
+                    </p>
+
+                    <button
+                        id="finishLoungeButton"
+                        class="main-game-btn"
+                    >
+                        ЗАВЕРШИТИ ХІД
+                    </button>
+
+                </div>
+
+            `);
+
+
+            document
+                .getElementById(
+                    "finishLoungeButton"
+                )
+                .addEventListener(
+                    "click",
+                    () => {
+
+                        closeGameInfoModal();
+
+                        completePlayerTurn();
+
+                    }
+                );
+
+        }
+
+
+        return;
+
+    }
+
+
+    const restored =
+        GAME_CONFIG.maxEnergy -
+        participant.energy;
+
+
+    participant.energy =
+        GAME_CONFIG.maxEnergy;
+
+
+    addLog(
+
+        `🎯 ${participant.name}: енергія відновлена до 100.`
+
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+
+        openGameInfoModal(`
+
+            <div class="lounge-result">
+
+                <div class="cycle-notice-icon">
+                    🎯
+                </div>
+
+                <h2>
+                    Lounge & Хобі
+                </h2>
+
+                <p>
+                    Час відпочити та відновити сили.
+                </p>
+
+                <div class="cycle-notice-main-value">
+
+                    ⚡ +${restored}
+
+                </div>
+
+                <strong>
+                    Енергія: 100
+                </strong>
+
+                <button
+                    id="finishLoungeButton"
+                    class="main-game-btn"
+                >
+                    ЗАВЕРШИТИ ХІД
+                </button>
+
+            </div>
+
+        `);
+
+
+        document
+            .getElementById(
+                "finishLoungeButton"
+            )
+            .addEventListener(
+                "click",
+                () => {
+
+                    closeGameInfoModal();
+
+                    completePlayerTurn();
+
+                }
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   86. ЗАХИСТ ЕНЕРГІЇ ВІД LOUNGE
+
+   ЦЮ ПЕРЕВІРКУ ВИКОРИСТОВУЄ
+   applyEffects().
+========================================================= */
+
+function isEnergyProtected(
+    participant
+) {
+
+    if (
+        !participant?.effects
+            ?.protectEnergyForLap
+    ) {
+
+        return false;
+
+    }
+
+
+    const currentLap =
+        participant.board ===
+            "inner"
+
+            ? participant.innerLaps
+
+            : participant.outerLaps;
+
+
+    const protectedLap =
+        participant
+            .effects
+            .protectedEnergyLap;
+
+
+    /* =====================================================
+       КОЛО ВЖЕ ЗАВЕРШЕНО —
+       ЗАХИСТ ЗНІМАЄМО.
+    ===================================================== */
+
+    if (
+        participant.board !==
+            participant
+                .effects
+                .protectedEnergyBoard
+
+        ||
+
+        currentLap >
+            protectedLap + 1
+    ) {
+
+        participant
+            .effects
+            .protectEnergyForLap =
+            false;
+
+
+        participant
+            .effects
+            .protectedEnergyBoard =
+            null;
+
+
+        participant
+            .effects
+            .protectedEnergyLap =
+            null;
+
+
+        return false;
+
+    }
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   87. НОВА applyEffects()
+
+   ЗАМІНЮЄ ПОПЕРЕДНЮ.
+
+   ВРАХОВУЄ:
+   - максимум енергії 100;
+   - Сімейне вогнище;
+   - Lounge-захист;
+   - кар'єрний прогрес.
 ========================================================= */
 
 function applyEffects(
     participant,
-    effects
+    effects = {}
 ) {
+
+    if (
+        !participant ||
+        !effects
+    ) {
+
+        return;
+
+    }
+
 
     Object
         .entries(
@@ -6315,6 +16730,23 @@ function applyEffects(
         )
         .forEach(
             ([key, value]) => {
+
+
+                if (
+                    key ===
+                    "energy"
+                    &&
+                    value < 0
+                    &&
+                    isEnergyProtected(
+                        participant
+                    )
+                ) {
+
+                    return;
+
+                }
+
 
                 if (
                     typeof participant[key] ===
@@ -6330,25 +16762,28 @@ function applyEffects(
         );
 
 
-    participant.energy =
-        Math.max(
-            0,
-            participant.energy
-        );
+    /* Сімейне вогнище */
+
+    if (
+        participant
+            .effects
+            ?.familyHearth
+
+        &&
+
+        participant.energy <
+            70
+    ) {
+
+        participant.energy =
+            70;
+
+    }
 
 
-    participant.reputation =
-        Math.max(
-            0,
-            participant.reputation
-        );
-
-
-    participant.knowledge =
-        Math.max(
-            0,
-            participant.knowledge
-        );
+    clampPlayerResources(
+        participant
+    );
 
 
     if (
@@ -6357,6 +16792,15 @@ function applyEffects(
     ) {
 
         updatePlayerStatsUI();
+
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+    else {
 
         checkCareerProgress(
             participant
@@ -6368,155 +16812,447 @@ function applyEffects(
 
 
 /* =========================================================
-   51. ЕФЕКТИ — HTML
+   88. АКАДЕМІЯ & SOFT SKILLS
+
+   3 ВАРІАНТИ З ПРАВИЛ:
+
+   1. Soft Skills
+      -3 000
+      +10 знань
+      +5 репутації
+
+   2. Hard Skills
+      -6 000
+      -10 енергії
+      +25 знань
+      +10 репутації
+
+   3. Ментор
+      заплатити 23 000
+      іншому гравцю з 70+ знань
+
+      гравець:
+      +20 знань
+
+      ментор:
+      +23 000
+      +5 репутації
 ========================================================= */
 
-function effectsHTML(
-    effects
-) {
-
-    const icons = {
-
-        money: "💰",
-        reputation: "⭐",
-        knowledge: "🧠",
-        energy: "⚡"
-
-    };
-
-
-    return Object
-        .entries(
-            effects
-        )
-        .map(
-            ([key, value]) => `
-
-                <span>
-
-                    ${icons[key]}
-
-                    ${
-                        value > 0
-                        ? "+"
-                        : ""
-                    }
-
-                    ${formatMoney(value)}
-
-                </span>
-
-            `
-        )
-        .join("");
-
-}
-
-
-/* =========================================================
-   52. ВІДКРИТА КАРТКА
-========================================================= */
-
-function showResultCard(
-    type,
-    title,
-    text,
-    effects
-) {
-
-    const panel =
-        document.getElementById(
-            "currentCardPanel"
-        );
-
-
-    if (!panel) {
-        return;
-    }
-
-
-    panel.innerHTML = `
-
-        <div class="revealed-current-card">
-
-
-            <div class="revealed-card-type">
-
-                ${type.icon}
-                ${type.name}
-
-            </div>
-
-
-            <h3>
-                ${title}
-            </h3>
-
-
-            <p>
-                ${text}
-            </p>
-
-
-            <div class="revealed-card-effects">
-
-                ${effectsHTML(effects)}
-
-            </div>
-
-        </div>
-
-    `;
-
-}
-
-
-/* =========================================================
-   53. ПОКАЗНИКИ
-========================================================= */
-
-function updatePlayerStatsUI() {
+function showAcademyChoice() {
 
     const player =
         gameState.player;
 
 
-    const fields = {
+    const mentors =
+        gameState.opponents.filter(
 
-        moneyValue:
-            formatMoney(
-                player.money
-            ),
+            participant =>
+                participant.knowledge >=
+                70
 
-        reputationValue:
-            player.reputation,
-
-        knowledgeValue:
-            player.knowledge,
-
-        energyValue:
-            player.energy
-
-    };
+        );
 
 
-    Object
-        .entries(fields)
-        .forEach(
-            ([id, value]) => {
+    const mentorOptions =
+        mentors.length > 0
 
-                const element =
+        ? mentors
+            .map(
+                mentor => `
+
+                    <option
+                        value="${mentor.id}"
+                    >
+                        ${mentor.name}
+                        — 🧠 ${mentor.knowledge}
+                    </option>
+
+                `
+            )
+            .join("")
+
+        : `
+
+            <option value="">
+                Немає доступного ментора
+            </option>
+
+          `;
+
+
+    openGameInfoModal(`
+
+        <div class="academy-modal">
+
+            <div class="cycle-notice-icon">
+                🎓
+            </div>
+
+
+            <h2>
+                Академія & Soft Skills
+            </h2>
+
+
+            <p>
+                Обери напрямок розвитку.
+            </p>
+
+
+            <div class="academy-options">
+
+
+                <button
+                    id="academySoftButton"
+                    class="card-decision-button"
+                    ${
+                        player.money < 3000
+                            ? "disabled"
+                            : ""
+                    }
+                >
+
+                    <strong>
+                        💬 Soft Skills / Комунікація
+                    </strong>
+
+                    <span>
+                        💰 -3 000 грн
+                    </span>
+
+                    <span>
+                        🧠 +10 | ⭐ +5
+                    </span>
+
+                </button>
+
+
+                <button
+                    id="academyHardButton"
+                    class="card-decision-button"
+                    ${
+                        (
+                            player.money < 6000
+                            ||
+                            player.energy < 10
+                        )
+                            ? "disabled"
+                            : ""
+                    }
+                >
+
+                    <strong>
+                        🧠 Професійна сертифікація / Hard Skills
+                    </strong>
+
+                    <span>
+                        💰 -6 000 грн | ⚡ -10
+                    </span>
+
+                    <span>
+                        🧠 +25 | ⭐ +10
+                    </span>
+
+                </button>
+
+
+                <div class="academy-mentor-option">
+
+                    <strong>
+                        🤝 Менторська сесія
+                    </strong>
+
+                    <p>
+                        💰 -23 000 грн → 🧠 +20
+                    </p>
+
+                    <select
+                        id="academyMentorSelect"
+                        ${
+                            (
+                                player.money < 23000
+                                ||
+                                mentors.length === 0
+                            )
+                                ? "disabled"
+                                : ""
+                        }
+                    >
+
+                        ${mentorOptions}
+
+                    </select>
+
+
+                    <button
+                        id="academyMentorButton"
+                        class="card-decision-button"
+                        ${
+                            (
+                                player.money < 23000
+                                ||
+                                mentors.length === 0
+                            )
+                                ? "disabled"
+                                : ""
+                        }
+                    >
+                        ОБРАТИ МЕНТОРА
+                    </button>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    `);
+
+
+    const softButton =
+        document.getElementById(
+            "academySoftButton"
+        );
+
+
+    if (softButton) {
+
+        softButton.addEventListener(
+            "click",
+            () => {
+
+                applyEffects(
+
+                    player,
+
+                    {
+                        money: -3000,
+                        knowledge: 10,
+                        reputation: 5
+                    }
+
+                );
+
+
+                addLog(
+
+                    "🎓 Академія: Soft Skills / Комунікація."
+
+                );
+
+
+                showAcademyResult(
+
+                    "Soft Skills / Комунікація",
+
+                    "💰 -3 000 грн | 🧠 +10 | ⭐ +5"
+
+                );
+
+            }
+        );
+
+    }
+
+
+    const hardButton =
+        document.getElementById(
+            "academyHardButton"
+        );
+
+
+    if (hardButton) {
+
+        hardButton.addEventListener(
+            "click",
+            () => {
+
+                applyEffects(
+
+                    player,
+
+                    {
+                        money: -6000,
+                        energy: -10,
+                        knowledge: 25,
+                        reputation: 10
+                    }
+
+                );
+
+
+                addLog(
+
+                    "🎓 Академія: Професійна сертифікація."
+
+                );
+
+
+                showAcademyResult(
+
+                    "Професійна сертифікація / Hard Skills",
+
+                    "💰 -6 000 грн | ⚡ -10 | 🧠 +25 | ⭐ +10"
+
+                );
+
+            }
+        );
+
+    }
+
+
+    const mentorButton =
+        document.getElementById(
+            "academyMentorButton"
+        );
+
+
+    if (mentorButton) {
+
+        mentorButton.addEventListener(
+            "click",
+            () => {
+
+                const select =
                     document.getElementById(
-                        id
+                        "academyMentorSelect"
                     );
 
 
-                if (element) {
+                const mentor =
+                    gameState
+                        .opponents
+                        .find(
+                            item =>
+                                item.id ===
+                                select.value
+                        );
 
-                    element.textContent =
-                        value;
+
+                if (!mentor) {
+
+                    return;
 
                 }
+
+
+                player.money -=
+                    23000;
+
+
+                player.knowledge +=
+                    20;
+
+
+                mentor.money +=
+                    23000;
+
+
+                mentor.reputation +=
+                    5;
+
+
+                clampPlayerResources(
+                    player
+                );
+
+
+                clampPlayerResources(
+                    mentor
+                );
+
+
+                checkCareerProgress(
+                    player
+                );
+
+
+                checkCareerProgress(
+                    mentor
+                );
+
+
+                updatePlayerStatsUI();
+
+
+                addLog(
+
+                    `🎓 ${player.name}: менторська сесія з ${mentor.name}.`
+
+                );
+
+
+                showAcademyResult(
+
+                    `Менторська сесія — ${mentor.name}`,
+
+                    `Ти: 💰 -23 000 грн | 🧠 +20. ${mentor.name}: 💰 +23 000 грн | ⭐ +5.`
+
+                );
+
+            }
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   89. РЕЗУЛЬТАТ АКАДЕМІЇ
+========================================================= */
+
+function showAcademyResult(
+    title,
+    result
+) {
+
+    openGameInfoModal(`
+
+        <div class="academy-result">
+
+            <div class="cycle-notice-icon">
+                🎓
+            </div>
+
+
+            <h2>
+                ${title}
+            </h2>
+
+
+            <p>
+                ${result}
+            </p>
+
+
+            <button
+                id="finishAcademyButton"
+                class="main-game-btn"
+            >
+                ЗАВЕРШИТИ ХІД
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishAcademyButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                completePlayerTurn();
 
             }
         );
@@ -6525,114 +17261,972 @@ function updatePlayerStatsUI() {
 
 
 /* =========================================================
-   54. КАР'ЄРНЕ ЗРОСТАННЯ
+   90. ПЕРЕВІРКА МРІЇ
 ========================================================= */
 
-function checkCareerProgress(participant) {
+function canRealizeDream(
+    participant =
+        gameState.player
+) {
 
-    const sector =
-        participant.sector;
-
-    if (!sector) {
-        return;
-    }
-
-
-    // careerLevel у нас 0–3:
-    // 0 = перша сходинка, 3 = четверта
     if (
-        participant.careerLevel >=
-        sector.levels.length - 1
+        !participant ||
+        !participant.dream
     ) {
-        return;
+
+        return false;
+
     }
 
 
-    const currentIndex =
-        participant.careerLevel;
-
-    const nextIndex =
-        currentIndex + 1;
-
-
-    // Параметри НАСТУПНОЇ сходинки
-    const nextStats =
-        getCareerStats(
-            sector.id,
-            nextIndex + 1
-        );
+    const req =
+        participant
+            .dream
+            .requirements;
 
 
-    /*
-       Перевіряємо умови переходу.
-    */
-    const ready =
-        participant.reputation >=             nextStats.reputation &&
+    return (
 
-        participant.knowledge >=             nextStats.knowledge &&
+        hasFinalCareerLevel(
+            participant
+        )
 
-        participant.energy >=             nextStats.energy;
+        &&
 
+        participant.money >=
+            req.money
 
-    if (!ready) {
-        return;
-    }
-    const oldProfession =
-        getProfessionName(
-            sector.levels[currentIndex],
-            participant.gender
-        );
+        &&
 
-    const newProfession =
-        getProfessionName(
-            sector.levels[nextIndex],
-            participant.gender
-        );
+        participant.reputation >=
+            req.reputation
 
+        &&
 
-    // Переходимо на нову кар'єрну сходинку
-    participant.careerLevel =
-        nextIndex;
+        participant.knowledge >=
+            req.knowledge
 
+        &&
 
-    // Нова зарплата
-    participant.salary =
-        nextStats.salary;
+        participant.energy >=
+            req.energy
 
-
-    addLog(
-        `🎉 Кар'єрне зростання: ${oldProfession} → ${newProfession}`
-    );
-
-
-    showCareerProgressModal(
-        oldProfession,
-        newProfession,
-        nextStats
     );
 
 }
 
 
 /* =========================================================
-   55. AI — ПОЧАТОК
-========================================================= */
-/* =========================================================
-   55. AI — ПОЧАТОК
+   91. КЛІТИНКА ПЕРЕВІРКИ МРІЇ
 ========================================================= */
 
-async function startAITurns() {
+function handleDreamCheckCell(
+    participant =
+        gameState.player
+) {
+
+    const dream =
+        participant.dream;
+
+
+    if (!dream) {
+
+        completePlayerTurn();
+
+        return;
+
+    }
+
+
+    const success =
+        canRealizeDream(
+            participant
+        );
+
+
+    if (success) {
+
+        showDreamReadyModal(
+            participant
+        );
+
+
+        return;
+
+    }
+
+
+    const req =
+        dream.requirements;
+
+
+    openGameInfoModal(`
+
+        <div class="dream-check-modal">
+
+            <div class="cycle-notice-icon">
+                ✨
+            </div>
+
+
+            <h2>
+                Мрія вже близько
+            </h2>
+
+
+            <p>
+
+                Поки що не всі умови
+                виконані.
+
+            </p>
+
+
+            ${createDreamProgressRow(
+                "💰",
+                "Гроші",
+                participant.money,
+                req.money
+            )}
+
+
+            ${createDreamProgressRow(
+                "⭐",
+                "Репутація",
+                participant.reputation,
+                req.reputation
+            )}
+
+
+            ${createDreamProgressRow(
+                "🧠",
+                "Знання",
+                participant.knowledge,
+                req.knowledge
+            )}
+
+
+            ${createDreamProgressRow(
+                "⚡",
+                "Енергія",
+                participant.energy,
+                req.energy
+            )}
+
+
+            <div class="dream-career-check">
+
+                ${
+                    hasFinalCareerLevel(
+                        participant
+                    )
+
+                    ? "✅ Фінальний професійний рівень досягнуто"
+
+                    : "❌ Потрібно досягти 4-го професійного рівня"
+                }
+
+            </div>
+
+
+            <button
+                id="continueDreamCheckButton"
+                class="main-game-btn"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "continueDreamCheckButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                completePlayerTurn();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   92. МРІЯ ГОТОВА ДО РЕАЛІЗАЦІЇ
+========================================================= */
+
+function showDreamReadyModal(
+    participant
+) {
+
+    const dream =
+        participant.dream;
+
+
+    openGameInfoModal(`
+
+        <div class="dream-ready-modal">
+
+            <div class="cycle-notice-icon">
+                ✨
+            </div>
+
+
+            <h2>
+                Усі умови виконані!
+            </h2>
+
+
+            <p>
+
+                Ти готовий / готова
+                реалізувати свою Мрію:
+
+            </p>
+
+
+            <div class="dream-ready-name">
+
+                ${dream.icon}
+
+                ${dream.name}
+
+            </div>
+
+
+            <div class="dream-ready-price">
+
+                💰 ${formatMoney(
+                    dream.requirements.money
+                )} грн
+
+            </div>
+
+
+            <button
+                id="realizeDreamButton"
+                class="main-game-btn"
+            >
+                ✨ ЗДІЙСНИТИ МРІЮ
+            </button>
+
+
+            <button
+                id="continueWithoutDreamButton"
+                class="secondary-game-btn"
+            >
+                ПОКИ ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "realizeDreamButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                realizePlayerDream();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "continueWithoutDreamButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                completePlayerTurn();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   93. РЕАЛІЗАЦІЯ МРІЇ
+========================================================= */
+
+function realizePlayerDream() {
+
+    ensureGameRuntimeState();
+
+
+    const player =
+        gameState.player;
+
 
     if (
-        gameState.currentTurn ===
-        "ai"
+        !canRealizeDream(
+            player
+        )
     ) {
+
         return;
+
+    }
+
+
+    const price =
+        player
+            .dream
+            .requirements
+            .money;
+
+
+    player.money -=
+        price;
+
+
+    player.reputation +=
+        50;
+
+
+    player.energy =
+        GAME_CONFIG.maxEnergy;
+
+
+    clampPlayerResources(
+        player
+    );
+
+
+    gameState.runtime.gameFinished =
+        true;
+
+
+    addLog(
+
+        `✨ ${player.name} здійснив(ла) Мрію «${player.dream.name}».`
+
+    );
+
+
+    updatePlayerStatsUI();
+
+
+    showDreamSuccessScreen();
+
+}
+
+
+/* =========================================================
+   94. ФІНАЛ ГРИ
+========================================================= */
+
+function showDreamSuccessScreen() {
+
+    const player =
+        gameState.player;
+
+
+    const profession =
+        getProfessionName(
+
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ],
+
+            player.gender
+
+        );
+
+
+    const reachedText =
+        player.gender ===
+            "girl"
+
+            ? "Ти досягла своєї Мрії!"
+
+            : "Ти досяг своєї Мрії!";
+
+
+    setScreen(`
+
+        <section class="game-screen dream-success-screen">
+
+            <div class="dream-success-card">
+
+
+                <div class="dream-success-icon">
+
+                    ${player.dream.icon}
+
+                </div>
+
+
+                <h1>
+                    ✨ МРІЮ ДОСЯГНУТО!
+                </h1>
+
+
+                <h2>
+                    ${reachedText}
+                </h2>
+
+
+                <div class="dream-success-name">
+
+                    ${player.dream.name}
+
+                </div>
+
+
+                <p>
+
+                    Ти розвивав / розвивала
+                    кар'єру, приймав / приймала
+                    фінансові рішення,
+                    заробляв / заробляла,
+                    навчався / навчалася
+                    і поступово наближався /
+                    наближалася до своєї цілі.
+
+                </p>
+
+
+                <div class="dream-success-summary">
+
+
+                    <div>
+
+                        <span>
+                            🏆 Кар'єра
+                        </span>
+
+                        <strong>
+                            Рівень ${
+                                getDisplayedCareerLevel(
+                                    player
+                                )
+                            }
+                        </strong>
+
+                        <small>
+                            ${profession}
+                        </small>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            💰 Залишок
+                        </span>
+
+                        <strong>
+                            ${formatMoney(player.money)} грн
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            💼 Зарплатних періодів
+                        </span>
+
+                        <strong>
+                            ${player.financialPeriods}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            🎲 Ходів
+                        </span>
+
+                        <strong>
+                            ${player.turnsCompleted}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            ⭐ Репутація
+                        </span>
+
+                        <strong>
+                            ${player.reputation}
+                        </strong>
+
+                    </div>
+
+
+                    <div>
+
+                        <span>
+                            🧠 Знання
+                        </span>
+
+                        <strong>
+                            ${player.knowledge}
+                        </strong>
+
+                    </div>
+
+
+                </div>
+
+
+                <button
+                    id="showFinalResultsButton"
+                    class="main-game-btn"
+                >
+                    ПЕРЕГЛЯНУТИ МОЇ РЕЗУЛЬТАТИ
+                </button>
+
+
+                <button
+                    id="playAgainButton"
+                    class="secondary-game-btn"
+                >
+                    ЗІГРАТИ ЩЕ РАЗ
+                </button>
+
+
+            </div>
+
+        </section>
+
+    `);
+
+
+    document
+        .getElementById(
+            "showFinalResultsButton"
+        )
+        .addEventListener(
+            "click",
+            showFinalGameResults
+        );
+
+
+    document
+        .getElementById(
+            "playAgainButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.reload();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   95. ПІДСУМКИ ГРИ
+========================================================= */
+
+function showFinalGameResults() {
+
+    const player =
+        gameState.player;
+
+
+    const profession =
+        getProfessionName(
+
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ],
+
+            player.gender
+
+        );
+
+
+    setScreen(`
+
+        <section class="game-screen final-results-screen">
+
+            <div class="final-results-card">
+
+                <h1>
+                    Твій шлях у CV ЖИТТЯ
+                </h1>
+
+
+                <div class="final-dream">
+
+                    ${player.dream.icon}
+
+                    <strong>
+                        ${player.dream.name}
+                    </strong>
+
+                </div>
+
+
+                <div class="final-results-grid">
+
+
+                    <div>
+                        <span>🎲 Ходів</span>
+                        <strong>
+                            ${player.turnsCompleted}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>💰 Фінансових періодів</span>
+                        <strong>
+                            ${player.financialPeriods}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>💵 Отримано зарплати</span>
+                        <strong>
+                            ${formatMoney(
+                                player.totalSalaryReceived
+                            )} грн
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>📈 Регулярний дохід</span>
+                        <strong>
+                            ${formatMoney(
+                                player.totalPassiveIncomeReceived
+                            )} грн
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>🏆 Кар'єрний рівень</span>
+                        <strong>
+                            ${
+                                getDisplayedCareerLevel(
+                                    player
+                                )
+                            }
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>💼 Професія</span>
+                        <strong>
+                            ${profession}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>⭐ Репутація</span>
+                        <strong>
+                            ${player.reputation}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>🧠 Знання</span>
+                        <strong>
+                            ${player.knowledge}
+                        </strong>
+                    </div>
+
+
+                    <div>
+                        <span>⚡ Енергія</span>
+                        <strong>
+                            ${player.energy}
+                        </strong>
+                    </div>
+
+
+                </div>
+
+
+                <button
+                    id="finalPlayAgainButton"
+                    class="main-game-btn"
+                >
+                    ЗІГРАТИ ЩЕ РАЗ
+                </button>
+
+            </div>
+
+        </section>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finalPlayAgainButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                window.location.reload();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 5А
+
+   ДАЛІ — 5Б:
+
+   - правильне завершення карткового ходу;
+   - зв'язок Долі з другим кидком;
+   - відмова від Життя;
+   - усі specialAction карток Життя;
+   - регулярні платежі;
+   - іпотека;
+   - франшиза;
+   - сімейне вогнище;
+   - Premium-контакт;
+   - AI з таким самим циклом;
+   - зарплата AI;
+   - виправлення старого startAITurns();
+   - повернення керування гравцю.
+
+   ПІСЛЯ 5Б ГРУ ВЖЕ МОЖНА БУДЕ
+   ПРОГАНЯТИ ВІД СТАРТУ ДО МРІЇ.
+
+   І ТІЛЬКИ ПІСЛЯ ЦЬОГО
+   БЕРЕМО БАНК.
+========================================================= */
+/* =========================================================
+   96. ЗАВЕРШЕННЯ КАРТКОВОГО ХОДУ
+
+   ЗАМІНЮЄ ПОПЕРЕДНЮ
+   finishPlayerCardTurn().
+
+   Тепер після картки:
+   → завершується власний хід;
+   → рахується 3-й хід;
+   → запускаються AI;
+   → повертається керування гравцю.
+========================================================= */
+
+function finishPlayerCardTurn() {
+
+    closeGameInfoModal();
+
+    completePlayerTurn();
+
+}
+
+
+/* =========================================================
+   97. СТАРА startAITurns()
+
+   У попередніх частинах деякі функції
+   ще викликають startAITurns().
+
+   Тому залишаємо сумісність,
+   але тепер вона означає:
+
+   "завершити хід гравця".
+========================================================= */
+
+function startAITurns() {
+
+    completePlayerTurn();
+
+}
+
+
+/* =========================================================
+   98. ОСНОВНИЙ ЦИКЛ AI
+========================================================= */
+
+async function startAITurnsCore() {
+
+    ensureGameRuntimeState();
+
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
     }
 
 
     gameState.currentTurn =
         "ai";
+
+
+    const rollButton =
+        document.getElementById(
+            "rollDiceButton"
+        );
+
+
+    if (rollButton) {
+
+        rollButton.disabled =
+            true;
+
+    }
+
+
+    for (
+        const ai of
+        gameState.opponents
+    ) {
+
+        if (
+            gameState.runtime.gameFinished
+        ) {
+
+            return;
+
+        }
+
+
+        await runAITurnCore(
+            ai
+        );
+
+    }
+
+
+    /* =====================================================
+       AI ЗАВЕРШИЛИ ХОДИ
+
+       Тепер:
+       1. показуємо зарплату /
+          кар'єрні повідомлення;
+       2. готуємо наступний
+          хід людини.
+    ===================================================== */
+
+    gameState.currentTurn =
+        "between-turns";
+
+
+    showNextGameNotice(
+
+        () => {
+
+            beginNextPlayerTurn();
+
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   99. ПОЧАТОК НАСТУПНОГО ХОДУ
+========================================================= */
+
+async function beginNextPlayerTurn() {
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    await preparePlayerTurn();
+
+
+    /*
+       preparePlayerTurn()
+       міг створити відкладені
+       повідомлення.
+    */
+
+    if (
+        gameState.runtime.noticeQueue.length >
+        0
+    ) {
+
+        showNextGameNotice(
+
+            () => {
+
+                activatePlayerTurn();
+
+            }
+
+        );
+
+
+        return;
+
+    }
+
+
+    activatePlayerTurn();
+
+}
+
+
+/* =========================================================
+   100. ПОВЕРНЕННЯ КЕРУВАННЯ ГРАВЦЮ
+========================================================= */
+
+function activatePlayerTurn() {
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    gameState.currentTurn =
+        "player";
 
 
     const button =
@@ -6642,55 +18236,10 @@ async function startAITurns() {
 
 
     if (button) {
-        button.disabled = true;
-    }
 
+        button.disabled =
+            false;
 
-    for (
-        const ai of
-        gameState.opponents
-    ) {
-
-        await runAITurn(
-            ai
-        );
-
-    }
-
-
-    /* =====================================================
-       ЗАВЕРШЕНО ОДИН ПОВНИЙ ХІД ГРАВЦЯ
-    ===================================================== */
-
-    gameState.playerTurns += 1;
-
-    addLog(
-        `🔄 Завершено хід ${gameState.playerTurns}`
-    );
-
-
-    /* =====================================================
-       ФІНАНСОВИЙ ПЕРІОД
-       Кожні N ходів, заданих у GAME_CONFIG
-    ===================================================== */
-
-    if (
-        gameState.playerTurns %
-            GAME_CONFIG.financialPeriodTurns ===
-        0
-    ) {
-
-        processFinancialPeriod();
-
-    }
-
-
-    gameState.currentTurn =
-        "player";
-
-
-    if (button) {
-        button.disabled = false;
     }
 
 
@@ -6703,7 +18252,7 @@ async function startAITurns() {
     if (title) {
 
         title.textContent =
-            "Твій хід";
+            "ТВІЙ ХІД";
 
     }
 
@@ -6718,66 +18267,103 @@ async function startAITurns() {
 
         message.innerHTML = `
 
-            Твій хід!
+            Хід ${
+                gameState.player.turnsCompleted + 1
+            }
 
             <br>
 
             Кидай кубик 🎲
 
         `;
+
     }
+
+
     showRaifikCurrentCardMessage(
 
-        `${gameState.player.name}, тепер твій хід. Кидай кубик 🎲`
+        `${gameState.player.name}, твій хід. Кидай кубик 🎲`
 
     );
 
 }
 
-/* =========================================================
-   55.1. ФІНАНСОВИЙ ПЕРІОД
-========================================================= */
-
-function processFinancialPeriod() {
-
-    gameState.financialPeriod += 1;
-
-    const player =
-        gameState.player;
-
-    const salary =
-        Number(player.salary) || 0;
-
-
-    player.money += salary;
-
-
-    addLog(
-        `💰 Фінансовий період ${gameState.financialPeriod}: зарплата +${formatMoney(salary)} грн`
-    );
-
-
-    updatePlayerStatusUI();
-
-}
 
 /* =========================================================
-   56. ХІД AI
+   101. ХІД AI
 ========================================================= */
 
-async function runAITurn(
+async function runAITurnCore(
     ai
 ) {
+
+    if (!ai) {
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ПРОПУСК ХОДУ
+    ===================================================== */
+
+    if (
+        ai.skipTurns > 0
+    ) {
+
+        ai.skipTurns -=
+            1;
+
+
+        ai.turnsCompleted +=
+            1;
+
+
+        addLog(
+
+            `⏭ ${ai.name} пропускає хід.`
+
+        );
+
+
+        processAIFinancialPeriodIfNeeded(
+            ai
+        );
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ПОЧАТОК ХОДУ AI
+    ===================================================== */
+
+    prepareAITurnEffects(
+        ai
+    );
+
+
+    /* =====================================================
+       ПЕРЕХІД НА ВЕЛИКЕ КОЛО
+    ===================================================== */
+
+    if (
+        ai.pendingOuterTransition
+    ) {
+
+        await moveParticipantToOuterStart(
+            ai
+        );
+
+    }
+
 
     const title =
         document.getElementById(
             "diceTitle"
-        );
-
-
-    const diceElement =
-        document.getElementById(
-            "dice"
         );
 
 
@@ -6791,7 +18377,7 @@ async function runAITurn(
 
     showRaifikCurrentCardMessage(
 
-        `Зараз ходить ${ai.name}. Подивимось, що випаде 🙂`
+        `Зараз ходить ${ai.name} 🙂`
 
     );
 
@@ -6801,23 +18387,38 @@ async function runAITurn(
     );
 
 
+    const diceElement =
+        document.getElementById(
+            "dice"
+        );
+
+
     for (
         let i = 0;
-        i < 7;
+        i < 6;
         i++
     ) {
+
+        const temp =
+            randomNumber(
+                1,
+                6
+            );
+
 
         if (diceElement) {
 
             diceElement.textContent =
-                randomItem(
-                    DICE_FACES
-                );
+                DICE_FACES[
+                    temp - 1
+                ];
 
         }
 
 
-        await delay(90);
+        await delay(
+            80
+        );
 
     }
 
@@ -6841,18 +18442,35 @@ async function runAITurn(
 
     addLog(
 
-        `${ai.name} 🎲 ${dice}`
+        `🎲 ${ai.name}: ${dice}`
 
     );
 
 
-    await moveAIStepByStep(
+    await moveAIStepByStepCore(
+
         ai,
+
         dice
+
     );
 
 
-    await resolveAICell(
+    await resolveAICellCore(
+        ai
+    );
+
+
+    ai.turnsCompleted +=
+        1;
+
+
+    processAIFinancialPeriodIfNeeded(
+        ai
+    );
+
+
+    checkCareerProgress(
         ai
     );
 
@@ -6865,13 +18483,105 @@ async function runAITurn(
 
 
 /* =========================================================
-   57. AI РУХАЄТЬСЯ ПО КЛІТИНКАХ
+   102. ЕФЕКТИ НА ПОЧАТКУ ХОДУ AI
 ========================================================= */
 
-async function moveAIStepByStep(
+function prepareAITurnEffects(
+    ai
+) {
+
+    /* Сімейне вогнище */
+
+    if (
+        ai.effects.familyHearth
+        &&
+        ai.energy < 70
+    ) {
+
+        ai.energy =
+            70;
+
+    }
+
+
+    /* Регулярна енергія */
+
+    if (
+        ai.effects.energyPerTurn
+    ) {
+
+        applyEffects(
+
+            ai,
+
+            {
+                energy:
+                    ai.effects.energyPerTurn
+            }
+
+        );
+
+    }
+
+
+    /* Дохід кожного ходу */
+
+    if (
+        ai.effects.incomePerTurn
+    ) {
+
+        ai.money +=
+            ai.effects.incomePerTurn;
+
+    }
+
+
+    processDelayedEffects(
+        ai
+    );
+
+
+    clampPlayerResources(
+        ai
+    );
+
+}
+
+
+/* =========================================================
+   103. РУХ AI
+
+   AI ТЕПЕР ТЕЖ:
+
+   - НЕ переходить автоматично
+     після клітинки 28;
+   - рахує кола;
+   - повинен пройти inner;
+   - повинен мати рівень 2;
+   - тільки тоді переходить
+     на outer.
+========================================================= */
+
+async function moveAIStepByStepCore(
     ai,
     steps
 ) {
+
+    const boardLength =
+        ai.board === "inner"
+
+        ? GAME_CONFIG.innerCells
+
+        : GAME_CONFIG.outerCells;
+
+
+    let crossedStart =
+        false;
+
+
+    let exactStart =
+        false;
+
 
     for (
         let step = 0;
@@ -6879,30 +18589,36 @@ async function moveAIStepByStep(
         step++
     ) {
 
-        /*
-           ВНУТРІШНЄ ПОЛЕ
-        */
+        let next =
+            ai.position + 1;
+
 
         if (
-            ai.board ===
-            "inner"
+            next >
+            boardLength
         ) {
 
+            next =
+                1;
+
+
+            crossedStart =
+                true;
+
+
             if (
-                ai.position <
-                GAME_CONFIG.innerCells
+                ai.board ===
+                "inner"
             ) {
 
-                ai.position++;
+                ai.innerLaps +=
+                    1;
 
             }
 
             else {
 
-                ai.board =
-                    "outer";
-
-                ai.position =
+                ai.outerLaps +=
                     1;
 
             }
@@ -6910,26 +18626,8 @@ async function moveAIStepByStep(
         }
 
 
-        /*
-           ЗОВНІШНЄ
-        */
-
-        else {
-
-            ai.position++;
-
-
-            if (
-                ai.position >
-                GAME_CONFIG.outerCells
-            ) {
-
-                ai.position =
-                    1;
-
-            }
-
-        }
+        ai.position =
+            next;
 
 
         const cell =
@@ -6957,49 +18655,23 @@ async function moveAIStepByStep(
     }
 
 
-    /*
-       Якщо AI закінчив рівно на 28.
-    */
+    exactStart =
+        crossedStart
+        &&
+        ai.position === 1;
+
 
     if (
-        ai.board ===
-        "inner" &&
-        ai.position ===
-        GAME_CONFIG.innerCells
+        crossedStart
     ) {
 
-        showRaifikCurrentCardMessage(
+        await handleCompletedLap(
 
-            `${ai.name} завершує внутрішній шлях і переходить на зовнішній.`
+            ai,
+
+            exactStart
 
         );
-
-
-        await delay(700);
-
-
-        ai.board =
-            "outer";
-
-
-        ai.position =
-            1;
-
-
-        const cell =
-            document.querySelector(
-                `.outer-cell[data-position="1"]`
-            );
-
-
-        if (cell) {
-
-            movePieceDOM(
-                ai.id,
-                cell
-            );
-
-        }
 
     }
 
@@ -7007,10 +18679,10 @@ async function moveAIStepByStep(
 
 
 /* =========================================================
-   58. AI — КОМІРКА
+   104. КЛІТИНКА AI
 ========================================================= */
 
-async function resolveAICell(
+async function resolveAICellCore(
     ai
 ) {
 
@@ -7026,6 +18698,13 @@ async function resolveAICell(
         ];
 
 
+    if (!type) {
+
+        return;
+
+    }
+
+
     showRaifikCurrentCardMessage(
 
         `${ai.name} потрапив(ла) на ${type.icon} «${type.name}».`
@@ -7033,118 +18712,172 @@ async function resolveAICell(
     );
 
 
-    await delay(800);
+    await delay(
+        500
+    );
 
 
-    switch (typeId) {
-
-        case "income":
-
-            applyEffects(
-                ai,
-                {
-                    money:
-                        GAME_CONFIG.incomeAmount
-                }
-            );
+    switch (
+        typeId
+    ) {
 
 
-            showAIResult(
-                ai,
-                "Отримання доходу",
-                {
-                    money:
-                        GAME_CONFIG.incomeAmount
-                }
-            );
+        /* =================================================
+           START
+        ================================================= */
+
+        case "start":
 
             break;
 
+
+        /* =================================================
+           ПОДІЯ
+        ================================================= */
 
         case "event":
 
+            resolveAIDecisionCard(
+
+                ai,
+
+                getAIRandomCard(
+                    ai,
+                    "event"
+                )
+
+            );
+
+            break;
+
+
+        /* =================================================
+           БАНК
+
+           Поки Банк ще не зроблений,
+           AI просто проходить клітинку.
+
+           Коли додамо Банк —
+           вставимо сюди банківську логіку.
+        ================================================= */
+
         case "bank":
+
+            showAIResult(
+
+                ai,
+
+                "Банк",
+
+                {}
+
+            );
+
+            break;
+
+
+        /* =================================================
+           ЖИТТЯ
+        ================================================= */
 
         case "life":
 
-        case "fate": {
+            resolveAIDecisionCard(
 
-            const card =
-                randomItem(
-                    CARD_DECKS[
-                        typeId
-                    ]
-                );
-
-
-            applyEffects(
                 ai,
-                card.effects
+
+                getAIRandomCard(
+                    ai,
+                    "life"
+                )
+
             );
-
-
-            showAIResult(
-                ai,
-                card.title,
-                card.effects
-            );
-
 
             break;
 
-        }
 
+        /* =================================================
+           ДОЛЯ
+        ================================================= */
+
+        case "fate":
+
+            resolveAIFateCard(
+
+                ai,
+
+                getAIRandomCard(
+                    ai,
+                    "fate"
+                )
+
+            );
+
+            break;
+
+
+        /* =================================================
+           LOUNGE
+        ================================================= */
 
         case "lounge":
 
-            applyEffects(
-                ai,
-                {
-                    energy: 15
-                }
-            );
-
-
-            showAIResult(
-                ai,
-                "Lounge & Хобі",
-                {
-                    energy: 15
-                }
+            resolveAILounge(
+                ai
             );
 
             break;
 
+
+        /* =================================================
+           ACADEMY
+        ================================================= */
 
         case "academy":
 
-            applyEffects(
-                ai,
-                {
-                    knowledge: 15,
-                    reputation: 5
-                }
-            );
-
-
-            showAIResult(
-                ai,
-                "Академія & Soft Skills",
-                {
-                    knowledge: 15,
-                    reputation: 5
-                }
+            resolveAIAcademy(
+                ai
             );
 
             break;
 
+
+        /* =================================================
+           ПЕРЕХІД
+        ================================================= */
+
+        case "transition":
+
+            if (
+                ai.innerLaps >= 1
+                &&
+                ai.careerLevel >=
+                    GAME_CONFIG
+                        .outerUnlockCareerLevel
+            ) {
+
+                ai.pendingOuterTransition =
+                    true;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           МРІЯ
+        ================================================= */
 
         case "dreamCheck":
 
             showAIResult(
+
                 ai,
+
                 "Перевірка Мрії",
+
                 {}
+
             );
 
             break;
@@ -7162,109 +18895,2953 @@ async function resolveAICell(
 
 
 /* =========================================================
-   59. AI — РЕЗУЛЬТАТ
+   105. ВИПАДКОВА КАРТКА AI
 ========================================================= */
 
-function showAIResult(
+function getAIRandomCard(
     ai,
-    title,
-    effects
+    deckName
 ) {
 
-    const panel =
-        document.getElementById(
-            "currentCardPanel"
+    const deck =
+        getDeckForParticipant(
+
+            ai,
+
+            deckName
+
         );
 
 
-    if (!panel) {
-        return;
+    if (
+        !deck ||
+        deck.length === 0
+    ) {
+
+        return null;
+
     }
 
 
-    panel.innerHTML = `
-
-        <div class="ai-turn-result">
-
-            <img
-                src="${ai.token.image}"
-                alt="${ai.name}"
-            >
-
-
-            <div>
-
-                <strong>
-                    ${ai.name}
-                </strong>
-
-
-                <h4>
-                    ${title}
-                </h4>
-
-
-                ${
-                    Object.keys(
-                        effects
-                    ).length
-
-                    ? `
-
-                        <div class="revealed-card-effects">
-
-                            ${effectsHTML(effects)}
-
-                        </div>
-
-                      `
-
-                    : ""
-                }
-
-            </div>
-
-        </div>
-
-    `;
+    return randomItem(
+        deck
+    );
 
 }
 
 
 /* =========================================================
-   60. ІНФО ПРО ТИП КОМІРКИ
+   106. AI — КАРТКА З ВИБОРОМ
+
+   Для AI:
+
+   1. шукаємо доступні рішення;
+   2. відсіюємо ті,
+      на які не вистачає грошей;
+   3. обираємо випадковий
+      доступний варіант.
+
+   Це дозволяє AI проходити гру
+   без зупинки модалками.
 ========================================================= */
 
-function showCellTypeInfo(
-    typeId
+function resolveAIDecisionCard(
+    ai,
+    card
 ) {
 
-    const type =
-        CELL_TYPES[
-            typeId
-        ];
+    if (!card) {
 
-
-    if (!type) {
         return;
+
     }
+
+
+    const fullCheck =
+        checkFullCardRequirements(
+
+            ai,
+
+            card
+
+        );
+
+
+    if (
+        !fullCheck.passed
+    ) {
+
+        showAIResult(
+
+            ai,
+
+            `${card.title} — умови не виконані`,
+
+            {}
+
+        );
+
+
+        return;
+
+    }
+
+
+    const availableChoices =
+        (
+            card.choices ||
+            []
+        )
+        .filter(
+            choice => {
+
+                const minimum =
+                    checkCardRequirements(
+
+                        ai,
+
+                        choice.minimum ||
+                        {}
+
+                    );
+
+
+                if (
+                    !minimum.passed
+                ) {
+
+                    return false;
+
+                }
+
+
+                if (
+                    choice.conditionProduct
+                    &&
+                    !hasBankProduct(
+
+                        ai,
+
+                        choice.conditionProduct
+
+                    )
+                ) {
+
+                    return false;
+
+                }
+
+
+                return true;
+
+            }
+        );
+
+
+    if (
+        availableChoices.length ===
+        0
+    ) {
+
+        return;
+
+    }
+
+
+    const choice =
+        randomItem(
+            availableChoices
+        );
+
+
+    applyEffects(
+
+        ai,
+
+        choice.effects ||
+        {}
+
+    );
+
+
+    applyPersistentEffects(
+
+        ai,
+
+        choice.persistentEffects
+
+    );
+
+
+    if (
+        choice.delayedEffect
+    ) {
+
+        addDelayedEffect(
+
+            ai,
+
+            choice.delayedEffect
+
+        );
+
+    }
+
+
+    applyAllSpecialActions(
+
+        ai,
+
+        choice
+
+    );
+
+
+    /* =====================================================
+       КИДОК ВСЕРЕДИНІ КАРТКИ
+    ===================================================== */
+
+    if (
+        choice.diceOutcomes
+    ) {
+
+        const roll =
+            randomNumber(
+                1,
+                6
+            );
+
+
+        const outcome =
+            choice
+                .diceOutcomes
+                .find(
+                    item =>
+
+                        roll >= item.min
+                        &&
+                        roll <= item.max
+                );
+
+
+        if (outcome) {
+
+            applyEffects(
+
+                ai,
+
+                outcome.effects ||
+                {}
+
+            );
+
+
+            applyPersistentEffects(
+
+                ai,
+
+                outcome.persistentEffects
+
+            );
+
+
+            if (
+                outcome.specialAction
+            ) {
+
+                applyCardSpecialAction(
+
+                    ai,
+
+                    outcome.specialAction
+
+                );
+
+            }
+
+        }
+
+    }
+
+
+    showAIResult(
+
+        ai,
+
+        card.title,
+
+        choice.effects ||
+        {}
+
+    );
+
+}
+
+
+/* =========================================================
+   107. AI — ДОЛЯ
+========================================================= */
+
+function resolveAIFateCard(
+    ai,
+    card
+) {
+
+    if (!card) {
+
+        return;
+
+    }
+
+
+    let effects = {
+
+        ...(card.effects || {})
+
+    };
+
+
+    /* Страхування */
+
+    if (
+        card.insuranceProtection
+        &&
+        hasBankProduct(
+
+            ai,
+
+            card
+                .insuranceProtection
+                .product
+
+        )
+    ) {
+
+        effects.money =
+            (
+                effects.money || 0
+            )
+            +
+            (
+                card
+                    .insuranceProtection
+                    .refundMoney || 0
+            );
+
+    }
+
+
+    applyEffects(
+
+        ai,
+
+        effects
+
+    );
+
+
+    showAIResult(
+
+        ai,
+
+        card.title,
+
+        effects
+
+    );
+
+}
+
+
+/* =========================================================
+   108. AI — LOUNGE
+========================================================= */
+
+function resolveAILounge(
+    ai
+) {
+
+    if (
+        ai.energy >=
+        GAME_CONFIG.maxEnergy
+    ) {
+
+        ai.effects
+            .protectEnergyForLap =
+            true;
+
+
+        ai.effects
+            .protectedEnergyBoard =
+            ai.board;
+
+
+        ai.effects
+            .protectedEnergyLap =
+            ai.board === "inner"
+
+            ? ai.innerLaps
+
+            : ai.outerLaps;
+
+
+        showAIResult(
+
+            ai,
+
+            "Lounge: захист енергії",
+
+            {}
+
+        );
+
+
+        return;
+
+    }
+
+
+    const gained =
+        GAME_CONFIG.maxEnergy -
+        ai.energy;
+
+
+    ai.energy =
+        GAME_CONFIG.maxEnergy;
+
+
+    showAIResult(
+
+        ai,
+
+        "Lounge & Хобі",
+
+        {
+            energy:
+                gained
+        }
+
+    );
+
+}
+
+
+/* =========================================================
+   109. AI — ACADEMY
+
+   AI автоматично обирає
+   доступний варіант.
+
+   Пріоритет:
+   Hard Skills → Soft Skills.
+========================================================= */
+
+function resolveAIAcademy(
+    ai
+) {
+
+    if (
+        ai.money >= 6000
+        &&
+        ai.energy >= 10
+    ) {
+
+        applyEffects(
+
+            ai,
+
+            {
+                money: -6000,
+                energy: -10,
+                knowledge: 25,
+                reputation: 10
+            }
+
+        );
+
+
+        showAIResult(
+
+            ai,
+
+            "Hard Skills",
+
+            {
+                money: -6000,
+                energy: -10,
+                knowledge: 25,
+                reputation: 10
+            }
+
+        );
+
+
+        return;
+
+    }
+
+
+    if (
+        ai.money >= 3000
+    ) {
+
+        applyEffects(
+
+            ai,
+
+            {
+                money: -3000,
+                knowledge: 10,
+                reputation: 5
+            }
+
+        );
+
+
+        showAIResult(
+
+            ai,
+
+            "Soft Skills",
+
+            {
+                money: -3000,
+                knowledge: 10,
+                reputation: 5
+            }
+
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   110. ФІНАНСОВИЙ ПЕРІОД AI
+
+   Кожні 3 ВЛАСНІ ходи AI.
+========================================================= */
+
+function processAIFinancialPeriodIfNeeded(
+    ai
+) {
+
+    if (
+        ai.turnsCompleted %
+            GAME_CONFIG.financialPeriodTurns
+        !==
+        0
+    ) {
+
+        return;
+
+    }
+
+
+    ai.financialPeriods +=
+        1;
+
+
+    const salary =
+        Number(
+            ai.salary
+        ) || 0;
+
+
+    const passive =
+        Number(
+            ai.passiveIncome
+        ) || 0;
+
+
+    ai.money +=
+        salary +
+        passive;
+
+
+    ai.totalSalaryReceived +=
+        salary;
+
+
+    ai.totalPassiveIncomeReceived +=
+        passive;
+
+
+    addLog(
+
+        `💰 ${ai.name}: зарплата +${formatMoney(salary)} грн${
+            passive
+                ? `, додатковий дохід +${formatMoney(passive)} грн`
+                : ""
+        }`
+
+    );
+
+}
+
+
+/* =========================================================
+   111. УСІ SPECIAL ACTION
+========================================================= */
+
+function applyAllSpecialActions(
+    participant,
+    source
+) {
+
+    if (!source) {
+
+        return;
+
+    }
+
+
+    if (
+        source.specialAction
+    ) {
+
+        applyCardSpecialAction(
+
+            participant,
+
+            source.specialAction
+
+        );
+
+    }
+
+
+    if (
+        Array.isArray(
+            source.specialActions
+        )
+    ) {
+
+        source
+            .specialActions
+            .forEach(
+                action => {
+
+                    applyCardSpecialAction(
+
+                        participant,
+
+                        action
+
+                    );
+
+                }
+            );
+
+    }
+
+}
+
+
+/* =========================================================
+   112. ОНОВЛЕНА resolveCardChoice()
+
+   ЗАМІНЮЄ ВЕРСІЮ З 4А.
+
+   Тепер працюють:
+   - specialAction
+   - specialActions
+   - delayedEffect
+   - diceOutcomes
+========================================================= */
+
+async function resolveCardChoice(
+    deckName,
+    card,
+    choice
+) {
+
+    const player =
+        gameState.player;
+
+
+    applyEffects(
+
+        player,
+
+        choice.effects ||
+        {}
+
+    );
+
+
+    applyPersistentEffects(
+
+        player,
+
+        choice.persistentEffects
+
+    );
+
+
+    if (
+        choice.delayedEffect
+    ) {
+
+        addDelayedEffect(
+
+            player,
+
+            choice.delayedEffect
+
+        );
+
+    }
+
+
+    applyAllSpecialActions(
+
+        player,
+
+        choice
+
+    );
+
+
+    if (
+        choice.diceOutcomes
+    ) {
+
+        await resolveCardDiceOutcome(
+
+            card,
+
+            choice,
+
+            deckName
+
+        );
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       OPTIONAL RISK
+
+       Наприклад:
+       міжнародне стажування.
+    ===================================================== */
+
+    if (
+        choice.optionalRisk
+    ) {
+
+        showOptionalRiskChoice(
+
+            deckName,
+
+            card,
+
+            choice
+
+        );
+
+
+        return;
+
+    }
+
+
+    addLog(
+
+        `${player.name}: ${card.title} → ${choice.title}`
+
+    );
+
+
+    showCardFinalResult(
+
+        deckName,
+
+        card,
+
+        choice,
+
+        choice.resultText
+
+    );
+
+}
+
+
+/* =========================================================
+   113. КИДОК УСЕРЕДИНІ КАРТКИ
+
+   ОНОВЛЕНА ВЕРСІЯ.
+========================================================= */
+
+async function resolveCardDiceOutcome(
+    card,
+    choice,
+    deckName = "event"
+) {
+
+    const player =
+        gameState.player;
 
 
     openGameInfoModal(`
 
-        <div class="cell-info-popup">
+        <div class="card-extra-roll">
 
-            <div class="cell-info-icon">
-                ${type.icon}
+            <div class="cycle-notice-icon">
+                🎲
             </div>
 
-            <h3>
-                ${type.name}
-            </h3>
+            <h2>
+                Кидок кубика
+            </h2>
 
             <p>
-                ${type.description}
+                Зараз випадок визначить результат.
             </p>
+
+            <div
+                id="cardExtraDice"
+                class="second-card-dice"
+            >
+                ⚀
+            </div>
+
+        </div>
+
+    `);
+
+
+    const display =
+        document.getElementById(
+            "cardExtraDice"
+        );
+
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const temp =
+            randomNumber(
+                1,
+                6
+            );
+
+
+        if (display) {
+
+            display.textContent =
+                DICE_FACES[
+                    temp - 1
+                ];
+
+        }
+
+
+        await delay(
+            80
+        );
+
+    }
+
+
+    const value =
+        randomNumber(
+            1,
+            6
+        );
+
+
+    if (display) {
+
+        display.textContent =
+            DICE_FACES[
+                value - 1
+            ];
+
+    }
+
+
+    await delay(
+        400
+    );
+
+
+    const outcome =
+        choice
+            .diceOutcomes
+            .find(
+                item =>
+
+                    value >= item.min
+                    &&
+                    value <= item.max
+            );
+
+
+    if (outcome) {
+
+        applyEffects(
+
+            player,
+
+            outcome.effects ||
+            {}
+
+        );
+
+
+        applyPersistentEffects(
+
+            player,
+
+            outcome.persistentEffects
+
+        );
+
+
+        applyAllSpecialActions(
+
+            player,
+
+            outcome
+
+        );
+
+    }
+
+
+    addLog(
+
+        `🎲 ${card.title}: випало ${value}`
+
+    );
+
+
+    showCardFinalResult(
+
+        deckName,
+
+        card,
+
+        choice,
+
+        outcome
+            ? outcome.text
+            : "Без додаткових змін"
+
+    );
+
+}
+
+
+/* =========================================================
+   114. OPTIONAL RISK
+
+   Для карток, де після основного
+   рішення можна додатково
+   ризикнути.
+========================================================= */
+
+function showOptionalRiskChoice(
+    deckName,
+    card,
+    choice
+) {
+
+    const risk =
+        choice.optionalRisk;
+
+
+    openGameInfoModal(`
+
+        <div class="optional-risk-modal">
+
+            <div class="cycle-notice-icon">
+                🎲
+            </div>
+
+
+            <h2>
+                Хочеш ризикнути?
+            </h2>
+
+
+            <p>
+                Основний результат картки
+                ти вже отримав / отримала.
+            </p>
+
+
+            <button
+                id="takeOptionalRiskButton"
+                class="main-game-btn"
+            >
+                🎲 РИЗИКНУТИ
+            </button>
+
+
+            <button
+                id="skipOptionalRiskButton"
+                class="secondary-game-btn"
+            >
+                НЕ РИЗИКУВАТИ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "takeOptionalRiskButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                resolveOptionalRisk(
+
+                    deckName,
+
+                    card,
+
+                    choice
+
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "skipOptionalRiskButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                showCardFinalResult(
+
+                    deckName,
+
+                    card,
+
+                    choice,
+
+                    choice.resultText
+
+                );
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   115. РЕЗУЛЬТАТ OPTIONAL RISK
+========================================================= */
+
+async function resolveOptionalRisk(
+    deckName,
+    card,
+    choice
+) {
+
+    const player =
+        gameState.player;
+
+
+    const risk =
+        choice.optionalRisk;
+
+
+    if (
+        risk.cost
+    ) {
+
+        applyEffects(
+
+            player,
+
+            risk.cost
+
+        );
+
+    }
+
+
+    const value =
+        randomNumber(
+            1,
+            6
+        );
+
+
+    const outcome =
+        risk
+            .diceOutcomes
+            .find(
+                item =>
+
+                    value >= item.min
+                    &&
+                    value <= item.max
+            );
+
+
+    if (outcome) {
+
+        applyEffects(
+
+            player,
+
+            outcome.effects ||
+            {}
+
+        );
+
+
+        applyPersistentEffects(
+
+            player,
+
+            outcome.persistentEffects
+
+        );
+
+
+        applyAllSpecialActions(
+
+            player,
+
+            outcome
+
+        );
+
+    }
+
+
+    showCardFinalResult(
+
+        deckName,
+
+        card,
+
+        choice,
+
+        `🎲 Випало ${value}. ${
+            outcome
+                ? outcome.text
+                : ""
+        }`
+
+    );
+
+}
+
+
+/* =========================================================
+   116. РОЗШИРЕНІ SPECIAL ACTIONS
+
+   ЦЯ ВЕРСІЯ ЗАМІНЮЄ
+   applyCardSpecialAction()
+   З ПОПЕРЕДНІХ ЧАСТИН.
+========================================================= */
+
+function applyCardSpecialAction(
+    participant,
+    action
+) {
+
+    if (
+        !participant ||
+        !action
+    ) {
+
+        return;
+
+    }
+
+
+    switch (
+        action
+    ) {
+
+
+        /* =================================================
+           ЕНЕРГІЯ ДО 100
+        ================================================= */
+
+        case "restoreEnergyTo100":
+
+            participant.energy =
+                GAME_CONFIG.maxEnergy;
+
+            break;
+
+
+        /* =================================================
+           ПРОПУСК НАСТУПНОГО ХОДУ
+        ================================================= */
+
+        case "skipNextTurn":
+
+            participant.skipTurns +=
+                1;
+
+            break;
+
+
+        /* =================================================
+           СІМЕЙНЕ ВОГНИЩЕ
+        ================================================= */
+
+        case "familyHearth":
+
+            participant.effects.familyHearth =
+                true;
+
+
+            if (
+                participant.energy < 70
+            ) {
+
+                participant.energy =
+                    70;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           +10 ЕНЕРГІЇ 3 ХОДИ
+        ================================================= */
+
+        case "familyEnergyThreeTurns":
+
+            addTimedTurnEffect(
+
+                participant,
+
+                {
+                    turns: 3,
+
+                    effects: {
+                        energy: 10
+                    },
+
+                    text:
+                        "Родинне натхнення"
+                }
+
+            );
+
+            break;
+
+
+        /* =================================================
+           -10 000 ДОХОДУ
+           ПРОТЯГОМ 2 ФІНПЕРІОДІВ
+        ================================================= */
+
+        case "reduceIncomeTwoPeriods":
+
+            addFinancialModifier(
+
+                participant,
+
+                {
+                    periods: 2,
+
+                    amount: -10000,
+
+                    text:
+                        "Наслідки конфлікту"
+                }
+
+            );
+
+            break;
+
+
+        /* =================================================
+           НОВИЙ РИНОК:
+           ЧЕРЕЗ 2 ХОДИ
+           +15 000 КОЖНОГО ХОДУ
+        ================================================= */
+
+        case "newMarketTwoTurns":
+
+            addDelayedEffect(
+
+                participant,
+
+                {
+                    turns: 2,
+
+                    effects: {},
+
+                    text:
+                        "Новий напрямок запущено",
+
+                    specialAction:
+                        "activateNewMarketIncome"
+                }
+
+            );
+
+            break;
+
+
+        case "activateNewMarketIncome":
+
+            participant.effects.incomePerTurn +=
+                15000;
+
+            break;
+
+
+        /* =================================================
+           НЕРУХОМІСТЬ
+        ================================================= */
+
+        case "addPropertyAsset":
+
+            if (
+                typeof participant.effects.properties !==
+                "number"
+            ) {
+
+                participant.effects.properties =
+                    0;
+
+            }
+
+
+            participant.effects.properties +=
+                1;
+
+            break;
+
+
+        /* =================================================
+           ІПОТЕКА:
+           -10 000 ЩОХОДУ × 4
+        ================================================= */
+
+        case "propertyMortgageFourTurns":
+
+            addTimedTurnEffect(
+
+                participant,
+
+                {
+                    turns: 4,
+
+                    effects: {
+                        money: -10000
+                    },
+
+                    text:
+                        "Платіж за бізнес-іпотекою"
+                }
+
+            );
+
+            break;
+
+
+        /* =================================================
+           ФРАНШИЗА:
+           З НАСТУПНОГО ХОДУ
+           +20 000 ЩОХОДУ
+        ================================================= */
+
+        case "franchiseIncomeFromNextTurn":
+
+            addDelayedEffect(
+
+                participant,
+
+                {
+                    turns: 1,
+
+                    effects: {},
+
+                    text:
+                        "Франчайзингова мережа почала приносити дохід",
+
+                    specialAction:
+                        "activateFranchiseIncome"
+                }
+
+            );
+
+            break;
+
+
+        case "activateFranchiseIncome":
+
+            participant.effects.incomePerTurn +=
+                20000;
+
+            break;
+
+
+        /* =================================================
+           VIP / PREMIUM CONTACT
+        ================================================= */
+
+        case "premiumContact":
+
+            participant.effects.premiumContact =
+                true;
+
+            break;
+
+
+        /* =================================================
+           ПЕРЕКИД КУБИКА
+        ================================================= */
+
+        case "grantReroll":
+
+            participant.effects.rerolls =
+                (
+                    participant.effects.rerolls ||
+                    0
+                ) + 1;
+
+            break;
+
+
+        /* =================================================
+           НАСТУПНІ ЗНАННЯ
+           НА 50% ДЕШЕВШЕ
+
+           Поки зберігаємо жетон.
+           Використання прив'яжемо
+           до платних освітніх рішень.
+        ================================================= */
+
+        case "nextKnowledgeUpgradeHalfPrice":
+
+        case "knowledgeDiscount":
+
+            participant.effects.knowledgeDiscount =
+                0.5;
+
+            break;
+
+
+        /* =================================================
+           РІСТ ПРОДАЖІВ 30%
+
+           Зберігаємо як окремий
+           бізнес-ефект.
+
+           Якщо вже є регулярний дохід,
+           збільшуємо його на 30%.
+        ================================================= */
+
+        case "salesGrowth30Percent": {
+
+            participant.effects.salesGrowth =
+                0.30;
+
+
+            if (
+                participant.passiveIncome > 0
+            ) {
+
+                const bonus =
+                    Math.round(
+                        participant.passiveIncome *
+                        0.30
+                    );
+
+
+                participant.passiveIncome +=
+                    bonus;
+
+            }
+
+            break;
+        }
+
+
+        /* =================================================
+           КАР'ЄРНИЙ РІВЕНЬ 2
+        ================================================= */
+
+        case "promoteToLevel2":
+
+            if (
+                participant.careerLevel < 1
+            ) {
+
+                participant.careerLevel =
+                    1;
+
+
+                const stats =
+                    getCareerStats(
+
+                        participant.sector.id,
+
+                        2
+
+                    );
+
+
+                participant.salary =
+                    stats.salary;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ПІДСУМКОВИЙ ЗВІТ
+        ================================================= */
+
+        case "circleOneReport":
+
+            if (
+                participant.reputation +
+                participant.knowledge >=
+                60
+            ) {
+
+                participant.money +=
+                    15000;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ПІДВИЩЕННЯ НА 1 РІВЕНЬ
+        ================================================= */
+
+        case "promoteOneLevelIfReady":
+
+            promoteParticipantOneLevelIfReady(
+                participant
+            );
+
+            break;
+
+
+        /* =================================================
+           НОВА ПРОФЕСІЯ
+
+           У ДЖЕРЕЛІ НЕ ВКАЗАНО
+           СПОСІБ ВИБОРУ.
+
+           Тому поки тільки
+           фіксуємо можливість.
+        ================================================= */
+
+        case "changeCareerSector":
+
+            participant.effects
+                .careerChangeAvailable =
+                true;
+
+            break;
+
+
+        /* =================================================
+           БОНУС НА НАСТУПНУ
+           КАР'ЄРНУ ПОДІЮ
+        ================================================= */
+
+        case "grantNextCareerEventBonus":
+
+            participant.effects
+                .nextCareerEventBonus = {
+
+                    money: 10000,
+
+                    reputation: 10
+
+                };
+
+            break;
+
+
+        /* =================================================
+           РІК ОСОБИСТОГО РОЗВИТКУ
+        ================================================= */
+
+        case "personalDevelopmentBonus":
+
+            if (
+                participant.knowledge >=
+                80
+            ) {
+
+                participant.reputation +=
+                    5;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ОТРИМАТИ ДОЛЮ
+        ================================================= */
+
+        case "drawFateCard":
+
+            participant.effects.pendingFateCard =
+                true;
+
+            break;
+
+
+        /* =================================================
+           КОЛАБОРАЦІЯ
+
+           Для одиночного режиму
+           зберігаємо прапорець.
+           Повноцінний вибір партнера
+           зробимо окремою модалкою
+           після базового тестування.
+        ================================================= */
+
+        case "collaborationWithPlayer":
+
+            participant.effects
+                .collaborationAvailable =
+                true;
+
+            break;
+
+
+        case "referralNetwork":
+
+            participant.effects
+                .referralNetworkAvailable =
+                true;
+
+            break;
+
+
+        case "playerVoteConflict":
+
+            participant.effects
+                .manualVoteRequired =
+                true;
+
+            break;
+
+
+        /* =================================================
+           СИНДИКАТ
+
+           Для основного циклу:
+           гравець вносить свою частку,
+           через 2 ходи отримує
+           свою частину результату.
+        ================================================= */
+
+        case "strategicSyndicate":
+
+            if (
+                participant.money >=
+                30000
+            ) {
+
+                participant.money -=
+                    30000;
+
+
+                addDelayedEffect(
+
+                    participant,
+
+                    {
+                        turns: 2,
+
+                        effects: {
+                            money: 65000,
+                            reputation: 25
+                        },
+
+                        text:
+                            "Прибуток стратегічного синдикату"
+                    }
+
+                );
+
+            }
+
+            break;
+
+
+        /* =================================================
+           ПОДАТКОВИЙ АУДИТ
+        ================================================= */
+
+        case "taxAudit":
+
+            if (
+                participant.knowledge >=
+                65
+            ) {
+
+                participant.reputation +=
+                    15;
+
+            }
+
+            else {
+
+                participant.money -=
+                    15000;
+
+
+                participant.reputation -=
+                    20;
+
+
+                participant.energy -=
+                    20;
+
+            }
+
+            break;
+
+
+        /* =================================================
+           МРІЯ
+        ================================================= */
+
+        case "realizeDream":
+
+            if (
+                participant.id ===
+                "player"
+            ) {
+
+                if (
+                    canRealizeDream(
+                        participant
+                    )
+                ) {
+
+                    realizePlayerDream();
+
+                }
+
+            }
+
+            break;
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+    }
+
+}
+
+
+/* =========================================================
+   117. ТИМЧАСОВІ ЕФЕКТИ
+   "КОЖНОГО ХОДУ N РАЗІВ"
+========================================================= */
+
+function addTimedTurnEffect(
+    participant,
+    effect
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.timedTurnEffects
+        )
+    ) {
+
+        participant.effects.timedTurnEffects =
+            [];
+
+    }
+
+
+    participant
+        .effects
+        .timedTurnEffects
+        .push({
+
+            turnsLeft:
+                effect.turns,
+
+            effects:
+                effect.effects ||
+                {},
+
+            text:
+                effect.text ||
+                "Тимчасовий ефект"
+
+        });
+
+}
+
+
+/* =========================================================
+   118. ОБРОБКА ТИМЧАСОВИХ ЕФЕКТІВ
+========================================================= */
+
+function processTimedTurnEffects(
+    participant
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.timedTurnEffects
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const remaining = [];
+
+
+    participant
+        .effects
+        .timedTurnEffects
+        .forEach(
+            effect => {
+
+                applyEffects(
+
+                    participant,
+
+                    effect.effects ||
+                    {}
+
+                );
+
+
+                addLog(
+
+                    `⏱ ${participant.name}: ${effect.text}`
+
+                );
+
+
+                effect.turnsLeft -=
+                    1;
+
+
+                if (
+                    effect.turnsLeft > 0
+                ) {
+
+                    remaining.push(
+                        effect
+                    );
+
+                }
+
+            }
+        );
+
+
+    participant.effects.timedTurnEffects =
+        remaining;
+
+}
+
+
+/* =========================================================
+   119. ФІНАНСОВІ МОДИФІКАТОРИ
+========================================================= */
+
+function addFinancialModifier(
+    participant,
+    modifier
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.financialModifiers
+        )
+    ) {
+
+        participant.effects.financialModifiers =
+            [];
+
+    }
+
+
+    participant
+        .effects
+        .financialModifiers
+        .push({
+
+            periodsLeft:
+                modifier.periods,
+
+            amount:
+                modifier.amount,
+
+            text:
+                modifier.text ||
+                "Фінансовий ефект"
+
+        });
+
+}
+
+
+/* =========================================================
+   120. ЗАСТОСУВАННЯ ФІНАНСОВИХ
+   МОДИФІКАТОРІВ
+========================================================= */
+
+function getFinancialModifiersTotal(
+    participant
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.financialModifiers
+        )
+    ) {
+
+        return 0;
+
+    }
+
+
+    let total =
+        0;
+
+
+    const remaining = [];
+
+
+    participant
+        .effects
+        .financialModifiers
+        .forEach(
+            modifier => {
+
+                total +=
+                    Number(
+                        modifier.amount
+                    ) || 0;
+
+
+                modifier.periodsLeft -=
+                    1;
+
+
+                if (
+                    modifier.periodsLeft > 0
+                ) {
+
+                    remaining.push(
+                        modifier
+                    );
+
+                }
+
+            }
+        );
+
+
+    participant.effects.financialModifiers =
+        remaining;
+
+
+    return total;
+
+}
+
+
+/* =========================================================
+   121. ОНОВЛЕНА ФІНАНСОВА ВИПЛАТА
+
+   ЗАМІНЮЄ processPlayerFinancialPeriod()
+   З 5А.
+
+   Тепер враховує:
+   - зарплату;
+   - регулярний дохід;
+   - тимчасові фінансові ефекти.
+========================================================= */
+
+function processPlayerFinancialPeriod() {
+
+    const player =
+        gameState.player;
+
+
+    player.financialPeriods +=
+        1;
+
+
+    gameState.financialPeriod =
+        player.financialPeriods;
+
+
+    const salary =
+        Number(
+            player.salary
+        ) || 0;
+
+
+    const passiveIncome =
+        Number(
+            player.passiveIncome
+        ) || 0;
+
+
+    const modifiers =
+        getFinancialModifiersTotal(
+            player
+        );
+
+
+    const total =
+        salary +
+        passiveIncome +
+        modifiers;
+
+
+    player.money +=
+        total;
+
+
+    player.totalSalaryReceived +=
+        salary;
+
+
+    player.totalPassiveIncomeReceived +=
+        passiveIncome;
+
+
+    addLog(
+
+        `💰 Фінансовий період ${player.financialPeriods}: ${total >= 0 ? "+" : ""}${formatMoney(total)} грн`
+
+    );
+
+
+    const profession =
+        getProfessionName(
+
+            player
+                .sector
+                .levels[
+                    player.careerLevel
+                ],
+
+            player.gender
+
+        );
+
+
+    queueGameNotice({
+
+        type:
+            "salary",
+
+        salary:
+            salary + modifiers,
+
+        passiveIncome,
+
+        careerLevel:
+            getDisplayedCareerLevel(
+                player
+            ),
+
+        profession
+
+    });
+
+
+    updatePlayerStatsUI();
+
+}
+
+
+/* =========================================================
+   122. ОНОВЛЕНА ФІНАНСОВА ВИПЛАТА AI
+========================================================= */
+
+function processAIFinancialPeriodIfNeeded(
+    ai
+) {
+
+    if (
+        ai.turnsCompleted === 0
+        ||
+        ai.turnsCompleted %
+            GAME_CONFIG.financialPeriodTurns
+        !==
+        0
+    ) {
+
+        return;
+
+    }
+
+
+    ai.financialPeriods +=
+        1;
+
+
+    const salary =
+        Number(
+            ai.salary
+        ) || 0;
+
+
+    const passive =
+        Number(
+            ai.passiveIncome
+        ) || 0;
+
+
+    const modifiers =
+        getFinancialModifiersTotal(
+            ai
+        );
+
+
+    ai.money +=
+        salary +
+        passive +
+        modifiers;
+
+
+    ai.totalSalaryReceived +=
+        salary;
+
+
+    ai.totalPassiveIncomeReceived +=
+        passive;
+
+
+    addLog(
+
+        `💰 ${ai.name}: фінансовий період ${ai.financialPeriods}`
+
+    );
+
+}
+
+
+/* =========================================================
+   123. ОНОВЛЕНА preparePlayerTurn()
+
+   ДОДАЄ:
+   - тимчасові ефекти;
+   - pending Fate.
+========================================================= */
+
+async function preparePlayerTurn() {
+
+    ensureGameRuntimeState();
+
+
+    const player =
+        gameState.player;
+
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       СІМЕЙНЕ ВОГНИЩЕ
+    ===================================================== */
+
+    if (
+        player.effects.familyHearth
+        &&
+        player.energy < 70
+    ) {
+
+        player.energy =
+            70;
+
+    }
+
+
+    /* =====================================================
+       ПОСТІЙНА ЕНЕРГІЯ
+    ===================================================== */
+
+    if (
+        player.effects.energyPerTurn
+    ) {
+
+        applyEffects(
+
+            player,
+
+            {
+                energy:
+                    player.effects.energyPerTurn
+            }
+
+        );
+
+    }
+
+
+    /* =====================================================
+       ПОСТІЙНИЙ ДОХІД КОЖНОГО ХОДУ
+    ===================================================== */
+
+    if (
+        player.effects.incomePerTurn
+    ) {
+
+        player.money +=
+            player.effects.incomePerTurn;
+
+
+        player.totalPassiveIncomeReceived +=
+            player.effects.incomePerTurn;
+
+
+        addLog(
+
+            `💰 Регулярний дохід: +${formatMoney(player.effects.incomePerTurn)} грн`
+
+        );
+
+    }
+
+
+    /* =====================================================
+       ТИМЧАСОВІ ЕФЕКТИ
+    ===================================================== */
+
+    processTimedTurnEffects(
+        player
+    );
+
+
+    /* =====================================================
+       ВІДКЛАДЕНІ ЕФЕКТИ
+    ===================================================== */
+
+    processDelayedEffectsAdvanced(
+        player
+    );
+
+
+    /* =====================================================
+       ПЕРЕХІД НА OUTER
+    ===================================================== */
+
+    if (
+        player.pendingOuterTransition
+    ) {
+
+        await moveParticipantToOuterStart(
+            player
+        );
+
+    }
+
+
+    clampPlayerResources(
+        player
+    );
+
+
+    updatePlayerStatsUI();
+
+}
+
+
+/* =========================================================
+   124. РОЗШИРЕНІ ВІДКЛАДЕНІ ЕФЕКТИ
+
+   Підтримує не тільки effects,
+   а й specialAction.
+========================================================= */
+
+function processDelayedEffectsAdvanced(
+    participant
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.delayedPayments
+        )
+    ) {
+
+        return;
+
+    }
+
+
+    const remaining = [];
+
+
+    participant
+        .effects
+        .delayedPayments
+        .forEach(
+            item => {
+
+                item.turnsLeft -=
+                    1;
+
+
+                if (
+                    item.turnsLeft <= 0
+                ) {
+
+                    applyEffects(
+
+                        participant,
+
+                        item.effects ||
+                        {}
+
+                    );
+
+
+                    if (
+                        item.specialAction
+                    ) {
+
+                        applyCardSpecialAction(
+
+                            participant,
+
+                            item.specialAction
+
+                        );
+
+                    }
+
+
+                    if (
+                        participant.id ===
+                        "player"
+                    ) {
+
+                        queueGameNotice({
+
+                            type:
+                                "delayed",
+
+                            text:
+                                item.text ||
+                                "Спрацював відкладений ефект",
+
+                            effects:
+                                item.effects ||
+                                {}
+
+                        });
+
+                    }
+
+
+                    addLog(
+
+                        `⏳ ${participant.name}: ${item.text || "відкладений ефект"}`
+
+                    );
+
+                }
+
+                else {
+
+                    remaining.push(
+                        item
+                    );
+
+                }
+
+            }
+        );
+
+
+    participant.effects.delayedPayments =
+        remaining;
+
+}
+
+
+/* =========================================================
+   125. ОНОВЛЕНА addDelayedEffect()
+
+   Зберігає specialAction.
+========================================================= */
+
+function addDelayedEffect(
+    participant,
+    delayedEffect
+) {
+
+    if (
+        !Array.isArray(
+            participant.effects.delayedPayments
+        )
+    ) {
+
+        participant.effects.delayedPayments =
+            [];
+
+    }
+
+
+    participant
+        .effects
+        .delayedPayments
+        .push({
+
+            turnsLeft:
+                delayedEffect.turns,
+
+            effects:
+                delayedEffect.effects ||
+                {},
+
+            specialAction:
+                delayedEffect.specialAction ||
+                null,
+
+            text:
+                delayedEffect.text ||
+                "Відкладений ефект"
+
+        });
+
+}
+
+
+/* =========================================================
+   126. ФІНАЛЬНА ПЕРЕВІРКА ДОЛІ
+
+   Якщо картка Події дала
+   "отримай картку Доля",
+   вона відкривається
+   перед наступним ходом.
+========================================================= */
+
+function resolvePendingFateCard() {
+
+    const player =
+        gameState.player;
+
+
+    if (
+        !player.effects.pendingFateCard
+    ) {
+
+        return false;
+
+    }
+
+
+    player.effects.pendingFateCard =
+        false;
+
+
+    const deck =
+        OUTER_CARD_DECKS.fate;
+
+
+    if (
+        !deck ||
+        deck.length === 0
+    ) {
+
+        return false;
+
+    }
+
+
+    const card =
+        randomItem(
+            deck
+        );
+
+
+    resolveFateCard(
+        card
+    );
+
+
+    return true;
+
+}
+
+
+/* =========================================================
+   127. РУЧНЕ ЗАВЕРШЕННЯ ГРИ
+
+   Кнопка справа
+   "Завершити гру".
+========================================================= */
+
+function showFinishGameModal() {
+
+    const player =
+        gameState.player;
+
+
+    openGameInfoModal(`
+
+        <div class="finish-game-modal">
+
+            <div class="cycle-notice-icon">
+                ⏹
+            </div>
+
+
+            <h2>
+                Завершити гру?
+            </h2>
+
+
+            <p>
+
+                Поточний прогрес:
+
+            </p>
+
+
+            <div class="finish-game-stats">
+
+                <span>
+                    🎲 Ходів:
+                    <strong>
+                        ${player.turnsCompleted || 0}
+                    </strong>
+                </span>
+
+                <span>
+                    💰 Гроші:
+                    <strong>
+                        ${formatMoney(player.money)} грн
+                    </strong>
+                </span>
+
+                <span>
+                    🏆 Кар'єрний рівень:
+                    <strong>
+                        ${getDisplayedCareerLevel(player)}
+                    </strong>
+                </span>
+
+                <span>
+                    ✨ Мрія:
+                    <strong>
+                        ${player.dream.name}
+                    </strong>
+                </span>
+
+            </div>
+
+
+            <button
+                id="confirmFinishGameButton"
+                class="main-game-btn"
+            >
+                ТАК, ЗАВЕРШИТИ
+            </button>
+
+
+            <button
+                id="cancelFinishGameButton"
+                class="secondary-game-btn"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "confirmFinishGameButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                gameState.runtime.gameFinished =
+                    true;
+
+
+                showFinalGameResults();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "cancelFinishGameButton"
+        )
+        .addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+}
+
+
+/* =========================================================
+   128. ПЕРШИЙ ЗАПУСК ЦИКЛУ
+
+   showGameBoard() вже створює поле.
+   Ця функція тільки гарантує,
+   що службові лічильники існують.
+========================================================= */
+/* ===========================
+function initializeGameCycle() {
+
+    ensureGameRuntimeState();
+
+
+    updatePlayerStatsUI();
+
+
+    gameState.currentTurn =
+        "player";
+
+}
+======== */
+
+/* =========================================================
+   КІНЕЦЬ ЧАСТИНИ 5Б
+
+   ПІСЛЯ ЦЬОГО У НАС Є:
+
+   ✅ хід гравця
+   ✅ хід двох AI
+   ✅ зарплата кожні 3 власні ходи
+   ✅ зарплата за поточним рівнем
+   ✅ регулярний дохід
+   ✅ відкладені виплати
+   ✅ тимчасові витрати
+   ✅ кар'єрне зростання
+   ✅ нова зарплата після підвищення
+   ✅ повідомлення про підвищення
+   ✅ мале → велике коло
+   ✅ Lounge
+   ✅ Academy
+   ✅ Подія
+   ✅ Життя
+   ✅ Доля
+   ✅ Мрія
+   ✅ фінальний екран
+   ✅ ручне завершення гри
+   ✅ AI більше не перестрибує
+      автоматично з 28 на outer
+
+   БАНК ПОКИ НЕ ЧІПАЄМО.
+========================================================= */
+/* =========================================================
+   129. ТЕХНІЧНЕ З'ЄДНАННЯ ГРИ
+
+   Цей блок ставимо В КІНЦІ script.js
+   перед останнім:
+
+   showStartScreen();
+
+   Він з'єднує:
+   - рух;
+   - картки;
+   - завершення ходу;
+   - AI;
+   - зарплату;
+   - кар'єру;
+   - Долю;
+   - Мрію.
+========================================================= */
+
+
+/* =========================================================
+   130. БЕЗПЕЧНИЙ effectsHTML
+
+   Показує тільки основні ресурси.
+========================================================= */
+
+function effectsHTML(
+    effects = {}
+) {
+
+    const icons = {
+
+        money:
+            "💰",
+
+        reputation:
+            "⭐",
+
+        knowledge:
+            "🧠",
+
+        energy:
+            "⚡"
+
+    };
+
+
+    return Object
+        .entries(
+            effects
+        )
+        .filter(
+            ([key, value]) =>
+
+                icons[key]
+                &&
+                typeof value ===
+                    "number"
+                &&
+                value !== 0
+        )
+        .map(
+            ([key, value]) => `
+
+                <span>
+
+                    ${icons[key]}
+
+                    ${
+                        value > 0
+                        ? "+"
+                        : ""
+                    }
+
+                    ${
+                        key === "money"
+
+                        ? `${formatMoney(value)} грн`
+
+                        : value
+                    }
+
+                </span>
+
+            `
+        )
+        .join("");
+
+}
+
+
+/* =========================================================
+   131. ОНОВЛЕННЯ HUD
+========================================================= */
+
+function updatePlayerStatsUI() {
+
+    const player =
+        gameState.player;
+
+
+    clampPlayerResources(
+        player
+    );
+
+
+    const fields = {
+
+        moneyValue:
+            formatMoney(
+                player.money
+            ),
+
+        reputationValue:
+            player.reputation,
+
+        knowledgeValue:
+            player.knowledge,
+
+        energyValue:
+            player.energy
+
+    };
+
+
+    Object
+        .entries(
+            fields
+        )
+        .forEach(
+            ([id, value]) => {
+
+                const element =
+                    document.getElementById(
+                        id
+                    );
+
+
+                if (element) {
+
+                    element.textContent =
+                        value;
+
+                }
+
+            }
+        );
+
+
+    updateCareerHUD(
+        player
+    );
+
+}
+
+
+/* =========================================================
+   132. ТИПИ ПОЛІВ
+
+   ВАЖЛИВО:
+   старого CELL_TYPES.income
+   більше немає.
+
+   Тепер є START.
+========================================================= */
+
+function showAllCellTypes() {
+
+    const typeIds = [
+
+        "start",
+        "bank",
+        "event",
+        "life",
+        "fate",
+        "lounge",
+        "academy",
+        "transition",
+        "dreamCheck"
+
+    ];
+
+
+    const types =
+        typeIds
+
+            .map(
+                id =>
+                    CELL_TYPES[id]
+            )
+
+            .filter(
+                Boolean
+            );
+
+
+    const rows =
+        types
+
+            .map(
+                type => `
+
+                    <div class="all-cell-type-row">
+
+                        <span>
+                            ${type.icon}
+                        </span>
+
+
+                        <div>
+
+                            <strong>
+                                ${type.name}
+                            </strong>
+
+                            <small>
+                                ${type.description}
+                            </small>
+
+                        </div>
+
+                    </div>
+
+                `
+            )
+
+            .join("");
+
+
+    openGameInfoModal(`
+
+        <div class="all-cell-types-popup">
+
+            <h2>
+                Поля гри
+            </h2>
+
+
+            <p>
+
+                Кожен тип поля запускає
+                окрему життєву,
+                кар'єрну або
+                фінансову ситуацію.
+
+            </p>
+
+
+            <div class="all-cell-types-list">
+
+                ${rows}
+
+            </div>
 
         </div>
 
@@ -7274,33 +21851,325 @@ function showCellTypeInfo(
 
 
 /* =========================================================
-   61. ІНФО ПРО СУПЕРНИКА
+   133. ДРУГИЙ КИДОК ДЛЯ КАРТКИ
+
+   Поки залишаємо цифровий вибір
+   номера по всій колоді,
+   щоб у тесті були доступні
+   ВСІ картки.
+
+   Пізніше можемо окремо
+   узгодити фізичну механіку d6.
 ========================================================= */
 
-function showParticipantInfo(
-    participantId
+async function rollForCardNumber(
+    deckName,
+    deck
 ) {
 
-    const participant =
-        gameState.opponents.find(
-            item =>
-                item.id ===
-                participantId
-        );
+    if (
+        !Array.isArray(deck)
+        ||
+        deck.length === 0
+    ) {
 
-
-    if (!participant) {
         return;
+
     }
 
 
-    const profession =
+    const button =
+        document.getElementById(
+            "secondCardRollButton"
+        );
+
+
+    const display =
+        document.getElementById(
+            "secondCardDice"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+    }
+
+
+    for (
+        let i = 0;
+        i < 9;
+        i++
+    ) {
+
+        const temp =
+            randomNumber(
+                1,
+                deck.length
+            );
+
+
+        if (display) {
+
+            display.textContent =
+                temp;
+
+        }
+
+
+        await delay(
+            65
+        );
+
+    }
+
+
+    const index =
+        randomNumber(
+            0,
+            deck.length - 1
+        );
+
+
+    const card =
+        deck[index];
+
+
+    if (display) {
+
+        display.textContent =
+            card.number ||
+            index + 1;
+
+    }
+
+
+    await delay(
+        350
+    );
+
+
+    addLog(
+
+        `${CELL_TYPES[deckName]?.icon || "🎴"} ${
+            CELL_TYPES[deckName]?.name || deckName
+        }: картка №${card.number || index + 1}`
+
+    );
+
+
+    /* =====================================================
+       ДОЛЯ — БЕЗ ВИБОРУ
+    ===================================================== */
+
+    if (
+        deckName ===
+        "fate"
+    ) {
+
+        resolveFateCard(
+            card
+        );
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ПОДІЯ / ЖИТТЯ / БАНК
+    ===================================================== */
+
+    showDecisionCard(
+
+        deckName,
+
+        card
+
+    );
+
+}
+
+
+/* =========================================================
+   134. START CARD TURN
+
+   ЄДИНА ТОЧКА ВХОДУ
+   В УСІ КАРТКИ.
+========================================================= */
+
+function startCardTurn(
+    deckName
+) {
+
+    const player =
+        gameState.player;
+
+
+    const deck =
+        getDeckForParticipant(
+
+            player,
+
+            deckName
+
+        );
+
+
+    /* =====================================================
+       БАНК ЩЕ НЕ ПІДКЛЮЧЕНИЙ
+
+       Щоб гра НЕ зависала,
+       хід можна завершити.
+    ===================================================== */
+
+    if (
+        !deck ||
+        deck.length === 0
+    ) {
+
+        openGameInfoModal(`
+
+            <div class="decision-card-modal">
+
+                <div class="cycle-notice-icon">
+
+                    ${
+                        CELL_TYPES[deckName]?.icon ||
+                        "🏦"
+                    }
+
+                </div>
+
+
+                <h2>
+
+                    ${
+                        CELL_TYPES[deckName]?.name ||
+                        "Картка"
+                    }
+
+                </h2>
+
+
+                <p>
+
+                    Цей блок ще буде
+                    підключений на наступному етапі.
+
+                </p>
+
+
+                <button
+                    id="finishEmptyDeckTurnButton"
+                    class="main-game-btn"
+                >
+                    ЗАВЕРШИТИ ХІД
+                </button>
+
+            </div>
+
+        `);
+
+
+        document
+            .getElementById(
+                "finishEmptyDeckTurnButton"
+            )
+            .addEventListener(
+                "click",
+                finishPlayerCardTurn
+            );
+
+
+        return;
+
+    }
+
+
+    showSecondCardRoll(
+
+        deckName,
+
+        deck
+
+    );
+
+}
+
+
+/* =========================================================
+   135. КАРТКА ЖИТТЯ
+
+   В оновлених правилах
+   відмовитися від Життя НЕ МОЖНА.
+
+   Тому кнопки "відмовитись"
+   не додаємо.
+========================================================= */
+
+
+/* =========================================================
+   136. PROMOTION HELPER
+
+   Використовується для карток,
+   які прямо дають
+   професійне підвищення.
+========================================================= */
+
+function promoteParticipantToLevel(
+    participant,
+    targetLevel
+) {
+
+    if (
+        !participant ||
+        !participant.sector
+    ) {
+
+        return false;
+
+    }
+
+
+    const maxLevel =
+        participant
+            .sector
+            .levels
+            .length - 1;
+
+
+    const safeTarget =
+        Math.min(
+            targetLevel,
+            maxLevel
+        );
+
+
+    if (
+        safeTarget <=
+        participant.careerLevel
+    ) {
+
+        return false;
+
+    }
+
+
+    const oldLevel =
+        participant.careerLevel;
+
+
+    const oldProfession =
         getProfessionName(
 
             participant
                 .sector
                 .levels[
-                    participant.careerLevel
+                    oldLevel
                 ],
 
             participant.gender
@@ -7308,291 +22177,1289 @@ function showParticipantInfo(
         );
 
 
-    openGameInfoModal(`
-
-        <div class="participant-info-popup">
-
-
-            <img
-                src="${participant.token.image}"
-                class="participant-popup-token"
-                alt="${participant.name}"
-            >
+    participant.careerLevel =
+        safeTarget;
 
 
-            <h3>
-                ${participant.name}
-            </h3>
+    const stats =
+        getCareerStats(
+
+            participant.sector.id,
+
+            safeTarget + 1
+
+        );
 
 
-            <p>
-
-                ${participant.sector.icon}
-
-                ${profession}
-
-            </p>
+    participant.salary =
+        stats.salary;
 
 
-            <div class="participant-popup-stats">
+    const newProfession =
+        getProfessionName(
 
-                <span>
-                    💰 ${formatMoney(participant.money)}
-                </span>
+            participant
+                .sector
+                .levels[
+                    safeTarget
+                ],
 
-                <span>
-                    ⭐ ${participant.reputation}
-                </span>
+            participant.gender
 
-                <span>
-                    🧠 ${participant.knowledge}
-                </span>
-
-                <span>
-                    ⚡ ${participant.energy}
-                </span>
-
-            </div>
+        );
 
 
-            <div class="participant-popup-dream">
+    addLog(
 
-                ✨ Мрія:
+        `🎉 ${participant.name}: ${oldProfession} → ${newProfession}`
 
-                <strong>
-                    ${participant.dream.name}
-                </strong>
-
-            </div>
+    );
 
 
-            <div class="participant-popup-position">
+    if (
+        participant.board ===
+            "inner"
+        &&
+        participant.innerLaps >=
+            1
+        &&
+        participant.careerLevel >=
+            GAME_CONFIG
+                .outerUnlockCareerLevel
+    ) {
 
-                ${
-                    participant.board === "inner"
-                    ? "Внутрішнє поле"
-                    : "Зовнішнє поле"
-                }
+        participant.pendingOuterTransition =
+            true;
 
-                · клітинка
+    }
 
-                ${participant.position}
 
-            </div>
+    if (
+        participant.id ===
+        "player"
+    ) {
 
-        </div>
+        queueGameNotice({
 
-    `);
+            type:
+                "career",
+
+            oldProfession,
+
+            newProfession,
+
+            level:
+                safeTarget + 1,
+
+            salary:
+                stats.salary
+
+        });
+
+
+        updateCareerHUD(
+            participant
+        );
+
+    }
+
+
+    return true;
 
 }
 
 
 /* =========================================================
-   62. ПРОГРЕС МРІЇ
+   137. SPECIAL ACTIONS WRAPPER
+
+   Перехоплюємо кар'єрні дії,
+   щоб вони теж давали
+   модалку "Нова сходинка".
 ========================================================= */
 
-function showDreamProgress() {
+function applyAllSpecialActions(
+    participant,
+    source
+) {
+
+    if (!source) {
+
+        return;
+
+    }
+
+
+    const actions = [];
+
+
+    if (
+        source.specialAction
+    ) {
+
+        actions.push(
+            source.specialAction
+        );
+
+    }
+
+
+    if (
+        Array.isArray(
+            source.specialActions
+        )
+    ) {
+
+        actions.push(
+            ...source.specialActions
+        );
+
+    }
+
+
+    actions.forEach(
+        action => {
+
+
+            /* =================================================
+               ПРЯМИЙ ПЕРЕХІД НА РІВЕНЬ 2
+            ================================================= */
+
+            if (
+                action ===
+                "promoteToLevel2"
+            ) {
+
+                promoteParticipantToLevel(
+
+                    participant,
+
+                    1
+
+                );
+
+
+                return;
+
+            }
+
+
+            /* =================================================
+               ПІДВИЩЕННЯ НА НАСТУПНИЙ
+               РІВЕНЬ, ЯКЩО ВИСТАЧАЄ
+               РЕСУРСІВ
+            ================================================= */
+
+            if (
+                action ===
+                "promoteOneLevelIfReady"
+            ) {
+
+                checkCareerProgress(
+                    participant
+                );
+
+
+                return;
+
+            }
+
+
+            applyCardSpecialAction(
+
+                participant,
+
+                action
+
+            );
+
+        }
+    );
+
+}
+
+
+/* =========================================================
+   138. ПЕРЕВІРКА КАРТКИ ЖИТТЯ /
+   ПОДІЇ / БАНКУ
+
+   Ця версія:
+   - перевіряє ресурси;
+   - банківські умови;
+   - не дає зіграти недоступний варіант;
+   - не зависає, якщо варіантів немає.
+========================================================= */
+
+function showDecisionCard(
+    deckName,
+    card
+) {
 
     const player =
         gameState.player;
 
 
-    const dream =
-        player.dream;
+    if (!card) {
 
+        finishPlayerCardTurn();
 
-    if (!dream) {
         return;
+
     }
 
 
-    const req =
-        dream.requirements;
+    const requirementCheck =
+        checkFullCardRequirements(
+
+            player,
+
+            card
+
+        );
+
+
+    if (
+        !requirementCheck.passed
+    ) {
+
+        openGameInfoModal(`
+
+            <div class="decision-card-modal">
+
+                <div class="decision-card-number">
+
+                    Картка №${card.number}
+
+                </div>
+
+
+                <div class="decision-card-type">
+
+                    ${CELL_TYPES[deckName]?.icon || "🎴"}
+
+                    ${CELL_TYPES[deckName]?.name || ""}
+
+                </div>
+
+
+                <h2>
+                    ${card.title}
+                </h2>
+
+
+                <p class="decision-card-story">
+                    ${card.story || ""}
+                </p>
+
+
+                <div class="card-requirement-warning">
+
+                    <strong>
+                        ⚠️ Умови не виконані
+                    </strong>
+
+                    <br><br>
+
+                    ${
+                        requirementCheck
+                            .failed
+                            .join("<br>")
+                    }
+
+                </div>
+
+
+                <button
+                    id="finishUnavailableCardButton"
+                    class="main-game-btn"
+                >
+                    ЗАВЕРШИТИ ХІД
+                </button>
+
+            </div>
+
+        `);
+
+
+        document
+            .getElementById(
+                "finishUnavailableCardButton"
+            )
+            .addEventListener(
+                "click",
+                finishPlayerCardTurn
+            );
+
+
+        return;
+
+    }
+
+
+    const availableChoices =
+        (
+            card.choices ||
+            []
+        );
+
+
+    if (
+        availableChoices.length ===
+        0
+    ) {
+
+        openGameInfoModal(`
+
+            <div class="decision-card-modal">
+
+                <h2>
+                    ${card.title}
+                </h2>
+
+                <p>
+                    ${card.story || ""}
+                </p>
+
+                <button
+                    id="finishNoChoiceCardButton"
+                    class="main-game-btn"
+                >
+                    ЗАВЕРШИТИ ХІД
+                </button>
+
+            </div>
+
+        `);
+
+
+        document
+            .getElementById(
+                "finishNoChoiceCardButton"
+            )
+            .addEventListener(
+                "click",
+                finishPlayerCardTurn
+            );
+
+
+        return;
+
+    }
+
+
+    const choicesHTML =
+        availableChoices
+
+            .map(
+                (
+                    choice,
+                    index
+                ) => {
+
+
+                    const minimumCheck =
+                        checkCardRequirements(
+
+                            player,
+
+                            choice.minimum ||
+                            {}
+
+                        );
+
+
+                    const productAllowed =
+                        !choice.conditionProduct
+                        ||
+                        hasBankProduct(
+
+                            player,
+
+                            choice.conditionProduct
+
+                        );
+
+
+                    const disabled =
+                        !minimumCheck.passed
+                        ||
+                        !productAllowed;
+
+
+                    return `
+
+                        <button
+                            class="
+                                card-decision-button
+                                ${
+                                    disabled
+                                    ? "card-decision-disabled"
+                                    : ""
+                                }
+                            "
+                            data-choice-index="${index}"
+                            ${
+                                disabled
+                                ? "disabled"
+                                : ""
+                            }
+                        >
+
+                            <strong>
+                                ${choice.title}
+                            </strong>
+
+
+                            <span class="card-decision-cost">
+                                ${choice.costText || "Без витрат"}
+                            </span>
+
+
+                            <span class="card-decision-result">
+                                ${choice.resultText || ""}
+                            </span>
+
+                        </button>
+
+                    `;
+
+                }
+            )
+
+            .join("");
 
 
     openGameInfoModal(`
 
-        <div class="dream-progress-popup">
+        <div class="decision-card-modal">
 
-
-            <div class="dream-confirmed-icon">
-                ${dream.icon}
+            <div class="decision-card-number">
+                Картка №${card.number}
             </div>
 
 
-            <h3>
-                ${dream.name}
-            </h3>
+            <div class="decision-card-type">
+
+                ${CELL_TYPES[deckName]?.icon || "🎴"}
+
+                ${CELL_TYPES[deckName]?.name || ""}
+
+            </div>
 
 
-            <p>
-                Твій поточний прогрес:
+            <h2>
+                ${card.title}
+            </h2>
+
+
+            <p class="decision-card-story">
+                ${card.story || ""}
             </p>
 
 
-            ${createDreamProgressRow(
-                "💰",
-                "Гроші",
-                player.money,
-                req.money
-            )}
+            ${
+                card.requirementText
+
+                ? `
+
+                    <div class="decision-card-requirement">
+
+                        <strong>
+                            🎯 Умова:
+                        </strong>
+
+                        ${card.requirementText}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
 
 
-            ${createDreamProgressRow(
-                "⭐",
-                "Репутація",
-                player.reputation,
-                req.reputation
-            )}
+            ${
+                card.bankRequirement
+
+                ? `
+
+                    <div class="decision-card-bank-requirement">
+
+                        <strong>
+                            🏦 Банківська умова:
+                        </strong>
+
+                        ${card.bankRequirement.text}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
 
 
-            ${createDreamProgressRow(
-                "🧠",
-                "Знання",
-                player.knowledge,
-                req.knowledge
-            )}
+            ${
+                card.taskText
+
+                ? `
+
+                    <div class="decision-card-task">
+                        ${card.taskText}
+                    </div>
+
+                  `
+
+                : ""
+            }
 
 
-            ${createDreamProgressRow(
-                "⚡",
-                "Енергія",
-                player.energy,
-                req.energy
-            )}
+            ${
+                card.cooperationText
+
+                ? `
+
+                    <div class="decision-card-task">
+                        ${card.cooperationText}
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <div class="card-decisions-list">
+
+                ${choicesHTML}
+
+            </div>
 
         </div>
 
     `);
 
-}
+
+    document
+        .querySelectorAll(
+            ".card-decision-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const index =
+                            Number(
+                                button.dataset.choiceIndex
+                            );
 
 
-/* =========================================================
-   63. ПРОГРЕС-БАР
-========================================================= */
-function createDreamProgressRow(
-    icon,
-    label,
-    current,
-    required
-) {
-
-    const safeRequired =
-        Number(required) || 1;
-
-    const safeCurrent =
-        Number(current) || 0;
+                        const choice =
+                            availableChoices[
+                                index
+                            ];
 
 
-    const percent =
-        Math.min(
-            100,
-            Math.max(
-                0,
-                Math.round(
-                    safeCurrent /
-                    safeRequired *
-                    100
-                )
-            )
+                        if (!choice) {
+
+                            return;
+
+                        }
+
+
+                        resolveCardChoice(
+
+                            deckName,
+
+                            card,
+
+                            choice
+
+                        );
+
+                    }
+                );
+
+            }
         );
-
-
-    const isMoney =
-        icon === "💰";
-
-
-    const currentText =
-        isMoney
-            ? `${formatMoney(safeCurrent)} грн`
-            : safeCurrent;
-
-
-    const requiredText =
-        isMoney
-            ? `${formatMoney(safeRequired)} грн`
-            : safeRequired;
-
-
-    return `
-
-        <div class="dream-progress-row">
-
-            <div class="dream-progress-title">
-
-                <span>
-                    ${icon}
-                    ${label}
-                </span>
-
-                <strong>
-                    ${currentText}
-                    /
-                    ${requiredText}
-                </strong>
-
-            </div>
-
-
-            <div class="dream-progress-bar">
-
-                <div
-                    class="dream-progress-fill"
-                    style="width: ${percent}%"
-                ></div>
-
-            </div>
-
-
-            <small class="dream-progress-percent">
-                ${percent}%
-            </small>
-
-        </div>
-
-    `;
 
 }
 
 
 /* =========================================================
-   64. МОДАЛКА
+   139. ДОЛЯ
+
+   Доля завжди спрацьовує
+   автоматично.
 ========================================================= */
 
-function openGameInfoModal(
-    html
+function resolveFateCard(
+    card
 ) {
 
-    const modal =
-        document.getElementById(
-            "gameInfoModal"
-        );
+    const player =
+        gameState.player;
 
 
-    const content =
-        document.getElementById(
-            "gameInfoContent"
-        );
+    if (!card) {
 
+        finishPlayerCardTurn();
 
-    if (
-        !modal ||
-        !content
-    ) {
         return;
+
     }
 
 
-    content.innerHTML =
-        html;
+    let finalEffects = {
+
+        ...(card.effects || {})
+
+    };
 
 
-    modal.hidden =
-        false;
+    let protectionMessage =
+        "";
+
+
+    /* =====================================================
+       СТРАХОВИЙ ЗАХИСТ
+    ===================================================== */
+
+    if (
+        card.insuranceProtection
+        &&
+        hasBankProduct(
+
+            player,
+
+            card
+                .insuranceProtection
+                .product
+
+        )
+    ) {
+
+        finalEffects.money =
+            (
+                finalEffects.money ||
+                0
+            )
+            +
+            (
+                card
+                    .insuranceProtection
+                    .refundMoney ||
+                0
+            );
+
+
+        protectionMessage =
+            card
+                .insuranceProtection
+                .text ||
+            "🛡️ Спрацював страховий захист.";
+
+    }
+
+
+    applyEffects(
+
+        player,
+
+        finalEffects
+
+    );
+
+
+    addLog(
+
+        `⚡ Доля №${card.number}: ${card.title}`
+
+    );
+
+
+    openGameInfoModal(`
+
+        <div class="fate-result-modal">
+
+            <div class="decision-card-number">
+
+                Картка Долі №${card.number}
+
+            </div>
+
+
+            <div class="decision-card-type">
+
+                ⚡ ДОЛЯ
+
+            </div>
+
+
+            <h2>
+                ${card.title}
+            </h2>
+
+
+            <p class="decision-card-story">
+
+                ${card.story}
+
+            </p>
+
+
+            <div class="revealed-card-effects">
+
+                ${effectsHTML(
+                    finalEffects
+                )}
+
+            </div>
+
+
+            ${
+                protectionMessage
+
+                ? `
+
+                    <div class="fate-protection-message">
+
+                        ${protectionMessage}
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            ${
+                card.advice
+
+                ? `
+
+                    <div class="fate-advice">
+
+                        <strong>
+                            💡 Порада
+                        </strong>
+
+                        <p>
+                            ${card.advice}
+                        </p>
+
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <button
+                id="finishFateTurnButton"
+                class="main-game-btn"
+            >
+                ЗАВЕРШИТИ ХІД
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishFateTurnButton"
+        )
+        .addEventListener(
+            "click",
+            finishPlayerCardTurn
+        );
 
 }
 
+
+/* =========================================================
+   140. ПІДГОТОВКА AI
+
+   ВАЖЛИВО:
+   використовуємо РОЗШИРЕНІ
+   delayed effects.
+========================================================= */
+
+function prepareAITurnEffects(
+    ai
+) {
+
+    if (
+        ai.effects.familyHearth
+        &&
+        ai.energy < 70
+    ) {
+
+        ai.energy =
+            70;
+
+    }
+
+
+    if (
+        ai.effects.energyPerTurn
+    ) {
+
+        applyEffects(
+
+            ai,
+
+            {
+                energy:
+                    ai.effects.energyPerTurn
+            }
+
+        );
+
+    }
+
+
+    if (
+        ai.effects.incomePerTurn
+    ) {
+
+        ai.money +=
+            ai.effects.incomePerTurn;
+
+
+        ai.totalPassiveIncomeReceived +=
+            ai.effects.incomePerTurn;
+
+    }
+
+
+    processTimedTurnEffects(
+        ai
+    );
+
+
+    processDelayedEffectsAdvanced(
+        ai
+    );
+
+
+    clampPlayerResources(
+        ai
+    );
+
+}
+
+
+/* =========================================================
+   141. ПРАВИЛЬНИЙ ПЕРШИЙ ХІД
+
+   Викликається після створення поля.
+========================================================= */
+
+function initializeGameCycle() {
+
+    ensureGameRuntimeState();
+
+
+    const player =
+        gameState.player;
+
+
+    player.turnsCompleted =
+        Number(
+            player.turnsCompleted
+        ) || 0;
+
+
+    gameState.playerTurns =
+        player.turnsCompleted;
+
+
+    gameState.currentTurn =
+        "player";
+
+
+    updatePlayerStatsUI();
+
+
+    const button =
+        document.getElementById(
+            "rollDiceButton"
+        );
+
+
+    if (button) {
+
+        button.disabled =
+            false;
+
+    }
+
+
+    const title =
+        document.getElementById(
+            "diceTitle"
+        );
+
+
+    if (title) {
+
+        title.textContent =
+            "ТВІЙ ХІД";
+
+    }
+
+}
+
+
+/* =========================================================
+   142. ЗАХИСТ ВІД ПОДВІЙНОГО
+   ЗАВЕРШЕННЯ ХОДУ
+
+   Іноді користувач може
+   двічі натиснути кнопку.
+========================================================= */
+
+let playerTurnClosing =
+    false;
+
+
+async function completePlayerTurn() {
+
+    ensureGameRuntimeState();
+
+
+    if (
+        playerTurnClosing
+        ||
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    playerTurnClosing =
+        true;
+
+
+    const player =
+        gameState.player;
+
+
+    player.turnsCompleted +=
+        1;
+
+
+    gameState.playerTurns =
+        player.turnsCompleted;
+
+
+    addLog(
+
+        `🔄 ${player.name}: завершено хід ${player.turnsCompleted}`
+
+    );
+
+
+    /* =====================================================
+       КОЖЕН 3-Й ХІД
+    ===================================================== */
+
+    if (
+        player.turnsCompleted %
+            GAME_CONFIG.financialPeriodTurns
+        ===
+        0
+    ) {
+
+        processPlayerFinancialPeriod();
+
+    }
+
+
+    checkCareerProgress(
+        player
+    );
+
+
+    updatePlayerStatsUI();
+
+
+    try {
+
+        await startAITurnsCore();
+
+    }
+
+    finally {
+
+        playerTurnClosing =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   143. ПОЧАТОК НОВОГО ХОДУ
+
+   Тут також перевіряємо
+   додаткову картку Долі,
+   отриману з іншої картки.
+========================================================= */
+
+async function beginNextPlayerTurn() {
+
+    if (
+        gameState.runtime.gameFinished
+    ) {
+
+        return;
+
+    }
+
+
+    await preparePlayerTurn();
+
+
+    /* =====================================================
+       СПОЧАТКУ ПОВІДОМЛЕННЯ
+       ПРО ВІДКЛАДЕНІ ЕФЕКТИ
+    ===================================================== */
+
+    if (
+        gameState.runtime.noticeQueue.length >
+        0
+    ) {
+
+        showNextGameNotice(
+
+            () => {
+
+                beginNextPlayerTurnAfterNotices();
+
+            }
+
+        );
+
+
+        return;
+
+    }
+
+
+    beginNextPlayerTurnAfterNotices();
+
+}
+
+
+/* =========================================================
+   144. ПІСЛЯ СЛУЖБОВИХ МОДАЛОК
+========================================================= */
+
+function beginNextPlayerTurnAfterNotices() {
+
+    const player =
+        gameState.player;
+
+
+    /* =====================================================
+       БОНУСНА ДОЛЯ
+
+       Вона не є окремим ходом.
+
+       Тому після неї треба
+       просто активувати кубик,
+       а НЕ рахувати ще один хід.
+    ===================================================== */
+
+    if (
+        player.effects.pendingFateCard
+    ) {
+
+        player.effects.pendingFateCard =
+            false;
+
+
+        const card =
+            randomItem(
+                OUTER_CARD_DECKS.fate
+            );
+
+
+        if (card) {
+
+            resolveBonusFateCard(
+                card
+            );
+
+
+            return;
+
+        }
+
+    }
+
+
+    activatePlayerTurn();
+
+}
+
+
+/* =========================================================
+   145. БОНУСНА ДОЛЯ
+
+   Не завершує ще один хід.
+========================================================= */
+
+function resolveBonusFateCard(
+    card
+) {
+
+    const player =
+        gameState.player;
+
+
+    let effects = {
+
+        ...(card.effects || {})
+
+    };
+
+
+    let protectionMessage =
+        "";
+
+
+    if (
+        card.insuranceProtection
+        &&
+        hasBankProduct(
+
+            player,
+
+            card
+                .insuranceProtection
+                .product
+
+        )
+    ) {
+
+        effects.money =
+            (
+                effects.money || 0
+            )
+            +
+            (
+                card
+                    .insuranceProtection
+                    .refundMoney || 0
+            );
+
+
+        protectionMessage =
+            card
+                .insuranceProtection
+                .text ||
+            "🛡️ Спрацював страховий захист.";
+
+    }
+
+
+    applyEffects(
+
+        player,
+
+        effects
+
+    );
+
+
+    openGameInfoModal(`
+
+        <div class="fate-result-modal">
+
+            <div class="decision-card-type">
+                ⚡ БОНУСНА КАРТКА ДОЛІ
+            </div>
+
+
+            <h2>
+                ${card.title}
+            </h2>
+
+
+            <p>
+                ${card.story}
+            </p>
+
+
+            <div class="revealed-card-effects">
+
+                ${effectsHTML(effects)}
+
+            </div>
+
+
+            ${
+                protectionMessage
+
+                ? `
+
+                    <div class="fate-protection-message">
+                        ${protectionMessage}
+                    </div>
+
+                  `
+
+                : ""
+            }
+
+
+            <button
+                id="finishBonusFateButton"
+                class="main-game-btn"
+            >
+                ПРОДОВЖИТИ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "finishBonusFateButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                activatePlayerTurn();
+
+            }
+        );
+
+}
+
+
+/* =========================================================
+   146. КНОПКА ЗАКРИТТЯ МОДАЛКИ
+
+   Залишаємо універсальною.
+========================================================= */
 
 function closeGameInfoModal() {
 
@@ -7602,171 +23469,153 @@ function closeGameInfoModal() {
         );
 
 
-    if (modal) {
+    if (!modal) {
 
-        modal.hidden =
-            true;
+        return;
 
     }
 
+
+    modal.hidden =
+        true;
+
 }
 
 
 /* =========================================================
-   65. ОЧИЩЕННЯ ПІДСВІЧЕННЯ
+   147. ФІНАЛЬНА ПЕРЕВІРКА
+   ПЕРЕД СТАРТОМ ГРИ
 ========================================================= */
 
-function clearTargetCells() {
+function validateGameData() {
 
-    document
-        .querySelectorAll(
-            ".target-cell"
+    const problems = [];
+
+
+    if (
+        !Array.isArray(
+            INNER_CARD_DECKS.event
         )
-        .forEach(
-            cell =>
-                cell.classList.remove(
-                    "target-cell"
-                )
+        ||
+        INNER_CARD_DECKS.event.length ===
+            0
+    ) {
+
+        problems.push(
+            "Немає карток Подій малого кола"
         );
 
+    }
+
+
+    if (
+        !Array.isArray(
+            OUTER_CARD_DECKS.event
+        )
+        ||
+        OUTER_CARD_DECKS.event.length ===
+            0
+    ) {
+
+        problems.push(
+            "Немає карток Подій великого кола"
+        );
+
+    }
+
+
+    if (
+        !Array.isArray(
+            OUTER_CARD_DECKS.life
+        )
+        ||
+        OUTER_CARD_DECKS.life.length ===
+            0
+    ) {
+
+        problems.push(
+            "Немає карток Життя"
+        );
+
+    }
+
+
+    if (
+        !Array.isArray(
+            OUTER_CARD_DECKS.fate
+        )
+        ||
+        OUTER_CARD_DECKS.fate.length ===
+            0
+    ) {
+
+        problems.push(
+            "Немає карток Долі"
+        );
+
+    }
+
+
+    if (
+        problems.length > 0
+    ) {
+
+        console.warn(
+            "CV ЖИТТЯ — перевірка даних:",
+            problems
+        );
+
+    }
+
+
+    return (
+        problems.length ===
+        0
+    );
+
 }
 
 
 /* =========================================================
-   66. ЖУРНАЛ
+   КІНЕЦЬ ЧАСТИНИ 5В
+
+   ПІСЛЯ ЦЬОГО МАЄ ПРАЦЮВАТИ:
+
+   START
+      ↓
+   КУБИК
+      ↓
+   РУХ
+      ↓
+   КЛІТИНКА
+      ↓
+   КАРТКА / LOUNGE / ACADEMY
+      ↓
+   ЗАВЕРШИТИ ХІД
+      ↓
+   AI 1
+      ↓
+   AI 2
+      ↓
+   КОЖЕН 3-Й ХІД:
+   ЗАРПЛАТА
+      ↓
+   КАР'ЄРНЕ ЗРОСТАННЯ
+      ↓
+   НОВИЙ ХІД
+      ↓
+   ...
+      ↓
+   МРІЯ
+      ↓
+   ФІНАЛ ГРИ
+
+
+   БАНК ПОКИ МОЖЕ БУТИ ПОРОЖНІМ.
+   ПОПАДАННЯ НА БАНК
+   НЕ ЗАВИСИТЬ ГРУ —
+   МОЖНА ЗАВЕРШИТИ ХІД.
 ========================================================= */
-/* =========================================================
-  66. ЖУРНАЛ ХОДІВ
-========================================================= */
-function addLog(text, details = "") {
-   if (!gameState.history) {
-       gameState.history = [];
-   }
 
-   const now =
-       new Date();
-
-   const time =
-       now.toLocaleTimeString(
-           "uk-UA",
-           {
-               hour: "2-digit",
-               minute: "2-digit"
-           }
-       );
-
-   gameState.history.push({
-       id:
-           Date.now() +
-           Math.random(),
-       time,
-       text,
-       details
-   });
-
-   updateJournalCounter();
-}
-
-/* =========================================================
-  66.1 ОНОВЛЕННЯ ЛІЧИЛЬНИКА
-========================================================= */
-function updateJournalCounter() {
-   const counter =
-       document.getElementById(
-           "journalCount"
-       );
-
-   if (!counter) {
-       return;
-   }
-
-   counter.textContent =
-       gameState.history
-           ? gameState.history.length
-           : 0;
-}
-
-/* =========================================================
-  66.2 ВІДКРИТИ ЖУРНАЛ
-========================================================= */
-function showGameJournal() {
-   const history =
-       gameState.history || [];
-
-   let journalHTML = "";
-
-   if (
-       history.length === 0
-   ) {
-       journalHTML = `
-<div class="journal-empty">
-               Поки що ходів немає.
-<br><br>
-               Кинь кубик —
-               і тут почне формуватися
-               історія гри 🎲
-</div>
-       `;
-   }
-   else {
-       journalHTML =
-           [...history]
-               .reverse()
-               .map(
-                   (entry, index) => `
-<div class="journal-entry">
-<div class="journal-entry-head">
-<strong>
-                                   Хід ${history.length - index}
-</strong>
-<span>
-                                   ${entry.time}
-</span>
-</div>
-
-<div class="journal-entry-action">
-                               ${entry.text}
-</div>
-
-                           ${
-                               entry.details
-                               ? `
-<div class="journal-entry-details">
-                                       ${entry.details}
-</div>
-                                 `
-                               : ""
-                           }
-</div>
-                   `
-               )
-               .join("");
-   }
-
-   openGameInfoModal(`
-<div class="game-journal-popup">
-<h2>
-               📜 Журнал ходів
-</h2>
-
-<p>
-               Тут зберігається історія гри:
-               кубик, переміщення,
-               поля та рішення гравців.
-</p>
-
-<div class="journal-list">
-               ${journalHTML}
-</div>
-</div>
-   `);
-}
-
-/* =========================================================
-   67. ЗАПУСК
-========================================================= */
 
 showStartScreen();
-
-
-
