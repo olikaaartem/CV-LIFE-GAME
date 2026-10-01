@@ -4788,3 +4788,88 @@ button {
     }
 
 }
+/* =========================================================
+   74. ЖОРСТКИЙ FIX РОЗМІРУ ФІШОК
+   СТАВИТИ САМИМ ОСТАННІМ У STYLE.CSS
+========================================================= */
+
+img.board-piece,
+.board-cell img.board-piece,
+img.player-piece,
+img.ai-piece {
+    position: absolute !important;
+
+    object-fit: contain !important;
+
+    max-width: none !important;
+    max-height: none !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    pointer-events: none !important;
+}
+
+
+/* МОЯ ФІШКА */
+
+img.board-piece.player-piece,
+.board-cell img.player-piece {
+    width: 34px !important;
+    height: 34px !important;
+
+    min-width: 34px !important;
+    min-height: 34px !important;
+
+    max-width: 34px !important;
+    max-height: 34px !important;
+
+    left: 50% !important;
+    top: 50% !important;
+
+    transform:
+        translate(-92%, -92%) !important;
+
+    z-index: 98 !important;
+}
+
+
+/* AI */
+
+img.board-piece.ai-piece,
+.board-cell img.ai-piece {
+    width: 27px !important;
+    height: 27px !important;
+
+    min-width: 27px !important;
+    min-height: 27px !important;
+
+    max-width: 27px !important;
+    max-height: 27px !important;
+
+    left: 50% !important;
+    top: 50% !important;
+
+    transform:
+        translate(-5%, -90%) !important;
+
+    z-index: 95 !important;
+}
+
+
+/* ЯКЩО НА ОДНІЙ КЛІТИНЦІ 3 ГРАВЦІ */
+
+.board-cell img.board-piece:nth-of-type(2) {
+    transform:
+        translate(-110%, -90%) !important;
+}
+
+.board-cell img.board-piece:nth-of-type(3) {
+    transform:
+        translate(5%, -90%) !important;
+}
+
+.board-cell img.board-piece:nth-of-type(4) {
+    transform:
+        translate(-50%, 0%) !important;
+}
