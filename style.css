@@ -4862,16 +4862,16 @@ button {
 
 .ai-board-piece,
 .board-player-piece.ai-board-piece {
-    width: 56px !important;
-    height: 56px !important;
+    width: 68px !important;
+    height: 68px !important;
 
-    max-width: 56px !important;
-    max-height: 56px !important;
+    max-width: 68px !important;
+    max-height: 68px !important;
 
     transform:
-        translate(-8%, -90%) !important;
+        translate(-88%, -92%) !important;
 
-    z-index: 94 !important;
+    z-index: 98 !important;
 }
 
 
