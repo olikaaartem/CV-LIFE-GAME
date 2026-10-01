@@ -5343,6 +5343,9 @@ function createRectangleBoard(
                 ${type.icon}
             </span>
 
+<span class="cell-type-label">
+    ${type.name}
+</span>
 
             ${
                 isStart
