@@ -4843,14 +4843,14 @@ button {
 
 .player-board-piece,
 .board-player-piece.player-board-piece {
-    width: 34px !important;
-    height: 34px !important;
+    width: 54px !important;
+    height: 54px !important;
 
-    max-width: 34px !important;
-    max-height: 34px !important;
+    max-width: 54px !important;
+    max-height: 54px !important;
 
     transform:
-        translate(-95%, -95%) !important;
+        translate(-92%, -92%) !important;
 
     z-index: 98 !important;
 }
@@ -4862,14 +4862,14 @@ button {
 
 .ai-board-piece,
 .board-player-piece.ai-board-piece {
-    width: 27px !important;
-    height: 27px !important;
+    width: 44px !important;
+    height: 44px !important;
 
-    max-width: 27px !important;
-    max-height: 27px !important;
+    max-width: 57px !important;
+    max-height: 54px !important;
 
     transform:
-        translate(-5%, -92%) !important;
+        translate(-5%, -90%) !important;
 
     z-index: 94 !important;
 }
@@ -4904,4 +4904,44 @@ button {
 .player-board-piece,
 .ai-board-piece {
     pointer-events: none !important;
+}
+/* =========================================================
+   ПІДПИС ТИПУ КЛІТИНКИ
+========================================================= */
+
+.cell-type-label {
+    position: absolute;
+
+    left: 50%;
+    bottom: -13px;
+
+    transform: translateX(-50%);
+
+    padding: 1px 4px;
+
+    border-radius: 5px;
+
+    background:
+        rgba(255,255,255,0.92);
+
+    color: #333;
+
+    font-size: 6px;
+    font-weight: 900;
+
+    line-height: 1;
+
+    white-space: nowrap;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 2px 5px
+        rgba(0,0,0,0.12);
+}
+
+.start-board-cell .cell-type-label,
+.transition-board-cell .cell-type-label,
+.dream-check-board-cell .cell-type-label {
+    display: none;
 }
