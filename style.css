@@ -4843,14 +4843,14 @@ button {
 
 .player-board-piece,
 .board-player-piece.player-board-piece {
-    width: 54px !important;
-    height: 54px !important;
+    width: 68px !important;
+    height: 68px !important;
 
-    max-width: 54px !important;
-    max-height: 54px !important;
+    max-width: 68px !important;
+    max-height: 68px !important;
 
     transform:
-        translate(-92%, -92%) !important;
+        translate(-88%, -92%) !important;
 
     z-index: 98 !important;
 }
@@ -4862,14 +4862,14 @@ button {
 
 .ai-board-piece,
 .board-player-piece.ai-board-piece {
-    width: 44px !important;
-    height: 44px !important;
+    width: 56px !important;
+    height: 56px !important;
 
-    max-width: 57px !important;
-    max-height: 54px !important;
+    max-width: 56px !important;
+    max-height: 56px !important;
 
     transform:
-        translate(-5%, -90%) !important;
+        translate(-8%, -90%) !important;
 
     z-index: 94 !important;
 }
