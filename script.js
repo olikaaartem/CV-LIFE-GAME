@@ -5570,12 +5570,13 @@ function placePiece(
         );
 
 
-    piece.className =
-        participant.id === "player"
+ piece.className =
+    participant.id === "player"
 
-        ? "board-player-piece"
+    ? "board-player-piece player-board-piece"
 
-        : "board-player-piece ai-board-piece";
+    : "board-player-piece ai-board-piece";
+
 
 
     piece.dataset.playerId =
