@@ -19217,6 +19217,65 @@ async function moveAIStepByStepCore(
 
 }
 
+/* =========================================================
+   AI — ПОКАЗ РЕЗУЛЬТАТУ ХОДУ
+========================================================= */
+
+function showAIResult(
+    ai,
+    title,
+    effects = {}
+) {
+
+    if (!ai) {
+        return;
+    }
+
+
+    const parts = [];
+
+
+    if (effects.money) {
+        parts.push(
+            `💰 ${effects.money > 0 ? "+" : ""}${formatMoney(effects.money)}`
+        );
+    }
+
+
+    if (effects.reputation) {
+        parts.push(
+            `⭐ ${effects.reputation > 0 ? "+" : ""}${effects.reputation} репутації`
+        );
+    }
+
+
+    if (effects.knowledge) {
+        parts.push(
+            `🧠 ${effects.knowledge > 0 ? "+" : ""}${effects.knowledge} знань`
+        );
+    }
+
+
+    if (effects.energy) {
+        parts.push(
+            `⚡ ${effects.energy > 0 ? "+" : ""}${effects.energy} енергії`
+        );
+    }
+
+
+    showRaifikCurrentCardMessage(
+        `
+        <strong>${ai.name}</strong><br>
+        ${title}
+        ${
+            parts.length
+                ? `<br>${parts.join(" • ")}`
+                : ""
+        }
+        `
+    );
+
+}
 
 /* =========================================================
    104. КЛІТИНКА AI
@@ -22928,6 +22987,21 @@ function applyAllSpecialActions(
    - не дає зіграти недоступний варіант;
    - не зависає, якщо варіантів немає.
 ========================================================= */
+/* =========================================================
+   138. КАРТКА ПОДІЇ / ЖИТТЯ
+   ПОКАЗ У ПРАВІЙ ПАНЕЛІ
+
+   ПОДІЯ:
+   - можна зіграти;
+   - можна не брати картку.
+
+   ЖИТТЯ:
+   - відмовитися не можна;
+   - потрібно обрати доступне рішення.
+
+   БАНК:
+   - окремо доробимо пізніше.
+========================================================= */
 
 function showDecisionCard(
     deckName,
@@ -22938,7 +23012,24 @@ function showDecisionCard(
         gameState.player;
 
 
-    if (!card) {
+    const panel =
+        document.getElementById(
+            "currentCardPanel"
+        );
+
+
+    /*
+       На випадок, якщо стара модалка
+       ще залишилась відкритою.
+    */
+
+    closeGameInfoModal();
+
+
+    if (
+        !card ||
+        !panel
+    ) {
 
         finishPlayerCardTurn();
 
@@ -22947,46 +23038,59 @@ function showDecisionCard(
     }
 
 
+    const type =
+        CELL_TYPES[
+            deckName
+        ] || {};
+
+
+    const isEvent =
+        deckName === "event";
+
+
+    const isLife =
+        deckName === "life";
+
+
     const requirementCheck =
         checkFullCardRequirements(
-
             player,
-
             card
-
         );
 
+
+    /* =====================================================
+       КАРТКА ВЗАГАЛІ НЕДОСТУПНА
+    ===================================================== */
 
     if (
         !requirementCheck.passed
     ) {
 
-        openGameInfoModal(`
+        panel.innerHTML = `
 
-            <div class="decision-card-modal">
+            <div class="revealed-current-card">
 
                 <div class="decision-card-number">
-
                     Картка №${card.number}
+                </div>
+
+
+                <div class="revealed-card-type">
+
+                    ${type.icon || "🎴"}
+
+                    ${type.name || ""}
 
                 </div>
 
 
-                <div class="decision-card-type">
-
-                    ${CELL_TYPES[deckName]?.icon || "🎴"}
-
-                    ${CELL_TYPES[deckName]?.name || ""}
-
-                </div>
-
-
-                <h2>
+                <h3>
                     ${card.title}
-                </h2>
+                </h3>
 
 
-                <p class="decision-card-story">
+                <p class="decision-card-text">
                     ${card.story || ""}
                 </p>
 
@@ -23010,21 +23114,21 @@ function showDecisionCard(
 
                 <button
                     id="finishUnavailableCardButton"
-                    class="main-game-btn"
+                    class="main-game-btn finish-turn-btn"
                 >
                     ЗАВЕРШИТИ ХІД
                 </button>
 
             </div>
 
-        `);
+        `;
 
 
-        document
-            .getElementById(
-                "finishUnavailableCardButton"
+        panel
+            .querySelector(
+                "#finishUnavailableCardButton"
             )
-            .addEventListener(
+            ?.addEventListener(
                 "click",
                 finishPlayerCardTurn
             );
@@ -23036,46 +23140,62 @@ function showDecisionCard(
 
 
     const availableChoices =
-        (
-            card.choices ||
-            []
-        );
+        card.choices || [];
 
+
+    /* =====================================================
+       ЯКЩО В КАРТЦІ НЕМАЄ ВАРІАНТІВ
+    ===================================================== */
 
     if (
-        availableChoices.length ===
-        0
+        availableChoices.length === 0
     ) {
 
-        openGameInfoModal(`
+        panel.innerHTML = `
 
-            <div class="decision-card-modal">
+            <div class="revealed-current-card">
 
-                <h2>
+                <div class="decision-card-number">
+                    Картка №${card.number}
+                </div>
+
+
+                <div class="revealed-card-type">
+
+                    ${type.icon || "🎴"}
+
+                    ${type.name || ""}
+
+                </div>
+
+
+                <h3>
                     ${card.title}
-                </h2>
+                </h3>
 
-                <p>
+
+                <p class="decision-card-text">
                     ${card.story || ""}
                 </p>
 
+
                 <button
                     id="finishNoChoiceCardButton"
-                    class="main-game-btn"
+                    class="main-game-btn finish-turn-btn"
                 >
-                    ЗАВЕРШИТИ ХІД
+                    ПРОДОВЖИТИ
                 </button>
 
             </div>
 
-        `);
+        `;
 
 
-        document
-            .getElementById(
-                "finishNoChoiceCardButton"
+        panel
+            .querySelector(
+                "#finishNoChoiceCardButton"
             )
-            .addEventListener(
+            ?.addEventListener(
                 "click",
                 finishPlayerCardTurn
             );
@@ -23085,6 +23205,10 @@ function showDecisionCard(
 
     }
 
+
+    /* =====================================================
+       ВАРІАНТИ РІШЕННЯ
+    ===================================================== */
 
     const choicesHTML =
         availableChoices
@@ -23098,12 +23222,8 @@ function showDecisionCard(
 
                     const minimumCheck =
                         checkCardRequirements(
-
                             player,
-
-                            choice.minimum ||
-                            {}
-
+                            choice.minimum || {}
                         );
 
 
@@ -23111,11 +23231,8 @@ function showDecisionCard(
                         !choice.conditionProduct
                         ||
                         hasBankProduct(
-
                             player,
-
                             choice.conditionProduct
-
                         );
 
 
@@ -23132,15 +23249,15 @@ function showDecisionCard(
                                 card-decision-button
                                 ${
                                     disabled
-                                    ? "card-decision-disabled"
-                                    : ""
+                                        ? "card-decision-disabled"
+                                        : ""
                                 }
                             "
                             data-choice-index="${index}"
                             ${
                                 disabled
-                                ? "disabled"
-                                : ""
+                                    ? "disabled"
+                                    : ""
                             }
                         >
 
@@ -23150,12 +23267,22 @@ function showDecisionCard(
 
 
                             <span class="card-decision-cost">
-                                ${choice.costText || "Без витрат"}
+
+                                ${
+                                    choice.costText
+                                    || "Без витрат"
+                                }
+
                             </span>
 
 
                             <span class="card-decision-result">
-                                ${choice.resultText || ""}
+
+                                ${
+                                    choice.resultText
+                                    || ""
+                                }
+
                             </span>
 
                         </button>
@@ -23168,103 +23295,162 @@ function showDecisionCard(
             .join("");
 
 
-    openGameInfoModal(`
+    /* =====================================================
+       КНОПКА ВІДМОВИ
 
-        <div class="decision-card-modal">
+       ТІЛЬКИ ДЛЯ ПОДІЇ.
+       ДЛЯ ЖИТТЯ ЇЇ НЕМАЄ.
+    ===================================================== */
+
+    const declineHTML =
+        isEvent
+
+            ? `
+
+                <button
+                    id="declineEventCardButton"
+                    class="
+                        secondary-game-btn
+                        finish-turn-btn
+                    "
+                >
+                    НЕ БРАТИ КАРТКУ
+                </button>
+
+              `
+
+            : "";
+
+
+    /* =====================================================
+       МАЛЮЄМО КАРТКУ СПРАВА
+    ===================================================== */
+
+    panel.innerHTML = `
+
+        <div class="revealed-current-card">
 
             <div class="decision-card-number">
+
                 Картка №${card.number}
-            </div>
-
-
-            <div class="decision-card-type">
-
-                ${CELL_TYPES[deckName]?.icon || "🎴"}
-
-                ${CELL_TYPES[deckName]?.name || ""}
 
             </div>
 
 
-            <h2>
+            <div class="revealed-card-type">
+
+                ${type.icon || "🎴"}
+
+                ${type.name || ""}
+
+            </div>
+
+
+            <h3>
+
                 ${card.title}
-            </h2>
+
+            </h3>
 
 
-            <p class="decision-card-story">
+            <p class="decision-card-text">
+
                 ${card.story || ""}
+
             </p>
 
 
             ${
                 card.requirementText
 
-                ? `
+                    ? `
 
-                    <div class="decision-card-requirement">
+                        <div class="decision-card-requirement">
 
-                        <strong>
-                            🎯 Умова:
-                        </strong>
+                            <strong>
+                                🎯 Умова:
+                            </strong>
 
-                        ${card.requirementText}
+                            ${card.requirementText}
 
-                    </div>
+                        </div>
 
-                  `
+                      `
 
-                : ""
+                    : ""
             }
 
 
             ${
                 card.bankRequirement
 
-                ? `
+                    ? `
 
-                    <div class="decision-card-bank-requirement">
+                        <div class="decision-card-bank-requirement">
 
-                        <strong>
-                            🏦 Банківська умова:
-                        </strong>
+                            <strong>
+                                🏦 Банківська умова:
+                            </strong>
 
-                        ${card.bankRequirement.text}
+                            ${card.bankRequirement.text}
 
-                    </div>
+                        </div>
 
-                  `
+                      `
 
-                : ""
+                    : ""
             }
 
 
             ${
                 card.taskText
 
-                ? `
+                    ? `
 
-                    <div class="decision-card-task">
-                        ${card.taskText}
-                    </div>
+                        <div class="decision-card-task">
 
-                  `
+                            ${card.taskText}
 
-                : ""
+                        </div>
+
+                      `
+
+                    : ""
             }
 
 
             ${
                 card.cooperationText
 
-                ? `
+                    ? `
 
-                    <div class="decision-card-task">
-                        ${card.cooperationText}
-                    </div>
+                        <div class="decision-card-task">
 
-                  `
+                            ${card.cooperationText}
 
-                : ""
+                        </div>
+
+                      `
+
+                    : ""
+            }
+
+
+            ${
+                isLife
+
+                    ? `
+
+                        <div class="decision-card-task">
+
+                            ❤️ Це картка Життя.
+                            Обери одне з доступних рішень.
+
+                        </div>
+
+                      `
+
+                    : ""
             }
 
 
@@ -23274,12 +23460,19 @@ function showDecisionCard(
 
             </div>
 
+
+            ${declineHTML}
+
         </div>
 
-    `);
+    `;
 
 
-    document
+    /* =====================================================
+       КЛІК ПО ВАРІАНТУ
+    ===================================================== */
+
+    panel
         .querySelectorAll(
             ".card-decision-button"
         )
@@ -23289,6 +23482,7 @@ function showDecisionCard(
                 button.addEventListener(
                     "click",
                     () => {
+
 
                         const index =
                             Number(
@@ -23310,13 +23504,9 @@ function showDecisionCard(
 
 
                         resolveCardChoice(
-
                             deckName,
-
                             card,
-
                             choice
-
                         );
 
                     }
@@ -23325,8 +23515,43 @@ function showDecisionCard(
             }
         );
 
-}
 
+    /* =====================================================
+       ВІДМОВА ВІД ПОДІЇ
+    ===================================================== */
+
+    if (isEvent) {
+
+        panel
+            .querySelector(
+                "#declineEventCardButton"
+            )
+            ?.addEventListener(
+                "click",
+                () => {
+
+
+                    addLog(
+                        `🎴 ${player.name}: не бере картку «${card.title}».`
+                    );
+
+
+                    showRaifikCurrentCardMessage(
+                        "Картку Події пропущено. Хід завершено."
+                    );
+
+
+                    setTimeout(
+                        finishPlayerCardTurn,
+                        500
+                    );
+
+                }
+            );
+
+    }
+
+}
 
 /* =========================================================
    139. ДОЛЯ
@@ -23993,7 +24218,143 @@ function resolveBonusFateCard(
         );
 
 }
+/* =========================================================
+   МОДАЛКА КАР'ЄРНОГО ПРОГРЕСУ
+========================================================= */
 
+function showCareerProgressModal() {
+
+    const player =
+        gameState.player;
+
+
+    if (
+        !player ||
+        !player.sector
+    ) {
+
+        return;
+
+    }
+
+
+    const displayedLevel =
+        getDisplayedCareerLevel(
+            player
+        );
+
+
+    const currentStats =
+        getCareerStats(
+            player.sector.id,
+            displayedLevel
+        );
+
+
+    const nextLevel =
+        Math.min(
+            displayedLevel + 1,
+            4
+        );
+
+
+    const nextStats =
+        getCareerStats(
+            player.sector.id,
+            nextLevel
+        );
+
+
+    openGameInfoModal(`
+        <div class="career-progress-popup">
+
+            <h2>
+                📈 Кар'єрний прогрес
+            </h2>
+
+
+            <div class="career-popup-profile">
+
+                <img
+                    class="career-popup-token"
+                    src="${player.token.image}"
+                    alt="${player.name}"
+                >
+
+                <div>
+
+                    <strong>
+                        ${player.name}
+                    </strong>
+
+                    <p>
+                        ${currentStats?.name || player.sector.name}
+                    </p>
+
+                    <p>
+                        Професійний рівень:
+                        ${displayedLevel}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            ${
+                displayedLevel < 4
+
+                ? `
+                    <div class="next-career-level">
+
+                        <span>
+                            Наступна сходинка
+                        </span>
+
+                        <strong>
+                            ${nextStats?.name || "Наступний рівень"}
+                        </strong>
+
+                    </div>
+
+                    <div class="dream-requirements">
+
+                        <span>
+                            ⭐ Репутація:
+                            ${player.reputation}
+                            /
+                            ${nextStats?.reputation || 0}
+                        </span>
+
+                        <span>
+                            🧠 Знання:
+                            ${player.knowledge}
+                            /
+                            ${nextStats?.knowledge || 0}
+                        </span>
+
+                        <span>
+                            ⚡ Енергія:
+                            ${player.energy}
+                            /
+                            ${nextStats?.energy || 0}
+                        </span>
+
+                    </div>
+                `
+
+                : `
+                    <div class="career-max-level">
+                        🏆 Ти вже на максимальному професійному рівні
+                    </div>
+                `
+            }
+
+        </div>
+    `);
+
+}
+ 
 /* =========================================================
  ВІДКРИТТЯ УНІВЕРСАЛЬНОЇ МОДАЛКИ
 
