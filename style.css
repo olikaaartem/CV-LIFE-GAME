@@ -4954,3 +4954,24 @@ button {
     display: none !important;
 }
 
+/* =========================================================
+   ОСТАННІЙ OVERRIDE ФІШОК
+========================================================= */
+
+.board-player-piece.player-board-piece {
+    width: 78px !important;
+    height: 78px !important;
+    max-width: 78px !important;
+    max-height: 78px !important;
+}
+
+.board-player-piece.ai-board-piece {
+    width: 40px !important;
+    height: 40px !important;
+    max-width: 40px !important;
+    max-height: 40px !important;
+}
+
+.cell-type-label {
+    display: none !important;
+}
