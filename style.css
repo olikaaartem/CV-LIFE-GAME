@@ -5040,3 +5040,65 @@ button {
 .board-player-piece.ai-board-piece {
     pointer-events: none !important;
 }
+
+
+
+
+/* =========================================================
+   РОЗВЕДЕННЯ ФІШОК НА ОДНІЙ КЛІТИНЦІ
+========================================================= */
+
+/* Якщо фішка одна — стоїть по центру */
+.board-cell > .board-player-piece {
+    left: 50% !important;
+    top: 50% !important;
+
+    transform:
+        translate(-50%, -50%) !important;
+}
+
+
+/* =========================================================
+   ЯКЩО НА КЛІТИНЦІ 2 ФІШКИ
+========================================================= */
+
+.board-cell:has(> .board-player-piece:nth-of-type(2))
+> .board-player-piece:nth-of-type(1) {
+
+    transform:
+        translate(-95%, -65%) !important;
+}
+
+.board-cell:has(> .board-player-piece:nth-of-type(2))
+> .board-player-piece:nth-of-type(2) {
+
+    transform:
+        translate(-5%, -65%) !important;
+}
+
+
+/* =========================================================
+   ЯКЩО НА КЛІТИНЦІ 3 ФІШКИ — ТРИКУТНИКОМ
+========================================================= */
+
+.board-cell:has(> .board-player-piece:nth-of-type(3))
+> .board-player-piece:nth-of-type(1) {
+
+    transform:
+        translate(-105%, -90%) !important;
+}
+
+.board-cell:has(> .board-player-piece:nth-of-type(3))
+> .board-player-piece:nth-of-type(2) {
+
+    transform:
+        translate(5%, -90%) !important;
+}
+
+.board-cell:has(> .board-player-piece:nth-of-type(3))
+> .board-player-piece:nth-of-type(3) {
+
+    transform:
+        translate(-50%, 5%) !important;
+}
+
