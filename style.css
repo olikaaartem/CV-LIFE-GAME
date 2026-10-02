@@ -4975,3 +4975,51 @@ button {
 .cell-type-label {
     display: none !important;
 }
+/* =========================================================
+   ОДНАКОВИЙ РОЗМІР УСІХ ФІШОК
+========================================================= */
+
+.board-player-piece,
+.board-player-piece.player-board-piece,
+.board-player-piece.ai-board-piece,
+.player-board-piece,
+.ai-board-piece {
+    width: 72px !important;
+    height: 72px !important;
+
+    max-width: 72px !important;
+    max-height: 72px !important;
+}
+
+
+/* САМА КАРТИНКА ФІШКИ */
+
+.board-player-piece img {
+    width: 72px !important;
+    height: 72px !important;
+
+    max-width: 72px !important;
+    max-height: 72px !important;
+
+    object-fit: contain !important;
+}
+
+
+/* ГРАВЕЦЬ */
+
+.board-player-piece.player-board-piece {
+    transform:
+        translate(-95%, -95%) !important;
+
+    z-index: 100 !important;
+}
+
+
+/* AI */
+
+.board-player-piece.ai-board-piece {
+    transform:
+        translate(-5%, -95%) !important;
+
+    z-index: 96 !important;
+}
