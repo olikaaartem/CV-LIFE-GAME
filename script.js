@@ -23112,12 +23112,13 @@ function showDecisionCard(
                 </div>
 
 
-                <button
-                    id="finishUnavailableCardButton"
-                    class="main-game-btn finish-turn-btn"
-                >
-                    ЗАВЕРШИТИ ХІД
-                </button>
+               <button
+    id="finishUnavailableCardButton"
+    class="side-card-finish-btn"
+>
+    ПРОПУСТИТИ КАРТКУ І ЗАВЕРШИТИ ХІД
+</button>
+
 
             </div>
 
