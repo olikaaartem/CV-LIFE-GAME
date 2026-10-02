@@ -5874,6 +5874,287 @@ async function rollDice() {
         450
     );
 
+prepareManualPlayerMove(
+    value
+);
+
+
+}
+
+
+/* =========================================================
+   38. РОЗРАХУНОК РУХУ
+
+   ВАЖЛИВО:
+
+   Тут більше НЕМАЄ
+   автоматичного:
+
+   28 → велике коло.
+
+   Гравець може проходити
+   мале коло декілька разів.
+========================================================= */
+
+function calculateDestination(
+    participant,
+    steps
+) {
+
+    const boardName =
+        participant.board;
+
+
+    const boardLength =
+        boardName === "inner"
+
+        ? GAME_CONFIG.innerCells
+
+        : GAME_CONFIG.outerCells;
+
+
+    const currentPosition =
+        participant.position;
+
+
+    const rawTarget =
+        currentPosition +
+        steps;
+
+
+    const crossedStart =
+        rawTarget >
+        boardLength;
+
+
+    const destinationPosition =
+        crossedStart
+
+        ? (
+            (
+                rawTarget - 1
+            ) %
+            boardLength
+        ) + 1
+
+        : rawTarget;
+
+
+    return {
+
+        board:
+            boardName,
+
+        position:
+            destinationPosition,
+
+        crossedStart,
+
+        landedExactlyOnStart:
+            crossedStart &&
+            destinationPosition === 1
+
+    };
+
+} 
+
+
+/* =========================================================
+   37. КИДОК КУБИКА ГРАВЦЯ
+========================================================= */
+
+async function rollDice() {
+
+    if (
+        gameState.currentTurn !==
+        "player"
+    ) {
+
+        return;
+
+    }
+
+
+    const player =
+        gameState.player;
+
+
+    const button =
+        document.getElementById(
+            "rollDiceButton"
+        );
+
+
+    /* =====================================================
+       ПРОПУСК ХОДУ
+    ===================================================== */
+
+    if (
+        player.skipTurns > 0
+    ) {
+
+        player.skipTurns -=
+            1;
+
+
+        addLog(
+            `⏭ ${player.name} пропускає хід.`
+        );
+
+
+        showRaifikCurrentCardMessage(
+
+            "⏭ Цей хід ти пропускаєш."
+
+        );
+
+
+        if (button) {
+
+            button.disabled =
+                true;
+
+        }
+
+
+        await delay(
+            1200
+        );
+
+
+        startAITurns();
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ПЕРЕХІД НА ВЕЛИКЕ КОЛО
+
+       За правилами:
+
+       якщо мале коло вже пройдене
+       і 2-й професійний рівень
+       отримано під час повторного
+       проходження —
+
+       завершувати поточне коло
+       не потрібно.
+
+       Перед наступним ходом
+       переміщаємо гравця
+       на START великого кола.
+    ===================================================== */
+
+    if (
+        player.pendingOuterTransition
+    ) {
+
+        await moveParticipantToOuterStart(
+            player
+        );
+
+    }
+
+
+    if (button) {
+
+        button.disabled =
+            true;
+
+    }
+
+
+    gameState.currentTurn =
+        "moving";
+
+
+    const dice =
+        document.getElementById(
+            "dice"
+        );
+
+
+    const message =
+        document.getElementById(
+            "diceMessage"
+        );
+
+
+    /* Анімація кубика */
+
+    for (
+        let i = 0;
+        i < 8;
+        i++
+    ) {
+
+        const randomFace =
+            randomNumber(
+                1,
+                6
+            );
+
+
+        if (dice) {
+
+            dice.textContent =
+                DICE_FACES[
+                    randomFace - 1
+                ];
+
+        }
+
+
+        await delay(
+            70
+        );
+
+    }
+
+
+    const value =
+        randomNumber(
+            1,
+            6
+        );
+
+
+    gameState.diceValue =
+        value;
+
+
+    if (dice) {
+
+        dice.textContent =
+            DICE_FACES[
+                value - 1
+            ];
+
+    }
+
+
+    if (message) {
+
+        message.textContent =
+            `Випало: ${value}`;
+
+    }
+
+
+    addLog(
+
+        `🎲 ${player.name}: випало ${value}`
+
+    );
+
+
+    await delay(
+        450
+    );
+
 
     await movePlayerStepByStep(
         value
@@ -6117,36 +6398,967 @@ async function movePlayerStepByStep(
 /* =========================================================
    40. РУХ DOM-ФІШКИ
 ========================================================= */
-
 function movePieceDOM(
     participantId,
     cell
 ) {
 
     if (!cell) {
+        return;
+    }
+
+
+    const piece =
+        document.querySelector(
+            `.board-player-piece[data-player-id="${participantId}"]`
+        );
+
+
+    if (!piece) {
+
+        console.warn(
+            "Не знайдено фішку:",
+            participantId
+        );
+
+        return;
+    }
+
+
+    cell.appendChild(
+        piece
+    );
+
+}
+
+
+
+/* =========================================================
+   41. ЗАВЕРШЕННЯ ПОВНОГО КОЛА
+
+   INNER:
+
+   Якщо після проходження
+   малого кола вже є
+   професійний рівень 2+:
+
+   → ставимо перехід
+     на велике коло
+     перед наступним ходом.
+
+   Якщо рівня 2 ще немає:
+
+   → гравець залишається
+     на малому колі
+   → отримує бонус START.
+
+   OUTER:
+
+   → гравець продовжує
+     велике коло
+   → отримує бонус START.
+========================================================= */
+
+async function handleCompletedLap(
+    participant,
+    exactStart
+) {
+
+    if (!participant) {
 
         return;
 
     }
 
 
-    const piece =
-        document.querySelector(
+    /* =====================================================
+       МАЛЕНЬКЕ КОЛО
+    ===================================================== */
 
-            `[data-player-id="${participantId}"]`
+    if (
+        participant.board ===
+        "inner"
+    ) {
+
+
+        const canMoveToOuter =
+            participant.innerLaps >= 1
+            &&
+            participant.careerLevel >=
+                GAME_CONFIG
+                    .outerUnlockCareerLevel;
+
+
+        /* =================================================
+           УМОВИ ПЕРЕХОДУ ВИКОНАНІ
+
+           Людина НЕ отримує
+           бонус повторного START,
+           бо вона вже не залишається
+           проходити мале коло знову.
+        ================================================= */
+
+        if (canMoveToOuter) {
+
+            participant.pendingOuterTransition =
+                true;
+
+
+            addLog(
+
+                `➡️ ${participant.name} виконав(ла) умови переходу на велике коло.`
+
+            );
+
+
+            if (
+                participant.id ===
+                "player"
+            ) {
+
+                showRaifikCurrentCardMessage(
+
+                    "🎉 Маленьке коло пройдено, а 2-й професійний рівень уже досягнуто. Перед наступним ходом ти переходиш на START великого кола."
+
+                );
+
+            }
+
+
+            return;
+
+        }
+
+
+        /* =================================================
+           ЗАЛИШАЄМОСЯ НА МАЛОМУ КОЛІ
+
+           ТУТ ДАЄМО БОНУС START.
+        ================================================= */
+
+        applyInnerStartBonus(
+
+            participant,
+
+            exactStart
 
         );
 
 
-    if (piece) {
+        if (
+            participant.id ===
+            "player"
+        ) {
 
-        cell.appendChild(
-            piece
+            showRaifikCurrentCardMessage(
+
+                "🔄 Перше коло завершено, але для переходу потрібен щонайменше 2-й професійний рівень. Продовжуємо мале коло."
+
+            );
+
+        }
+
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ВЕЛИКЕ КОЛО
+    ===================================================== */
+
+    if (
+        participant.board ===
+        "outer"
+    ) {
+
+        applyOuterStartBonus(
+
+            participant,
+
+            exactStart
+
         );
 
     }
 
 }
+
+
+/* =========================================================
+   42. БОНУС START — МАЛЕ КОЛО
+
+   ЗА ПРАВИЛАМИ:
+
+   точна зупинка:
+   +50 000 грн
+
+   перетин:
+   +5 репутації
+   +5 знань
+
+   За один START —
+   лише один бонус.
+========================================================= */
+
+function applyInnerStartBonus(
+    participant,
+    exactStart
+) {
+
+    if (exactStart) {
+
+        participant.money +=
+            GAME_CONFIG
+                .innerExactStartMoney;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: точна зупинка на START малого кола +${formatMoney(GAME_CONFIG.innerExactStartMoney)} грн`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Точна зупинка на START! +${formatMoney(GAME_CONFIG.innerExactStartMoney)} грн.`
+
+            );
+
+        }
+
+    }
+
+    else {
+
+        participant.reputation +=
+            GAME_CONFIG
+                .innerPassedStartReputation;
+
+
+        participant.knowledge +=
+            GAME_CONFIG
+                .innerPassedStartKnowledge;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: перетин START малого кола +${GAME_CONFIG.innerPassedStartReputation} репутації, +${GAME_CONFIG.innerPassedStartKnowledge} знань`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Ти перетнув(ла) START: +${GAME_CONFIG.innerPassedStartReputation} репутації та +${GAME_CONFIG.innerPassedStartKnowledge} знань.`
+
+            );
+
+        }
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   43. БОНУС START — ВЕЛИКЕ КОЛО
+
+   ЗА ПРАВИЛАМИ:
+
+   точна зупинка:
+   +100 000 грн
+
+   перетин:
+   +10 репутації
+   +10 знань.
+========================================================= */
+
+function applyOuterStartBonus(
+    participant,
+    exactStart
+) {
+
+    if (exactStart) {
+
+        participant.money +=
+            GAME_CONFIG
+                .outerExactStartMoney;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: точна зупинка на START великого кола +${formatMoney(GAME_CONFIG.outerExactStartMoney)} грн`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Точна зупинка на START великого кола! +${formatMoney(GAME_CONFIG.outerExactStartMoney)} грн.`
+
+            );
+
+        }
+
+    }
+
+    else {
+
+        participant.reputation +=
+            GAME_CONFIG
+                .outerPassedStartReputation;
+
+
+        participant.knowledge +=
+            GAME_CONFIG
+                .outerPassedStartKnowledge;
+
+
+        addLog(
+
+            `🏁 ${participant.name}: перетин START великого кола +${GAME_CONFIG.outerPassedStartReputation} репутації, +${GAME_CONFIG.outerPassedStartKnowledge} знань`
+
+        );
+
+
+        if (
+            participant.id ===
+            "player"
+        ) {
+
+            showRaifikCurrentCardMessage(
+
+                `🏁 Перетин START великого кола: +${GAME_CONFIG.outerPassedStartReputation} репутації та +${GAME_CONFIG.outerPassedStartKnowledge} знань.`
+
+            );
+
+        }
+
+    }
+
+
+    clampPlayerResources(
+        participant
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        updatePlayerStatsUI();
+
+
+        checkCareerProgress(
+            participant
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   44. ПЕРЕХІД НА START ВЕЛИКОГО КОЛА
+
+   Виконується ПЕРЕД наступним ходом.
+========================================================= */
+
+async function moveParticipantToOuterStart(
+    participant
+) {
+
+    if (!participant) {
+
+        return;
+
+    }
+
+
+    participant.board =
+        "outer";
+
+
+    participant.position =
+        1;
+
+
+    participant.pendingOuterTransition =
+        false;
+
+
+    const cell =
+        document.querySelector(
+
+            `.outer-cell[data-position="1"]`
+
+        );
+
+
+    if (cell) {
+
+        movePieceDOM(
+            participant.id,
+            cell
+        );
+
+    }
+
+
+    addLog(
+
+        `➡️ ${participant.name} переходить на START великого кола.`
+
+    );
+
+
+    if (
+        participant.id ===
+        "player"
+    ) {
+
+        showRaifikCurrentCardMessage(
+
+            "➡️ Ти переходиш на START великого кола. Тепер починається наступний етап твого життя!"
+
+        );
+
+
+        await delay(
+            700
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   45. ТИП ПОТОЧНОЇ КЛІТИНКИ
+========================================================= */
+
+function getParticipantCellType(
+    participant
+) {
+
+    const board =
+        participant.board ===
+        "inner"
+
+        ? INNER_BOARD
+
+        : OUTER_BOARD;
+
+
+    return board[
+        participant.position - 1
+    ];
+
+}
+
+
+/* =========================================================
+   46. ОБРОБКА КЛІТИНКИ ГРАВЦЯ
+
+   КАРТКИ ПІДКЛЮЧИМО
+   В НАСТУПНІЙ ЧАСТИНІ.
+========================================================= */
+
+async function resolvePlayerCell() {
+
+    const player =
+        gameState.player;
+
+
+    const typeId =
+        getParticipantCellType(
+            player
+        );
+
+
+    const type =
+        CELL_TYPES[
+            typeId
+        ];
+
+
+    if (!type) {
+
+        startAITurns();
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       START
+
+       Сам факт стояння на START
+       НЕ дає зарплату.
+
+       START-бонус уже був
+       оброблений під час
+       проходження кола.
+    ===================================================== */
+
+    if (
+        typeId ===
+        "start"
+    ) {
+
+        showRaifikCurrentCardMessage(
+
+            "🏁 START. Зарплата виплачується окремо кожні 3 твої ходи."
+
+        );
+
+
+        await delay(
+            1000
+        );
+
+
+        startAITurns();
+
+
+        return;
+
+    }
+
+
+    showRaifikCurrentCardMessage(
+
+        `${type.icon} ${getLandedText(player)} на «${type.name}».`
+
+    );
+
+
+    switch (
+        typeId
+    ) {
+
+
+        /* =================================================
+           ПОДІЯ
+        ================================================= */
+
+        case "event":
+
+            startCardTurn(
+                "event"
+            );
+
+            break;
+
+
+        /* =================================================
+           БАНК
+        ================================================= */
+
+        case "bank":
+
+            startCardTurn(
+                "bank"
+            );
+
+            break;
+
+
+        /* =================================================
+           ЖИТТЯ
+        ================================================= */
+
+        case "life":
+
+            startCardTurn(
+                "life"
+            );
+
+            break;
+
+
+        /* =================================================
+           ДОЛЯ
+        ================================================= */
+
+        case "fate":
+
+            startCardTurn(
+                "fate"
+            );
+
+            break;
+
+
+        /* =================================================
+           LOUNGE
+        ================================================= */
+
+        case "lounge":
+
+            handleLoungeCell(
+                player
+            );
+
+            break;
+
+
+        /* =================================================
+           АКАДЕМІЯ
+        ================================================= */
+
+        case "academy":
+
+            showAcademyChoice();
+
+            break;
+
+
+        /* =================================================
+           ПОЛЕ ПЕРЕХОДУ
+
+           Саме поле 28
+           більше НЕ переносить
+           автоматично на outer.
+        ================================================= */
+
+        case "transition":
+
+            await handleTransitionCell(
+                player
+            );
+
+            break;
+
+
+        /* =================================================
+           МРІЯ
+        ================================================= */
+
+        case "dreamCheck":
+
+            handleDreamCheckCell(
+                player
+            );
+
+            break;
+
+
+        default:
+
+            startAITurns();
+
+            break;
+
+    }
+
+}
+
+
+/* =========================================================
+   47. КЛІТИНКА ПЕРЕХОДУ МАЛОГО КОЛА
+
+   Це інформаційна зона.
+
+   Сам факт попадання на 28
+   НЕ означає автоматичний перехід.
+
+   Треба:
+   - пройти мале коло;
+   - мати 2-й професійний рівень.
+========================================================= */
+
+async function handleTransitionCell(
+    participant
+) {
+
+    const ready =
+        participant.innerLaps >= 1
+        &&
+        participant.careerLevel >=
+            GAME_CONFIG
+                .outerUnlockCareerLevel;
+
+
+    if (ready) {
+
+        participant.pendingOuterTransition =
+            true;
+
+
+        showRaifikCurrentCardMessage(
+
+            "➡️ Умови переходу виконані. Перед наступним ходом ти перейдеш на START великого кола."
+
+        );
+
+
+        addLog(
+
+            `➡️ ${participant.name}: готовий(а) до переходу на велике коло.`
+
+        );
+
+    }
+
+    else {
+
+        const level =
+            getDisplayedCareerLevel(
+                participant
+            );
+
+
+        showRaifikCurrentCardMessage(
+
+            `➡️ Для переходу потрібно пройти мале коло щонайменше один раз і досягти 2-го професійного рівня. Зараз твій рівень: ${level}.`
+
+        );
+
+    }
+
+
+    await delay(
+        1300
+    );
+
+
+    startAITurns();
+
+}
+
+
+/* =========================================================
+   39. ПОКРОКОВИЙ РУХ ГРАВЦЯ
+========================================================= */
+
+async function movePlayerStepByStep(
+    steps
+) {
+
+    const player =
+        gameState.player;
+
+
+    const startBoard =
+        player.board;
+
+
+    const boardLength =
+        startBoard === "inner"
+
+        ? GAME_CONFIG.innerCells
+
+        : GAME_CONFIG.outerCells;
+
+
+    let crossedStart =
+        false;
+
+
+    let landedExactlyOnStart =
+        false;
+
+
+    for (
+        let step = 0;
+        step < steps;
+        step++
+    ) {
+
+
+        let nextPosition =
+            player.position + 1;
+
+
+        /* =================================================
+           ПЕРЕТИН START
+        ================================================= */
+
+        if (
+            nextPosition >
+            boardLength
+        ) {
+
+            nextPosition =
+                1;
+
+
+            crossedStart =
+                true;
+
+
+            /* =================================================
+               ЗАВЕРШЕНО ПОВНЕ КОЛО
+            ================================================= */
+
+            if (
+                player.board ===
+                "inner"
+            ) {
+
+                player.innerLaps +=
+                    1;
+
+            }
+
+            else {
+
+                player.outerLaps +=
+                    1;
+
+            }
+
+        }
+
+
+        player.position =
+            nextPosition;
+
+
+        const cell =
+            document.querySelector(
+
+                `.${player.board}-cell[data-position="${player.position}"]`
+
+            );
+
+
+        if (cell) {
+
+            movePieceDOM(
+                player.id,
+                cell
+            );
+
+        }
+
+
+        await delay(
+            180
+        );
+
+    }
+
+
+    /* =====================================================
+       ТОЧНА ЗУПИНКА НА START
+    ===================================================== */
+
+    landedExactlyOnStart =
+        crossedStart &&
+        player.position === 1;
+
+
+    /* =====================================================
+       ОБРОБКА ЗАВЕРШЕННЯ КОЛА
+    ===================================================== */
+
+    if (crossedStart) {
+
+        await handleCompletedLap(
+
+            player,
+
+            landedExactlyOnStart
+
+        );
+
+    }
+
+
+    gameState.target = {
+
+        board:
+            player.board,
+
+        position:
+            player.position
+
+    };
+
+
+    await resolvePlayerCell();
+
+}
+
+
+/* =========================================================
+   40. РУХ DOM-ФІШКИ
+========================================================= */
+function movePieceDOM(
+    participantId,
+    cell
+) {
+
+    if (!cell) {
+        return;
+    }
+
+
+    const piece =
+        document.querySelector(
+            `.board-player-piece[data-player-id="${participantId}"]`
+        );
+
+
+    if (!piece) {
+
+        console.warn(
+            "Не знайдено фішку:",
+            participantId
+        );
+
+        return;
+    }
+
+
+    cell.appendChild(
+        piece
+    );
+
+}
+
 
 
 /* =========================================================
