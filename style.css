@@ -5023,3 +5023,20 @@ button {
 
     z-index: 96 !important;
 }
+
+/* ручне перетягування фышки гравця */
+
+
+
+.board-player-piece.player-board-piece {
+    pointer-events: auto !important;
+    cursor: grab !important;
+}
+
+.board-player-piece.player-board-piece:active {
+    cursor: grabbing !important;
+}
+
+.board-player-piece.ai-board-piece {
+    pointer-events: none !important;
+}
