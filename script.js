@@ -23994,6 +23994,50 @@ function resolveBonusFateCard(
 
 }
 
+/* =========================================================
+ ВІДКРИТТЯ УНІВЕРСАЛЬНОЇ МОДАЛКИ
+
+   Залишаємо універсальною.  
+========================================================= */
+
+function openGameInfoModal(
+    html
+) {
+
+    const modal =
+        document.getElementById(
+            "gameInfoModal"
+        );
+
+
+    const content =
+        document.getElementById(
+            "gameInfoContent"
+        );
+
+
+    if (
+        !modal ||
+        !content
+    ) {
+
+        console.warn(
+            "Не знайдено gameInfoModal або gameInfoContent"
+        );
+
+        return;
+
+    }
+
+
+    content.innerHTML =
+        html;
+
+
+    modal.hidden =
+        false;
+
+}
 
 /* =========================================================
    146. КНОПКА ЗАКРИТТЯ МОДАЛКИ
@@ -24007,18 +24051,13 @@ function closeGameInfoModal() {
         document.getElementById(
             "gameInfoModal"
         );
-
-
     if (!modal) {
 
         return;
-
     }
-
 
     modal.hidden =
         true;
-
 }
 
 
