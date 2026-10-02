@@ -1722,6 +1722,68 @@ function delay(ms) {
 
 }
 
+/* =========================================================
+   ЖУРНАЛ ХОДІВ
+========================================================= */
+
+function addLog(
+    text
+) {
+
+    if (!text) {
+        return;
+    }
+
+
+    if (
+        !Array.isArray(
+            gameState.history
+        )
+    ) {
+
+        gameState.history =
+            [];
+
+    }
+
+
+    gameState.history.push({
+
+        text:
+            String(text),
+
+        turn:
+            Number(
+                gameState.playerTurns
+            ) || 0,
+
+        time:
+            new Date()
+                .toLocaleTimeString(
+                    "uk-UA",
+                    {
+                        hour: "2-digit",
+                        minute: "2-digit"
+                    }
+                )
+
+    });
+
+
+    const journalCount =
+        document.getElementById(
+            "journalCount"
+        );
+
+
+    if (journalCount) {
+
+        journalCount.textContent =
+            gameState.history.length;
+
+    }
+
+}
 
 /* =========================================================
    ЗАМІНА ЕКРАНА
