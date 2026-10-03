@@ -6276,9 +6276,10 @@ async function rollDice() {
     );
 
 
-    await movePlayerStepByStep(
-        value
-    );
+    prepareManualPlayerMove(
+    value
+);
+
 
 }
 
@@ -6358,6 +6359,274 @@ function calculateDestination(
     };
 
 }
+/* =========================================================
+   38.1. РУЧНИЙ РУХ ФІШКИ ГРАВЦЯ
+
+   Після кидка кубика:
+   - рахуємо кінцеву клітинку;
+   - підсвічуємо її;
+   - гравець сам перетягує фішку;
+   - лише після цього запускається дія клітинки.
+========================================================= */
+
+function prepareManualPlayerMove(
+    steps
+) {
+
+    const player =
+        gameState.player;
+
+
+    const target =
+        calculateDestination(
+            player,
+            steps
+        );
+
+
+    gameState.target =
+        target;
+
+
+    /* Прибираємо стару підсвітку */
+
+    document
+        .querySelectorAll(
+            ".board-cell"
+        )
+        .forEach(
+            cell =>
+                cell.classList.remove(
+                    "target-cell"
+                )
+        );
+
+
+    const targetCell =
+        document.querySelector(
+
+            `.${target.board}-cell[data-position="${target.position}"]`
+
+        );
+
+
+    const piece =
+        document.querySelector(
+
+            `.board-player-piece[data-player-id="player"]`
+
+        );
+
+
+    if (
+        !targetCell ||
+        !piece
+    ) {
+
+        console.warn(
+            "Не вдалося підготувати ручний рух."
+        );
+
+        return;
+
+    }
+
+
+    targetCell.classList.add(
+        "target-cell"
+    );
+
+
+    piece.draggable =
+        true;
+
+
+    showRaifikCurrentCardMessage(
+
+        `🎲 Випало ${steps}. Перетягни свою фішку на підсвічену клітинку.`
+
+    );
+
+
+    piece.addEventListener(
+        "dragstart",
+        event => {
+
+            event.dataTransfer.setData(
+                "text/plain",
+                "player"
+            );
+
+        },
+        {
+            once: true
+        }
+    );
+
+
+    targetCell.addEventListener(
+        "dragover",
+        event => {
+
+            event.preventDefault();
+
+        }
+    );
+
+
+    targetCell.addEventListener(
+        "drop",
+        async event => {
+
+            event.preventDefault();
+
+
+            const id =
+                event.dataTransfer.getData(
+                    "text/plain"
+                );
+
+
+            if (
+                id !== "player"
+            ) {
+
+                return;
+
+            }
+
+
+            await finishManualPlayerMove(
+                target
+            );
+
+        },
+        {
+            once: true
+        }
+    );
+
+}
+
+
+/* =========================================================
+   38.2. ЗАВЕРШЕННЯ РУЧНОГО РУХУ
+========================================================= */
+
+async function finishManualPlayerMove(
+    target
+) {
+
+    const player =
+        gameState.player;
+
+
+    const oldBoard =
+        player.board;
+
+
+    player.position =
+        target.position;
+
+
+    player.board =
+        target.board;
+
+
+    if (
+        target.crossedStart
+    ) {
+
+        if (
+            oldBoard === "inner"
+        ) {
+
+            player.innerLaps +=
+                1;
+
+        }
+
+        else {
+
+            player.outerLaps +=
+                1;
+
+        }
+
+    }
+
+
+    const targetCell =
+        document.querySelector(
+
+            `.${target.board}-cell[data-position="${target.position}"]`
+
+        );
+
+
+    const piece =
+        document.querySelector(
+
+            `.board-player-piece[data-player-id="player"]`
+
+        );
+
+
+    if (
+        targetCell &&
+        piece
+    ) {
+
+        targetCell.appendChild(
+            piece
+        );
+
+    }
+
+
+    document
+        .querySelectorAll(
+            ".board-cell"
+        )
+        .forEach(
+            cell =>
+                cell.classList.remove(
+                    "target-cell"
+                )
+        );
+
+
+    if (piece) {
+
+        piece.draggable =
+            false;
+
+    }
+
+
+    gameState.target =
+        null;
+
+
+    if (
+        target.crossedStart
+    ) {
+
+        await handleCompletedLap(
+
+            player,
+
+            target.landedExactlyOnStart
+
+        );
+
+    }
+
+
+    await resolvePlayerCell();
+
+}
+
 
 
 /* =========================================================
