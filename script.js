@@ -19085,23 +19085,43 @@ const completedDreamsHTML =
         Вітаємо, ${player.name}!
     </p>
 
-    <p>
-        Ти круто прокачав / прокачала
-        свою фінансову грамотність,
-        навчився / навчилася
-        приймати рішення,
-        керувати ресурсами
-        та рухатися до великих цілей.
-    </p>
+   <p>
+    ${
+        player.gender === "girl"
+
+        ? `Ти круто прокачала свою фінансову грамотність,
+           навчилася приймати рішення,
+           керувати ресурсами
+           та рухатися до великих цілей.`
+
+        : `Ти круто прокачав свою фінансову грамотність,
+           навчився приймати рішення,
+           керувати ресурсами
+           та рухатися до великих цілей.`
+    }
+</p>
+
 
     <div class="cycle-notice-main-value">
 
-        ✨ Виконано Мрій:
-        ${completedDreamObjects.length}
-        із
-        ${DREAMS.length}
+    ${
+        completedDreamObjects.length === 1
 
-    </div>
+        ? (
+            player.gender === "girl"
+                ? "✨ Ти здійснила свою Мрію!"
+                : "✨ Ти здійснив свою Мрію!"
+          )
+
+        : (
+            player.gender === "girl"
+                ? `✨ Ти здійснила ${completedDreamObjects.length} Мрії!`
+                : `✨ Ти здійснив ${completedDreamObjects.length} Мрії!`
+          )
+    }
+
+</div>
+
 
     <div class="completed-dreams-summary">
 
