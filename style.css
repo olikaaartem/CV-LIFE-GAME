@@ -5185,4 +5185,27 @@ button {
     font-size: 11px;
     font-weight: 900;
 }
+/* =========================================================
+   ФІНАЛЬНА ГРАМОТА —
+   СПИСОК ВИКОНАНИХ МРІЙ
+========================================================= */
+
+.completed-dreams-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin-top: 14px;
+    padding: 12px;
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.75);
+}
+
+.completed-dreams-summary span {
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.35;
+}
 
