@@ -25106,6 +25106,374 @@ function openGameInfoModal(
         false;
 
 }
+/* =========================================================
+   145.1. ПРОГРЕС МРІЇ
+
+   Використовується кнопкою "МОЯ МРІЯ".
+   Якщо активної Мрії немає —
+   відкриваємо вибір нової.
+========================================================= */
+
+function showDreamProgress() {
+
+    const player =
+        gameState.player;
+
+
+    if (
+        !player.dream
+    ) {
+
+        showDreamSelection();
+
+        return;
+
+    }
+
+
+    const dream =
+        player.dream;
+
+
+    const req =
+        dream.requirements;
+
+
+    const careerReady =
+        hasFinalCareerLevel(
+            player
+        );
+
+
+    openGameInfoModal(`
+
+        <div class="dream-check-modal">
+
+            <div class="cycle-notice-icon">
+                ${dream.icon || "✨"}
+            </div>
+
+
+            <h2>
+                Моя Мрія
+            </h2>
+
+
+            <h3>
+                ${dream.name}
+            </h3>
+
+
+            <div class="dream-requirements">
+
+                <span>
+                    💰 ${formatMoney(player.money)}
+                    /
+                    ${formatMoney(req.money)}
+                </span>
+
+
+                <span>
+                    ⭐ ${player.reputation}
+                    /
+                    ${req.reputation}
+                </span>
+
+
+                <span>
+                    🧠 ${player.knowledge}
+                    /
+                    ${req.knowledge}
+                </span>
+
+
+                <span>
+                    ⚡ ${player.energy}
+                    /
+                    ${req.energy}
+                </span>
+
+            </div>
+
+
+            <div class="dream-career-check">
+
+                ${
+                    careerReady
+                        ? "✅ 4-й професійний рівень досягнуто"
+                        : "⏳ Потрібно досягти 4-го професійного рівня"
+                }
+
+            </div>
+
+
+            <p>
+                ✨ Виконано Мрій:
+                ${
+                    Array.isArray(
+                        player.completedDreams
+                    )
+                        ? player.completedDreams.length
+                        : 0
+                }
+                із ${DREAMS.length}
+            </p>
+
+
+            <button
+                id="closeDreamProgressButton"
+                class="main-game-btn"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "closeDreamProgressButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+}
+
+
+/* =========================================================
+   145.2. БАНК — ТИМЧАСОВИЙ HUB
+
+   Повний каталог банківських продуктів
+   підключимо окремим наступним блоком.
+
+   Зараз ця функція потрібна,
+   щоб кнопка БАНК працювала
+   і не ламала інші кнопки HUD.
+========================================================= */
+
+function showBankHub() {
+
+    const player =
+        gameState.player;
+
+
+    const bank =
+        player.bank || {};
+
+
+    const products =
+        Array.isArray(
+            bank.products
+        )
+            ? bank.products
+            : [];
+
+
+    const debts =
+        Array.isArray(
+            bank.debts
+        )
+            ? bank.debts
+            : [];
+
+
+    openGameInfoModal(`
+
+        <div class="bank-hub-modal">
+
+            <div class="cycle-notice-icon">
+                🏦
+            </div>
+
+
+            <h2>
+                Банк
+            </h2>
+
+
+            <p>
+                Твої фінансові можливості
+                та банківські продукти.
+            </p>
+
+
+            <div class="participant-popup-stats">
+
+                <span>
+                    🎟 Додаткові звернення:
+                    ${bank.extraVisits || 0}
+                </span>
+
+                <span>
+                    ⭐ Premium:
+                    ${bank.premium ? "Так" : "Ні"}
+                </span>
+
+                <span>
+                    💳 Продуктів:
+                    ${products.length}
+                </span>
+
+                <span>
+                    📄 Активних зобов'язань:
+                    ${debts.length}
+                </span>
+
+            </div>
+
+
+            <p class="progress-help-text">
+                Повний каталог банківських продуктів
+                підключаємо наступним етапом.
+            </p>
+
+
+            <button
+                id="closeBankHubButton"
+                class="main-game-btn"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "closeBankHubButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+}
+
+
+/* =========================================================
+   145.3. ЖУРНАЛ ХОДІВ
+========================================================= */
+
+function showGameJournal() {
+
+    const history =
+        Array.isArray(
+            gameState.history
+        )
+            ? gameState.history
+            : [];
+
+
+    const rows =
+        history.length
+
+            ? history
+                .slice()
+                .reverse()
+                .map(
+                    item => {
+
+                        const text =
+                            typeof item === "string"
+                                ? item
+                                : item.text || "";
+
+
+                        const time =
+                            typeof item === "object"
+                                ? item.time || ""
+                                : "";
+
+
+                        const turn =
+                            typeof item === "object"
+                                ? item.turn || ""
+                                : "";
+
+
+                        return `
+
+                            <div class="journal-row">
+
+                                <small>
+                                    ${
+                                        turn
+                                            ? `Хід ${turn}`
+                                            : ""
+                                    }
+
+                                    ${
+                                        time
+                                            ? ` • ${time}`
+                                            : ""
+                                    }
+                                </small>
+
+                                <div>
+                                    ${text}
+                                </div>
+
+                            </div>
+
+                        `;
+
+                    }
+                )
+                .join("")
+
+            : `
+
+                <p>
+                    Журнал поки порожній.
+                </p>
+
+              `;
+
+
+    openGameInfoModal(`
+
+        <div class="game-journal-modal">
+
+            <h2>
+                📋 Журнал ходів
+            </h2>
+
+
+            <div class="game-journal-list">
+
+                ${rows}
+
+            </div>
+
+
+            <button
+                id="closeJournalButton"
+                class="main-game-btn"
+            >
+                ЗАКРИТИ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "closeJournalButton"
+        )
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+}
 
 /* =========================================================
    146. КНОПКА ЗАКРИТТЯ МОДАЛКИ
