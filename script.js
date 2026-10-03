@@ -64,15 +64,12 @@ const GAME_CONFIG = {
        відповідно до актуального
        професійного рівня.
     ===================================================== */
-
     financialPeriodTurns: 3,
-
-
+    careerFirstPromotionMinTurn: 5,
+    careerMinTurnsBetweenPromotions: 4,
     /* =====================================================
        УМОВА ПЕРЕХОДУ НА ВЕЛИКЕ КОЛО
-
        careerLevel у JS рахується від 0:
-
        0 = професійний рівень 1
        1 = професійний рівень 2
        2 = професійний рівень 3
@@ -1532,8 +1529,10 @@ const gameState = {
 
         careerLevel: 0,
 
-
         dream: null,
+       
+      /* Виконані Мрії */
+      completedDreams: [],
 
 
         /* =================================================
@@ -3415,20 +3414,33 @@ function showDreamSelection() {
 
                           `;
 
+const isCompleted =
+    Array.isArray(
+        gameState.player.completedDreams
+    )
+    &&
+    gameState.player.completedDreams.includes(
+        dream.id
+    );
 
                     return `
 
                         <button
-                            class="
-                                dream-option
-                                ${
-                                    gameState.selectedDreamId === dream.id
-                                    ? "selected"
-                                    : ""
-                                }
-                            "
-                            data-dream="${dream.id}"
-                        >
+                           class="  dream-option
+    ${
+        gameState.selectedDreamId === dream.id
+        ? "selected"
+        : ""
+    }
+    ${
+        isCompleted
+        ? "dream-completed"
+        : ""
+    }
+"
+data-dream="${dream.id}"
+${isCompleted ? "disabled" : ""}
+                   >
 
                             ${visual}
 
@@ -3437,6 +3449,17 @@ function showDreamSelection() {
                                 ${dream.name}
                             </div>
 
+${
+    isCompleted
+
+    ? `
+        <div class="dream-completed-label">
+            ✅ ЗДІЙСНЕНО
+        </div>
+      `
+
+    : ""
+}
 
                         </button>
 
@@ -16743,6 +16766,40 @@ function checkCareerProgress(
 
     const sector =
         participant.sector;
+/* =====================================================
+   КОНТРОЛЬ ТЕМПУ КАР'ЄРИ
+===================================================== */
+const currentTurnNumber =
+    Number(
+        participant.turnsCompleted
+    ) || 0;
+const lastPromotionTurn =
+    Number(
+        participant.lastCareerPromotionTurn
+    ) || 0;
+/*  ПЕРШЕ ПІДВИЩЕННЯ:
+   не раніше 5-го власного ходу.*/
+if (
+    participant.careerLevel === 0
+    &&
+    currentTurnNumber <
+        GAME_CONFIG.careerFirstPromotionMinTurn
+) {
+    return false;
+}
+/*   ПОДАЛЬШІ ПІДВИЩЕННЯ:
+   між сходинками мінімум 4 ходи.*/
+if (
+    participant.careerLevel > 0
+    &&
+    currentTurnNumber -
+        lastPromotionTurn <
+        GAME_CONFIG.careerMinTurnsBetweenPromotions
+) {
+
+    return false;
+
+}
 
 
     if (
@@ -16834,6 +16891,8 @@ function checkCareerProgress(
     participant.salary =
         nextStats.salary;
 
+participant.lastCareerPromotionTurn =
+    currentTurnNumber;
 
     addLog(
 
@@ -18127,16 +18186,27 @@ function realizePlayerDream() {
     }
 
 
+    const completedDream =
+        player.dream;
+
+
     const price =
-        player
-            .dream
+        completedDream
             .requirements
             .money;
 
 
+    /* =====================================================
+       ОПЛАЧУЄМО МРІЮ
+    ===================================================== */
+
     player.money -=
         price;
 
+
+    /* =====================================================
+       БОНУС ЗА ВИКОНАНУ МРІЮ
+    ===================================================== */
 
     player.reputation +=
         50;
@@ -18151,13 +18221,53 @@ function realizePlayerDream() {
     );
 
 
-    gameState.runtime.gameFinished =
-        true;
+    /* =====================================================
+       ЗАПИСУЄМО МРІЮ ЯК ВИКОНАНУ
+    ===================================================== */
+
+    if (
+        !Array.isArray(
+            player.completedDreams
+        )
+    ) {
+
+        player.completedDreams =
+            [];
+
+    }
+
+
+    if (
+        !player.completedDreams.includes(
+            completedDream.id
+        )
+    ) {
+
+        player.completedDreams.push(
+            completedDream.id
+        );
+
+    }
+
+
+    /* =====================================================
+       ПОТОЧНУ МРІЮ ПРИБИРАЄМО
+
+       Гравець потім може
+       обрати нову.
+    ===================================================== */
+
+    player.dream =
+        null;
+
+
+    gameState.selectedDreamId =
+        null;
 
 
     addLog(
 
-        `✨ ${player.name} здійснив(ла) Мрію «${player.dream.name}».`
+        `✨ ${player.name} здійснив(ла) Мрію «${completedDream.name}».`
 
     );
 
@@ -18165,7 +18275,172 @@ function realizePlayerDream() {
     updatePlayerStatsUI();
 
 
-    showDreamSuccessScreen();
+    /* =====================================================
+       ГРУ НЕ ЗАВЕРШУЄМО
+    ===================================================== */
+
+    gameState.runtime.gameFinished =
+        false;
+
+
+    showCompletedDreamModal(
+        completedDream
+    );
+
+}
+
+/* =========================================================
+   93.1. МРІЮ ЗДІЙСНЕНО —
+   ВИБІР, ЩО РОБИТИ ДАЛІ
+========================================================= */
+
+function showCompletedDreamModal(
+    completedDream
+) {
+
+    const player =
+        gameState.player;
+
+
+    const completedCount =
+        player.completedDreams?.length || 0;
+
+
+    openGameInfoModal(`
+
+        <div class="dream-ready-modal">
+
+            <div class="cycle-notice-icon">
+                🏆
+            </div>
+
+
+            <h2>
+                МРІЮ ЗДІЙСНЕНО!
+            </h2>
+
+
+            <div class="dream-ready-name">
+
+                ${completedDream.icon}
+
+                ${completedDream.name}
+
+            </div>
+
+
+            <p>
+
+                ${
+                    player.gender === "girl"
+
+                    ? "Ти здійснила ще одну велику Мрію!"
+
+                    : "Ти здійснив ще одну велику Мрію!"
+                }
+
+            </p>
+
+
+            <p>
+
+                Класна робота! Ти прокачуєш
+                фінансову грамотність,
+                вчишся керувати ресурсами
+                та рухатися до своїх цілей.
+
+            </p>
+
+
+            <div class="cycle-notice-main-value">
+
+                ✨ Виконано Мрій:
+                ${completedCount}
+                із
+                ${DREAMS.length}
+
+            </div>
+
+
+            <button
+                id="chooseNextDreamButton"
+                class="main-game-btn"
+            >
+                ✨ ОБРАТИ НОВУ МРІЮ
+            </button>
+
+
+            <button
+                id="continueAfterDreamButton"
+                class="secondary-game-btn"
+            >
+                ▶ ПРОДОВЖИТИ ГРУ
+            </button>
+
+
+            <button
+                id="finishGameAfterDreamButton"
+                class="secondary-game-btn"
+            >
+                🏆 ЗАВЕРШИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .getElementById(
+            "chooseNextDreamButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                showDreamSelection();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "continueAfterDreamButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                closeGameInfoModal();
+
+                completePlayerTurn();
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "finishGameAfterDreamButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                gameState.runtime.gameFinished =
+                    true;
+
+
+                closeGameInfoModal();
+
+
+                showFinalGameResults();
+
+            }
+        );
 
 }
 
@@ -23951,26 +24226,53 @@ async function completePlayerTurn() {
     }
 
 
-    checkCareerProgress(
-        player
-    );
+  checkCareerProgress(
+    player
+);
 
 
-    updatePlayerStatsUI();
+updatePlayerStatsUI();
 
 
-    try {
+try {
 
-        await startAITurnsCore();
+    /* =====================================================
+       СПОЧАТКУ ПОКАЗУЄМО ЗАРПЛАТУ /
+       КАР'ЄРНЕ ПІДВИЩЕННЯ
+
+       І ЛИШЕ ПІСЛЯ ЦЬОГО
+       ПОЧИНАЮТЬ ХОДИТИ AI.
+    ===================================================== */
+
+    if (
+        gameState.runtime.noticeQueue.length >
+        0
+    ) {
+
+        await new Promise(
+            resolve => {
+
+                showNextGameNotice(
+                    resolve
+                );
+
+            }
+        );
 
     }
 
-    finally {
 
-        playerTurnClosing =
-            false;
+    await startAITurnsCore();
 
-    }
+}
+
+finally {
+
+    playerTurnClosing =
+        false;
+
+}
+
 
 }
 
