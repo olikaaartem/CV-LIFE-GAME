@@ -3559,14 +3559,31 @@ ${
         );
 
 
-    document
-        .getElementById(
-            "dreamBackButton"
-        )
-        .addEventListener(
-            "click",
-            showCareerReveal
-        );
+document
+    .getElementById(
+        "dreamBackButton"
+    )
+    ?.addEventListener(
+        "click",
+        () => {
+
+            if (
+                gameState.player.turnsCompleted > 0
+            ) {
+
+                showGameBoard();
+
+            }
+
+            else {
+
+                showCareerReveal();
+
+            }
+
+        }
+    );
+
 
 
     if (
@@ -3743,6 +3760,15 @@ function previewDream(
 /* =========================================================
    26. ЗБЕРЕЖЕННЯ МРІЇ
 ========================================================= */
+/* =========================================================
+   26. ЗБЕРЕЖЕННЯ МРІЇ
+
+   Якщо Мрію обираємо на старті —
+   продовжуємо стартовий сценарій.
+
+   Якщо Мрію обираємо вже під час гри —
+   повертаємося на ігрове поле.
+========================================================= */
 
 function selectDream(dreamId) {
 
@@ -3760,9 +3786,61 @@ function selectDream(dreamId) {
     }
 
 
+    /* =====================================================
+       НЕ ДОЗВОЛЯЄМО ПОВТОРНО
+       ОБРАТИ ВЖЕ ВИКОНАНУ МРІЮ
+    ===================================================== */
+
+    if (
+        Array.isArray(
+            gameState.player.completedDreams
+        )
+        &&
+        gameState.player.completedDreams.includes(
+            dreamId
+        )
+    ) {
+
+        return;
+
+    }
+
+
     gameState.player.dream =
         dream;
 
+
+    gameState.selectedDreamId =
+        dreamId;
+
+
+    /* =====================================================
+       ЯКЩО ГРА ВЖЕ ЙДЕ —
+       ПРОСТО ПОВЕРТАЄМОСЯ НА ПОЛЕ
+    ===================================================== */
+
+    if (
+        gameState.player.turnsCompleted > 0
+        ||
+        gameState.phase === "game"
+    ) {
+
+        addLog(
+            `✨ ${gameState.player.name} обрав(ла) нову Мрію «${dream.name}».`
+        );
+
+
+        showGameBoard();
+
+        return;
+
+    }
+
+
+    /* =====================================================
+       ЯКЩО ЦЕ ПЕРШИЙ ВИБІР МРІЇ
+       ПЕРЕД ПОЧАТКОМ ГРИ
+    ===================================================== */
 
     createAIPlayers();
 
@@ -3770,7 +3848,6 @@ function selectDream(dreamId) {
     showBeforeGameScreen();
 
 }
-
 
 /* =========================================================
    27. СТВОРЕННЯ AI
@@ -4620,9 +4697,10 @@ function showGameBoard() {
 
                         <span class="hud-feature-icon">
 
-                            ${player.dream.icon}
+    ${player.dream?.icon || "✨"}
 
-                        </span>
+</span>
+
 
 
                         <div>
@@ -4632,8 +4710,13 @@ function showGameBoard() {
                             </small>
 
                             <strong>
-                                ${player.dream.name}
-                            </strong>
+    ${
+        player.dream
+            ? player.dream.name
+            : "Обрати нову Мрію"
+    }
+</strong>
+
 
                         </div>
 
@@ -4929,18 +5012,32 @@ initializeGameCycle();
         );
 
 
-    /* =====================================================
-       МРІЯ
-    ===================================================== */
+    /* =========================================================
+   ВИКОНАНІ МРІЇ
 
-    document
-        .getElementById(
-            "dreamHudButton"
-        )
-        .addEventListener(
-            "click",
-            showDreamProgress
-        );
+   Уже здійснені Мрії:
+   - залишаються видимими у списку;
+   - мають позначку "ЗДІЙСНЕНО";
+   - стають неактивними;
+   - повторно обрати їх не можна.
+========================================================= */
+
+.dream-option.dream-completed {
+    opacity: 0.55;
+    cursor: default;
+    position: relative;
+}
+
+.dream-option.dream-completed:hover {
+    transform: none;
+}
+
+.dream-completed-label {
+    margin-top: 8px;
+    font-size: 11px;
+    font-weight: 900;
+}
+
 
 
     /* =====================================================
@@ -18671,6 +18768,42 @@ function showFinalGameResults() {
 
     const player =
         gameState.player;
+const completedDreams =
+    Array.isArray(
+        player.completedDreams
+    )
+        ? player.completedDreams
+        : [];
+
+
+const completedDreamObjects =
+    DREAMS.filter(
+        dream =>
+            completedDreams.includes(
+                dream.id
+            )
+    );
+
+
+const completedDreamsHTML =
+    completedDreamObjects.length > 0
+
+        ? completedDreamObjects
+            .map(
+                dream => `
+                    <span>
+                        ${dream.icon}
+                        ${dream.name}
+                    </span>
+                `
+            )
+            .join("")
+
+        : `
+            <span>
+                Поки що немає виконаних Мрій
+            </span>
+          `;
 
 
     const profession =
@@ -18698,15 +18831,46 @@ function showFinalGameResults() {
                 </h1>
 
 
-                <div class="final-dream">
+              <div class="final-dream">
 
-                    ${player.dream.icon}
+    <div class="cycle-notice-icon">
+        🏆
+    </div>
 
-                    <strong>
-                        ${player.dream.name}
-                    </strong>
+    <h2>
+        ФІНАНСОВА ГРАМОТА
+    </h2>
 
-                </div>
+    <p>
+        Вітаємо, ${player.name}!
+    </p>
+
+    <p>
+        Ти круто прокачав / прокачала
+        свою фінансову грамотність,
+        навчився / навчилася
+        приймати рішення,
+        керувати ресурсами
+        та рухатися до великих цілей.
+    </p>
+
+    <div class="cycle-notice-main-value">
+
+        ✨ Виконано Мрій:
+        ${completedDreamObjects.length}
+        із
+        ${DREAMS.length}
+
+    </div>
+
+    <div class="completed-dreams-summary">
+
+        ${completedDreamsHTML}
+
+    </div>
+
+</div>
+
 
 
                 <div class="final-results-grid">
