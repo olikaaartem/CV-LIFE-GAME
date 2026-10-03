@@ -5012,31 +5012,7 @@ initializeGameCycle();
         );
 
 
-    /* =========================================================
-   ВИКОНАНІ МРІЇ
-
-   Уже здійснені Мрії:
-   - залишаються видимими у списку;
-   - мають позначку "ЗДІЙСНЕНО";
-   - стають неактивними;
-   - повторно обрати їх не можна.
-========================================================= */
-
-.dream-option.dream-completed {
-    opacity: 0.55;
-    cursor: default;
-    position: relative;
-}
-
-.dream-option.dream-completed:hover {
-    transform: none;
-}
-
-.dream-completed-label {
-    margin-top: 8px;
-    font-size: 11px;
-    font-weight: 900;
-}
+ 
 
 
 
