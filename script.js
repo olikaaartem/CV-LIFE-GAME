@@ -6336,8 +6336,9 @@ function calculateDestination(
    Після кидка кубика:
    - рахуємо кінцеву клітинку;
    - підсвічуємо її;
-   - гравець сам перетягує фішку;
-   - лише після цього запускається дія клітинки.
+   - гравець може перетягнути фішку
+     АБО натиснути на підсвічену клітинку;
+   - після цього запускається дія клітинки.
 ========================================================= */
 
 function prepareManualPlayerMove(
@@ -6395,7 +6396,8 @@ function prepareManualPlayerMove(
     ) {
 
         console.warn(
-            "Не вдалося підготувати ручний рух."
+            "Не вдалося підготувати ручний рух.",
+            target
         );
 
         return;
@@ -6414,23 +6416,65 @@ function prepareManualPlayerMove(
 
     showRaifikCurrentCardMessage(
 
-        `🎲 Випало ${steps}. Перетягни свою фішку на підсвічену клітинку.`
+        `🎲 Випало ${steps}. Перетягни фішку або натисни на підсвічену клітинку.`
 
     );
 
 
+    let moveCompleted =
+        false;
+
+
+    const completeManualMove =
+        async () => {
+
+            if (
+                moveCompleted
+            ) {
+
+                return;
+
+            }
+
+
+            moveCompleted =
+                true;
+
+
+            await finishManualPlayerMove(
+                target
+            );
+
+        };
+
+
+    /* =====================================================
+       ПЕРЕТЯГУВАННЯ ФІШКИ
+    ===================================================== */
+
     piece.addEventListener(
         "dragstart",
         event => {
+
+            event.dataTransfer.effectAllowed =
+                "move";
+
 
             event.dataTransfer.setData(
                 "text/plain",
                 "player"
             );
 
-        },
-        {
-            once: true
+        }
+    );
+
+
+    targetCell.addEventListener(
+        "dragenter",
+        event => {
+
+            event.preventDefault();
+
         }
     );
 
@@ -6440,6 +6484,10 @@ function prepareManualPlayerMove(
         event => {
 
             event.preventDefault();
+
+
+            event.dataTransfer.dropEffect =
+                "move";
 
         }
     );
@@ -6451,25 +6499,34 @@ function prepareManualPlayerMove(
 
             event.preventDefault();
 
-
-            const id =
-                event.dataTransfer.getData(
-                    "text/plain"
-                );
+            event.stopPropagation();
 
 
-            if (
-                id !== "player"
-            ) {
+            await completeManualMove();
 
-                return;
+        },
+        {
+            once: true
+        }
+    );
 
-            }
+
+    /* =====================================================
+       КЛІК ПО ПІДСВІЧЕНІЙ КЛІТИНЦІ
+
+       Запасний і більш надійний спосіб.
+    ===================================================== */
+
+    targetCell.addEventListener(
+        "click",
+        async event => {
+
+            event.preventDefault();
+
+            event.stopPropagation();
 
 
-            await finishManualPlayerMove(
-                target
-            );
+            await completeManualMove();
 
         },
         {
@@ -6478,7 +6535,6 @@ function prepareManualPlayerMove(
     );
 
 }
-
 
 /* =========================================================
    38.2. ЗАВЕРШЕННЯ РУЧНОГО РУХУ
