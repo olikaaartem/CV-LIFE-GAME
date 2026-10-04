@@ -1273,7 +1273,7 @@ const CELL_TYPES = {
    11 — Academy
    22 — Lounge
    25 — Academy
-   28 — зона переходу
+   28 — подія
 ========================================================= */
 
 const INNER_BOARD = [
@@ -1315,7 +1315,7 @@ const INNER_BOARD = [
     "event",        // 26
     "bank",         // 27
 
-    "transition"    // 28
+    "event"    // 28
 
 ];
 
