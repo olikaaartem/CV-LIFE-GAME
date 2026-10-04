@@ -18999,51 +18999,58 @@ function showDreamSuccessScreen() {
 
 }
 
-
 /* =========================================================
    95. ПІДСУМКИ ГРИ
+
+   Якщо є виконані Мрії —
+   показуємо фінансову грамоту.
+
+   Якщо Мрій ще немає —
+   показуємо просто тепле завершення гри.
 ========================================================= */
 
 function showFinalGameResults() {
 
     const player =
         gameState.player;
-const completedDreams =
-    Array.isArray(
-        player.completedDreams
-    )
-        ? player.completedDreams
-        : [];
 
 
-const completedDreamObjects =
-    DREAMS.filter(
-        dream =>
-            completedDreams.includes(
-                dream.id
-            )
-    );
+    const completedDreams =
+        Array.isArray(
+            player.completedDreams
+        )
+            ? player.completedDreams
+            : [];
 
 
-const completedDreamsHTML =
-    completedDreamObjects.length > 0
+    const completedDreamObjects =
+        DREAMS.filter(
+            dream =>
+                completedDreams.includes(
+                    dream.id
+                )
+        );
 
-        ? completedDreamObjects
-            .map(
-                dream => `
-                    <span>
-                        ${dream.icon}
-                        ${dream.name}
-                    </span>
-                `
-            )
-            .join("")
 
-        : `
-            <span>
-                Поки що немає виконаних Мрій
-            </span>
-          `;
+    const hasCompletedDreams =
+        completedDreamObjects.length > 0;
+
+
+    const completedDreamsHTML =
+        completedDreamObjects.length > 0
+
+            ? completedDreamObjects
+                .map(
+                    dream => `
+                        <span>
+                            ${dream.icon}
+                            ${dream.name}
+                        </span>
+                    `
+                )
+                .join("")
+
+            : "";
 
 
     const profession =
@@ -19060,159 +19067,271 @@ const completedDreamsHTML =
         );
 
 
+    const finalMainBlock =
+        hasCompletedDreams
+
+        ? `
+
+            <div class="final-dream">
+
+                <div class="cycle-notice-icon">
+                    🏆
+                </div>
+
+
+                <h2>
+                    ФІНАНСОВА ГРАМОТА
+                </h2>
+
+
+                <p>
+                    Вітаємо, ${player.name}!
+                </p>
+
+
+                <p>
+                    ${
+                        player.gender === "girl"
+
+                        ? `Ти круто прокачала свою фінансову грамотність,
+                           навчилася приймати рішення,
+                           керувати ресурсами
+                           та рухатися до великих цілей.`
+
+                        : `Ти круто прокачав свою фінансову грамотність,
+                           навчився приймати рішення,
+                           керувати ресурсами
+                           та рухатися до великих цілей.`
+                    }
+                </p>
+
+
+                <div class="cycle-notice-main-value">
+
+                    ${
+                        completedDreamObjects.length === 1
+
+                        ? (
+                            player.gender === "girl"
+
+                                ? "✨ Ти здійснила свою Мрію!"
+
+                                : "✨ Ти здійснив свою Мрію!"
+                          )
+
+                        : (
+                            player.gender === "girl"
+
+                                ? `✨ Ти здійснила ${completedDreamObjects.length} Мрії!`
+
+                                : `✨ Ти здійснив ${completedDreamObjects.length} Мрії!`
+                          )
+                    }
+
+                </div>
+
+
+                <div class="completed-dreams-summary">
+
+                    ${completedDreamsHTML}
+
+                </div>
+
+            </div>
+
+          `
+
+        : `
+
+            <div class="final-dream">
+
+                <div class="cycle-notice-icon">
+                    👋
+                </div>
+
+
+                <h2>
+                    ДЯКУЄМО ЗА ГРУ!
+                </h2>
+
+
+                <p>
+                    ${
+                        player.gender === "girl"
+
+                        ? `Шкода, що цього разу ти завершила гру,
+                           не встигнувши здійснити свою Мрію.`
+
+                        : `Шкода, що цього разу ти завершив гру,
+                           не встигнувши здійснити свою Мрію.`
+                    }
+                </p>
+
+
+                <p>
+                    Але кожне фінансове рішення —
+                    це досвід.
+
+                    Спробуй ще раз і подивись,
+                    куди приведе тебе наступний шлях.
+                </p>
+
+
+                <div class="cycle-notice-main-value">
+                    ✨ До зустрічі у наступній грі!
+                </div>
+
+            </div>
+
+          `;
+
+
     setScreen(`
 
         <section class="game-screen final-results-screen">
 
             <div class="final-results-card">
 
+
                 <h1>
                     Твій шлях у CV ЖИТТЯ
                 </h1>
 
 
-              <div class="final-dream">
-
-    <div class="cycle-notice-icon">
-        🏆
-    </div>
-
-    <h2>
-        ФІНАНСОВА ГРАМОТА
-    </h2>
-
-    <p>
-        Вітаємо, ${player.name}!
-    </p>
-
-   <p>
-    ${
-        player.gender === "girl"
-
-        ? `Ти круто прокачала свою фінансову грамотність,
-           навчилася приймати рішення,
-           керувати ресурсами
-           та рухатися до великих цілей.`
-
-        : `Ти круто прокачав свою фінансову грамотність,
-           навчився приймати рішення,
-           керувати ресурсами
-           та рухатися до великих цілей.`
-    }
-</p>
-
-
-    <div class="cycle-notice-main-value">
-
-    ${
-        completedDreamObjects.length === 1
-
-        ? (
-            player.gender === "girl"
-                ? "✨ Ти здійснила свою Мрію!"
-                : "✨ Ти здійснив свою Мрію!"
-          )
-
-        : (
-            player.gender === "girl"
-                ? `✨ Ти здійснила ${completedDreamObjects.length} Мрії!`
-                : `✨ Ти здійснив ${completedDreamObjects.length} Мрії!`
-          )
-    }
-
-</div>
-
-
-    <div class="completed-dreams-summary">
-
-        ${completedDreamsHTML}
-
-    </div>
-
-</div>
-
+                ${finalMainBlock}
 
 
                 <div class="final-results-grid">
 
 
                     <div>
-                        <span>🎲 Ходів</span>
+
+                        <span>
+                            🎲 Ходів
+                        </span>
+
                         <strong>
                             ${player.turnsCompleted}
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>💰 Фінансових періодів</span>
+
+                        <span>
+                            💰 Фінансових періодів
+                        </span>
+
                         <strong>
                             ${player.financialPeriods}
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>💵 Отримано зарплати</span>
+
+                        <span>
+                            💵 Отримано зарплати
+                        </span>
+
                         <strong>
+
                             ${formatMoney(
                                 player.totalSalaryReceived
                             )} грн
+
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>📈 Регулярний дохід</span>
+
+                        <span>
+                            📈 Регулярний дохід
+                        </span>
+
                         <strong>
+
                             ${formatMoney(
                                 player.totalPassiveIncomeReceived
                             )} грн
+
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>🏆 Кар'єрний рівень</span>
+
+                        <span>
+                            🏆 Кар'єрний рівень
+                        </span>
+
                         <strong>
+
                             ${
                                 getDisplayedCareerLevel(
                                     player
                                 )
                             }
+
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>💼 Професія</span>
+
+                        <span>
+                            💼 Професія
+                        </span>
+
                         <strong>
                             ${profession}
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>⭐ Репутація</span>
+
+                        <span>
+                            ⭐ Репутація
+                        </span>
+
                         <strong>
                             ${player.reputation}
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>🧠 Знання</span>
+
+                        <span>
+                            🧠 Знання
+                        </span>
+
                         <strong>
                             ${player.knowledge}
                         </strong>
+
                     </div>
 
 
                     <div>
-                        <span>⚡ Енергія</span>
+
+                        <span>
+                            ⚡ Енергія
+                        </span>
+
                         <strong>
                             ${player.energy}
                         </strong>
+
                     </div>
 
 
@@ -19226,6 +19345,7 @@ const completedDreamsHTML =
                     ЗІГРАТИ ЩЕ РАЗ
                 </button>
 
+
             </div>
 
         </section>
@@ -19237,7 +19357,7 @@ const completedDreamsHTML =
         .getElementById(
             "finalPlayAgainButton"
         )
-        .addEventListener(
+        ?.addEventListener(
             "click",
             () => {
 
