@@ -9833,16 +9833,15 @@ INNER_CARD_DECKS.event = [
    /* =====================================================
    КАРТКА 16
 ===================================================== */
-
 {
     id: "inner-event-16",
     number: 16,
 
     title:
-        "ДТП та пошкодження авто",
+        "ДТП з твоєї вини",
 
     story:
-        "На парковці пошкодили бампер та крило твоєї автівки, а винуватець зник. Час оцінити наявність страховки!",
+        "Під час паркування ти випадково пошкоджуєш іншу автівку. Відшкодування збитків становить 5 000 грн. Перевір, чи є страховий захист!",
 
     requirementText:
         "Несподівана дорожня пригода",
@@ -9850,7 +9849,6 @@ INNER_CARD_DECKS.event = [
     requirements: {},
 
     choices: [
-
         {
             id: "insured",
 
@@ -9861,12 +9859,13 @@ INNER_CARD_DECKS.event = [
                 "extra_motor_insurance",
 
             costText:
-                "💰 0 грн",
+                "💰 0 грн | ⚡ -10 енергії",
 
             resultText:
-                "🛡️ Страховий захист допомагає зменшити фінансові втрати | 🧠 +10 знань",
+                "🛡️ Страховка покриває 5 000 грн збитків | 🧠 +10 знань",
 
             effects: {
+                energy: -10,
                 knowledge: 10
             },
 
@@ -9876,6 +9875,71 @@ INNER_CARD_DECKS.event = [
 
         {
             id: "not-insured",
+
+            title:
+                "Відшкодувати збитки самостійно",
+
+            costText:
+                "💰 -5 000 грн | ⚡ -10 енергії",
+
+            resultText:
+                "🧠 +5 знань",
+
+            effects: {
+                money: -5000,
+                energy: -10,
+                knowledge: 5
+            }
+        }
+    ]
+},
+
+    /* =====================================================
+       КАРТКА 17
+    ===================================================== */
+{
+    id: "inner-event-17",
+    number: 17,
+
+    title:
+        "Затоплення оселі",
+
+    story:
+        "У сусідній оселі вночі прорвало трубу — вода частково пошкодила меблі та робочу документацію.",
+
+    requirementText:
+        "Комунальна аварія в будівлі",
+
+    requirements: {},
+
+    choices: [
+        {
+            id: "home-insurance",
+
+            title:
+                "Скористатися страхуванням оселі",
+
+            conditionProduct:
+                "home_insurance",
+
+            costText:
+                "💰 -1 000 грн | ⚡ -10 енергії",
+
+            resultText:
+                "🛡️ Страховка покриває 4 000 грн із 5 000 грн збитків | ⭐ +10 репутації",
+
+            effects: {
+                money: -1000,
+                energy: -10,
+                reputation: 10
+            },
+
+            consumeBankProduct:
+                "home_insurance"
+        },
+
+        {
+            id: "repair",
 
             title:
                 "Сплатити ремонт самостійно",
@@ -9892,73 +9956,9 @@ INNER_CARD_DECKS.event = [
                 knowledge: 5
             }
         }
-
     ]
 },
 
-    /* =====================================================
-       КАРТКА 17
-    ===================================================== */
-
-    {
-        id: "inner-event-17",
-        number: 17,
-
-        title:
-            "Затоплення оселі",
-
-        story:
-            "У сусідній оселі вночі прорвало трубу — вода частково пошкодила меблі та робочу документацію.",
-
-        requirementText:
-            "Комунальна аварія в будівлі",
-
-        requirements: {},
-
-        choices: [
-
-            {
-                id: "home-insurance",
-
-                title:
-                    "Якщо є страхування оселі",
-
-                conditionProduct:
-                    "home_insurance",
-
-                costText:
-                    "💰 -5 000 грн",
-
-                resultText:
-                    "⭐ +10 репутації",
-
-                effects: {
-                    money: -5000,
-                    reputation: 10
-                }
-            },
-
-            {
-                id: "repair",
-
-                title:
-                    "Якщо захисту немає: екстрений ремонт власним коштом",
-
-                costText:
-                    "💰 -5 000 грн | ⚡ -10 енергії",
-
-                resultText:
-                    "🧠 +5 знань",
-
-                effects: {
-                    money: -5000,
-                    energy: -10,
-                    knowledge: 5
-                }
-            }
-
-        ]
-    },
 
 
     /* =====================================================
@@ -13501,9 +13501,10 @@ const BANK_CARD_DECK = [
         story:
             "Строковий депозит у MyRaif. Ти вкладаєш гроші на визначений строк і наприкінці отримуєш вклад разом із доходом.",
 
-        rulesText:
-            "Вклади 4 000 грн. Обери строк: 3, 6 або 12 місяців. У грі це відповідно 2, 4 або 6 ходів. Наприкінці строку отримай назад вклад і дохід: +1 000, +1 500 або +2 000 грн.",
+       rulesText:
+    "Вклади 4 000 грн. Обери строк: 3, 6 або 12 місяців. У грі 1 місяць = 3 ходи, тому строки становлять відповідно 9, 18 або 36 ходів. Хід підключення депозиту не враховується. Наприкінці строку отримай назад вклад і дохід: +1 000, +1 500 або +2 000 грн.",
 
+          
         initialEffects: {
             money: -4000,
             reputation: 10,
@@ -21726,11 +21727,12 @@ function applyAllSpecialActions(
 
    ЗАМІНЮЄ ВЕРСІЮ З 4А.
 
-   Тепер працюють:
+   Працюють:
    - specialAction
    - specialActions
    - delayedEffect
    - diceOutcomes
+   - одноразові страхові захисти
 ========================================================= */
 
 async function resolveCardChoice(
@@ -21738,122 +21740,178 @@ async function resolveCardChoice(
     card,
     choice
 ) {
-
     const player =
         gameState.player;
 
+    /* =====================================================
+       ОДНОРАЗОВІ ЗАХИСТИ ЕНЕРГІЇ
+    ===================================================== */
+
+    const energyLoss =
+        Number(choice.effects?.energy) || 0;
+
+    const lifeProduct =
+        player.bank?.products?.find(
+            product =>
+                product &&
+                product.id === "life_insurance" &&
+                product.active !== false &&
+                product.energyProtectionUsed !== true
+        );
+
+    const vartaProduct =
+        player.bank?.products?.find(
+            product =>
+                product &&
+                product.id === "varta_247" &&
+                product.active !== false
+        );
+
+    let protectionMessage = "";
+
+    /*
+       Для картки Життя спочатку використовуємо
+       захист страхування життя.
+
+       Накопичення після використання захисту
+       продовжується.
+    */
+
+    if (
+        deckName === "life" &&
+        lifeProduct &&
+        energyLoss <= -15
+    ) {
+        choice = {
+            ...choice,
+
+            effects: {
+                ...(choice.effects || {}),
+                energy: energyLoss + 15
+            }
+        };
+
+        lifeProduct.energyProtectionUsed = true;
+
+        protectionMessage =
+            `🛡️ Страхування життя скасувало 15 одиниць втрати енергії. Замість ${energyLoss}: ${energyLoss + 15}. Одноразовий захист використано; накопичення продовжується.`;
+    } else if (
+        vartaProduct &&
+        energyLoss <= -10
+    ) {
+        choice = {
+            ...choice,
+
+            effects: {
+                ...(choice.effects || {}),
+                energy: energyLoss + 10
+            }
+        };
+
+        vartaProduct.active = false;
+
+        protectionMessage =
+            `🛡️ «Варта 24/7» скасувала 10 одиниць втрати енергії. Замість ${energyLoss}: ${energyLoss + 10}. Одноразовий захист використано.`;
+    }
+
+    if (protectionMessage) {
+        // Доповнюємо пояснення, не змінюючи спільну картку.
+        choice = {
+            ...choice,
+
+            resultText: [
+                choice.resultText,
+                protectionMessage
+            ].filter(Boolean).join(" ")
+        };
+
+        addLog(protectionMessage);
+    }
 
     applyEffects(
-
         player,
-
-        choice.effects ||
-        {}
-
+        choice.effects || {}
     );
 
+    /* =====================================================
+       ОДНОРАЗОВЕ ВИКОРИСТАННЯ БАНКІВСЬКОГО ЗАХИСТУ
+    ===================================================== */
+
+    if (
+        choice.consumeBankProduct &&
+        Array.isArray(player.bank?.products)
+    ) {
+        const protectionProduct =
+            player.bank.products.find(
+                product =>
+                    product &&
+                    product.id === choice.consumeBankProduct &&
+                    product.active !== false
+            );
+
+        if (protectionProduct) {
+            protectionProduct.active = false;
+
+            addLog(
+                "🛡️ Одноразовий страховий захист використано."
+            );
+        }
+    }
 
     applyPersistentEffects(
-
         player,
-
         choice.persistentEffects
-
     );
 
-
-    if (
-        choice.delayedEffect
-    ) {
-
+    if (choice.delayedEffect) {
         addDelayedEffect(
-
             player,
-
             choice.delayedEffect
-
         );
-
     }
-
 
     applyAllSpecialActions(
-
         player,
-
         choice
-
     );
 
-
-    if (
-        choice.diceOutcomes
-    ) {
-
+    if (choice.diceOutcomes) {
         await resolveCardDiceOutcome(
-
             card,
-
             choice,
-
             deckName
-
         );
 
-
         return;
-
     }
-
 
     /* =====================================================
        OPTIONAL RISK
 
-       Наприклад:
-       міжнародне стажування.
+       Наприклад: міжнародне стажування.
     ===================================================== */
 
-    if (
-        choice.optionalRisk
-    ) {
-
+    if (choice.optionalRisk) {
         showOptionalRiskChoice(
-
             deckName,
-
             card,
-
             choice
-
         );
 
-
         return;
-
     }
 
-
     addLog(
-
         `${player.name}: ${card.title} → ${choice.title}`
-
     );
-
 
     showCardFinalResult(
-
         deckName,
-
         card,
-
         choice,
-
         choice.resultText
-
     );
-
 }
-
 
 /* =========================================================
    113. КИДОК УСЕРЕДИНІ КАРТКИ
@@ -21866,15 +21924,11 @@ async function resolveCardDiceOutcome(
     choice,
     deckName = "event"
 ) {
-
     const player =
         gameState.player;
 
-
     openGameInfoModal(`
-
         <div class="card-extra-roll">
-
             <div class="cycle-notice-icon">
                 🎲
             </div>
@@ -21893,137 +21947,146 @@ async function resolveCardDiceOutcome(
             >
                 ⚀
             </div>
-
         </div>
-
     `);
-
 
     const display =
         document.getElementById(
             "cardExtraDice"
         );
 
-
     for (
         let i = 0;
         i < 8;
         i++
     ) {
-
         const temp =
-            randomNumber(
-                1,
-                6
-            );
-
+            randomNumber(1, 6);
 
         if (display) {
-
             display.textContent =
-                DICE_FACES[
-                    temp - 1
-                ];
-
+                DICE_FACES[temp - 1];
         }
 
-
-        await delay(
-            80
-        );
-
+        await delay(80);
     }
-
 
     const value =
-        randomNumber(
-            1,
-            6
-        );
-
+        randomNumber(1, 6);
 
     if (display) {
-
         display.textContent =
-            DICE_FACES[
-                value - 1
-            ];
-
+            DICE_FACES[value - 1];
     }
 
+    await delay(400);
 
-    await delay(
-        400
-    );
-
-
-    const outcome =
-        choice
-            .diceOutcomes
-            .find(
-                item =>
-
-                    value >= item.min
-                    &&
-                    value <= item.max
-            );
-
+    let outcome =
+        choice.diceOutcomes.find(
+            item =>
+                value >= item.min &&
+                value <= item.max
+        );
 
     if (outcome) {
+        /* =============================================
+           ОДНОРАЗОВІ ЗАХИСТИ ЕНЕРГІЇ
+        ============================================= */
+
+        const energyLoss =
+            Number(outcome.effects?.energy) || 0;
+
+        const lifeProduct =
+            player.bank?.products?.find(
+                product =>
+                    product &&
+                    product.id === "life_insurance" &&
+                    product.active !== false &&
+                    product.energyProtectionUsed !== true
+            );
+
+        const vartaProduct =
+            player.bank?.products?.find(
+                product =>
+                    product &&
+                    product.id === "varta_247" &&
+                    product.active !== false
+            );
+
+        let protectionMessage = "";
+        let protectedEnergy = energyLoss;
+
+        if (
+            deckName === "life" &&
+            lifeProduct &&
+            energyLoss <= -15
+        ) {
+            protectedEnergy = energyLoss + 15;
+
+            lifeProduct.energyProtectionUsed = true;
+
+            protectionMessage =
+                `🛡️ Страхування життя скасувало 15 одиниць втрати енергії. Замість ${energyLoss}: ${protectedEnergy}. Захист використано; накопичення продовжується.`;
+        } else if (
+            vartaProduct &&
+            energyLoss <= -10
+        ) {
+            protectedEnergy = energyLoss + 10;
+
+            vartaProduct.active = false;
+
+            protectionMessage =
+                `🛡️ «Варта 24/7» скасувала 10 одиниць втрати енергії. Замість ${energyLoss}: ${protectedEnergy}. Захист використано.`;
+        }
+
+        if (protectionMessage) {
+            // Не змінюємо результат у спільній колоді.
+            outcome = {
+                ...outcome,
+
+                effects: {
+                    ...(outcome.effects || {}),
+                    energy: protectedEnergy
+                },
+
+                text: [
+                    outcome.text,
+                    protectionMessage
+                ].filter(Boolean).join(" ")
+            };
+
+            addLog(protectionMessage);
+        }
 
         applyEffects(
-
             player,
-
-            outcome.effects ||
-            {}
-
+            outcome.effects || {}
         );
-
 
         applyPersistentEffects(
-
             player,
-
             outcome.persistentEffects
-
         );
-
 
         applyAllSpecialActions(
-
             player,
-
             outcome
-
         );
-
     }
 
-
     addLog(
-
         `🎲 ${card.title}: випало ${value}`
-
     );
 
-
     showCardFinalResult(
-
         deckName,
-
         card,
-
         choice,
-
         outcome
             ? outcome.text
             : "Без додаткових змін"
-
     );
-
 }
-
 
 /* =========================================================
    114. OPTIONAL RISK
@@ -25263,6 +25326,39 @@ if (
 
 }
 
+/* =====================================================
+   «ВАРТА 24/7» — ЗАХИСТ У КАРТЦІ ДОЛІ
+===================================================== */
+
+const vartaProduct =
+    player.bank?.products?.find(
+        product =>
+            product &&
+            product.id === "varta_247" &&
+            product.active !== false
+    );
+
+const energyLoss =
+    Number(finalEffects.energy) || 0;
+
+if (
+    vartaProduct &&
+    energyLoss <= -10
+) {
+    finalEffects.energy = energyLoss + 10;
+
+    vartaProduct.active = false;
+
+    const vartaMessage =
+        "🛡️ «Варта 24/7»: скасовано втрату 10 енергії. Захист використано.";
+
+    protectionMessage = [
+        protectionMessage,
+        vartaMessage
+    ].filter(Boolean).join(" ");
+
+    addLog(vartaMessage);
+}
 
 
     applyEffects(
@@ -25804,8 +25900,65 @@ function resolveBonusFateCard(
                 .text ||
             "🛡️ Спрацював страховий захист.";
 
+  /* Одноразовий захист використано */
+
+if (
+    card.insuranceProtection.consumeAfterUse
+) {
+    const protectionProduct =
+        player.bank.products.find(
+            product =>
+                product &&
+                product.id ===
+                    card.insuranceProtection.product &&
+                product.active !== false
+        );
+
+    if (protectionProduct) {
+        protectionProduct.active = false;
+
+        addLog(
+            "🛡️ Одноразовий страховий захист використано."
+        );
+    }
+}
+
+    
     }
 
+/* =====================================================
+   «ВАРТА 24/7» — ЗАХИСТ У БОНУСНІЙ ДОЛІ
+===================================================== */
+
+const vartaProduct =
+    player.bank?.products?.find(
+        product =>
+            product &&
+            product.id === "varta_247" &&
+            product.active !== false
+    );
+
+const energyLoss =
+    Number(effects.energy) || 0;
+
+if (
+    vartaProduct &&
+    energyLoss <= -10
+) {
+    effects.energy = energyLoss + 10;
+
+    vartaProduct.active = false;
+
+    const vartaMessage =
+        "🛡️ «Варта 24/7»: скасовано втрату 10 енергії. Захист використано.";
+
+    protectionMessage = [
+        protectionMessage,
+        vartaMessage
+    ].filter(Boolean).join(" ");
+
+    addLog(vartaMessage);
+}
 
     applyEffects(
 
@@ -28871,7 +29024,6 @@ function chargeBankPayment(
    За банківськими картками:
    платіж відбувається кожного 2-го ходу.
 ========================================================= */
-
 function processFixedLoan(
     player,
     product,
@@ -28880,133 +29032,104 @@ function processFixedLoan(
     totalPayments,
     title
 ) {
-
     if (
-        !player
-        ||
-        !product
-        ||
-        product.active === false
+        !player ||
+        !product ||
+        product.active === false ||
+        elapsedTurns <= 0
     ) {
         return;
     }
 
+    product.paymentsMade =
+        Number(product.paymentsMade) || 0;
 
-    if (
-        typeof product.paymentsMade !==
-        "number"
-    ) {
+    product.pendingPayment =
+        product.pendingPayment === true;
 
-        product.paymentsMade =
-            0;
+    product.lateFeeDue =
+        Number(product.lateFeeDue) || 0;
 
+    if (product.paymentsMade >= totalPayments) {
+        product.active = false;
+        return;
     }
 
-
+    // Захист від повторного списання за той самий хід.
     if (
-        typeof product.pendingPayment !==
-        "boolean"
+        product.lastLoanProcessedTurn === elapsedTurns
     ) {
-
-        product.pendingPayment =
-            false;
-
+        return;
     }
-
 
     const paymentIsDue =
-        elapsedTurns % 2 === 0
-        ||
+        elapsedTurns % 2 === 0 ||
         product.pendingPayment;
 
-
-    if (
-        !paymentIsDue
-    ) {
+    if (!paymentIsDue) {
         return;
     }
 
+    product.lastLoanProcessedTurn = elapsedTurns;
 
-    if (
-        product.paymentsMade >=
-        totalPayments
-    ) {
-
-        product.active =
-            false;
-
-        return;
-
-    }
+  const isCreditCard100 =
+    [
+        "credit_card_100",
+        "premium_credit_card"
+    ].includes(product.id);
 
 
-    if (
-        player.money >=
-        paymentAmount
-    ) {
+    const amountDue =
+        paymentAmount + product.lateFeeDue;
 
-        player.money -=
-            paymentAmount;
+    if (player.money >= amountDue) {
+        player.money -= amountDue;
 
-
-        product.paymentsMade +=
-            1;
-
-
-        product.pendingPayment =
-            false;
-
+        product.paymentsMade += 1;
+        product.pendingPayment = false;
+        product.lateFeeDue = 0;
 
         addLog(
-            `🏦 ${title}: платіж ${product.paymentsMade}/${totalPayments} — ${formatMoney(paymentAmount)} грн`
+            `🏦 ${title}: платіж ${product.paymentsMade}/${totalPayments} — ${formatMoney(amountDue)} грн`
         );
 
-
         if (
-            product.paymentsMade >=
-            totalPayments
+            product.paymentsMade >= totalPayments
         ) {
-
-            product.active =
-                false;
-
+            product.active = false;
 
             addLog(
                 `✅ ${title}: зобов'язання повністю виконано.`
             );
-
         }
 
-
         return;
-
     }
 
+    if (isCreditCard100) {
+        // Одна додаткова плата за перенесений платіж.
+        // Повторні спроби його сплатити не додають нову плату.
+        if (!product.pendingPayment) {
+            product.lateFeeDue += 1000;
 
-    /* =====================================================
-       У ФАЙЛІ БАНКУ ДЛЯ КРЕДИТУ:
-       якщо грошей на платіж немає —
-       -2 репутації,
-       платіж переноситься.
-    ===================================================== */
-
-    player.reputation =
-        Math.max(
+            addLog(
+                `⚠️ ${title}: платіж перенесено. Додаткова плата — 1 000 грн; буде сплачена разом із платежем.`
+            );
+        }
+    } else {
+        // Для інших кредитів зберігаємо поточну логіку.
+        player.reputation = Math.max(
             0,
             player.reputation - 2
         );
 
+        addLog(
+            `⚠️ ${title}: платіж перенесено. ⭐ -2 репутації.`
+        );
+    }
 
-    product.pendingPayment =
-        true;
-
-
-    addLog(
-        `⚠️ ${title}: платіж перенесено. ⭐ -2 репутації.`
-    );
-
+    product.pendingPayment = true;
 }
-
 
 /* =========================================================
    145.2.8. ЗАКРИТТЯ ПРОДУКТУ
