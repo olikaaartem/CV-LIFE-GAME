@@ -13501,8 +13501,8 @@ const BANK_CARD_DECK = [
         story:
             "Строковий депозит у MyRaif. Ти вкладаєш гроші на визначений строк і наприкінці отримуєш вклад разом із доходом.",
 
-       rulesText:
-    "Вклади 4 000 грн. Обери строк: 3, 6 або 12 місяців. У грі 1 місяць = 3 ходи, тому строки становлять відповідно 9, 18 або 36 ходів. Хід підключення депозиту не враховується. Наприкінці строку отримай назад вклад і дохід: +1 000, +1 500 або +2 000 грн.",
+      rulesText:
+    "Сплати 2 000 грн при підключенні. Далі сплачуй по 2 000 грн кожного 2-го ходу після підключення. На кожному 6-му ході отримуй 8 000 грн. Один раз протягом дії продукту можна скасувати втрату 15 енергії від життєвої події.",
 
           
         initialEffects: {
@@ -26475,14 +26475,15 @@ function showParticipantInfo(
 /* =========================================================
    145.2. КАТАЛОГ БАНКІВСЬКИХ ПРОДУКТІВ
 
+   Повна заміна банківського блоку до розділу 145.3.
+
+   1 місяць = 3 особисті завершені ходи.
+   Інтервали, зазначені на картках у ходах, збережено.
+
    audience:
    personal   — фізична особа
    business   — ФОП / бізнес
    investment — фінансові інструменти
-
-   gameMode:
-   active — продукт може працювати у грі
-   info   — лише навчальна інформація
 ========================================================= */
 
 const BANK_PRODUCTS = [
@@ -26560,7 +26561,7 @@ const BANK_PRODUCTS = [
         id: "premium_cash_credit",
         audience: "personal",
         category: "credit",
-        gameMode: "info",
+        gameMode: "active",
         icon: "👑",
         name: "Кредит для Premium-клієнтів",
         shortName: "Premium кредит",
@@ -26572,12 +26573,12 @@ const BANK_PRODUCTS = [
         id: "premium_credit_card",
         audience: "personal",
         category: "credit",
-        gameMode: "info",
+        gameMode: "active",
         icon: "👑",
         name: "Кредитна картка Premium",
         shortName: "Premium кредитна картка",
         description:
-            "Кредитна картка в преміальному пакеті поєднує кредитний ліміт та додаткові можливості обслуговування. У грі цей продукт використовується лише для знайомства з банківськими продуктами."
+            "Кредитна картка в преміальному пакеті поєднує кредитний ліміт та додаткові можливості обслуговування. У грі кредитні платежі та правила прострочення застосовуються за відповідною банківською карткою."
     },
 
 
@@ -26589,7 +26590,7 @@ const BANK_PRODUCTS = [
         id: "green_card",
         audience: "personal",
         category: "insurance",
-        gameMode: "info",
+        gameMode: "active",
         icon: "🚗",
         name: "Зелена картка",
         shortName: "Зелена картка",
@@ -26613,7 +26614,7 @@ const BANK_PRODUCTS = [
         id: "varta_247",
         audience: "personal",
         category: "insurance",
-        gameMode: "info",
+        gameMode: "active",
         icon: "🛡️",
         name: "«Варта 24/7»",
         shortName: "Варта 24/7",
@@ -26637,7 +26638,7 @@ const BANK_PRODUCTS = [
         id: "extra_motor_insurance",
         audience: "personal",
         category: "insurance",
-        gameMode: "info",
+        gameMode: "active",
         icon: "🚘",
         name: "Додаткова автоцивілка",
         shortName: "Додаткова автоцивілка",
@@ -26678,7 +26679,7 @@ const BANK_PRODUCTS = [
         id: "common_stock",
         audience: "investment",
         category: "investment",
-        gameMode: "info",
+        gameMode: "active",
         icon: "📊",
         name: "Прості акції",
         shortName: "Прості акції",
@@ -26690,7 +26691,7 @@ const BANK_PRODUCTS = [
         id: "preferred_stock",
         audience: "investment",
         category: "investment",
-        gameMode: "info",
+        gameMode: "active",
         icon: "⭐",
         name: "Привілейовані акції",
         shortName: "Привілейовані акції",
@@ -26702,7 +26703,7 @@ const BANK_PRODUCTS = [
         id: "dividend_stock",
         audience: "investment",
         category: "investment",
-        gameMode: "info",
+        gameMode: "active",
         icon: "💸",
         name: "Дивідендні акції",
         shortName: "Дивідендні акції",
@@ -26731,7 +26732,7 @@ const BANK_PRODUCTS = [
         id: "deposit_line",
         audience: "business",
         category: "deposit",
-        gameMode: "info",
+        gameMode: "active",
         icon: "🏦",
         name: "Депозитна лінія",
         shortName: "Депозитна лінія",
@@ -26767,7 +26768,7 @@ const BANK_PRODUCTS = [
         id: "business_elite",
         audience: "business",
         category: "service",
-        gameMode: "info",
+        gameMode: "active",
         icon: "💼",
         name: "Пакет для бізнесу",
         shortName: "Бізнес Еліт+",
@@ -26801,144 +26802,344 @@ const BANK_PRODUCTS = [
 
 ];
 
+
+/* =========================================================
+   145.2.0. СПІЛЬНІ ПЕРЕВІРКИ Й ПРАВИЛА
+========================================================= */
+
+const BANK_TURNS_PER_MONTH = 3;
+
+const BANK_EARLY_RETURNS = {
+    deposit_growing: 4000,
+    deposit_chest: 4000,
+    ovdp: 3000,
+    deposit_line: 6000
+};
+
+const BANK_CLASSIC_TERMS = [
+    {
+        months: 3,
+        turns: 9,
+        profit: 1000
+    },
+    {
+        months: 6,
+        turns: 18,
+        profit: 1500
+    },
+    {
+        months: 12,
+        turns: 36,
+        profit: 2000
+    }
+];
+
+
+function ensureBankState(player) {
+
+    if (!player) {
+        return null;
+    }
+
+    const bank =
+        player.bank || (player.bank = {});
+
+    if (!Array.isArray(bank.products)) {
+        bank.products = [];
+    }
+
+    bank.products = bank.products
+        .map(product =>
+            typeof product === "string"
+                ? {
+                    id: product,
+                    active: true,
+                    activatedTurn:
+                        Number(player.turnsCompleted) || 0
+                }
+                : product
+        )
+        .filter(Boolean);
+
+    if (!Array.isArray(bank.debts)) {
+        bank.debts = [];
+    }
+
+    const visits =
+        Number(bank.extraVisits);
+
+    bank.extraVisits =
+        Number.isFinite(visits) && visits >= 0
+            ? Math.floor(visits)
+            : Math.max(
+                0,
+                Number(GAME_CONFIG.startingBankTokens) || 0
+            );
+
+    bank.premium =
+        bank.premium === true;
+
+    bank.premiumExtraGranted =
+        bank.premiumExtraGranted === true;
+
+    return bank;
+
+}
+
+
+function bankCatalogCard(productId) {
+
+    const card =
+        BANK_CARD_DECK.find(
+            item => item.productId === productId
+        );
+
+    return card
+        ? {
+            ...card,
+            initialEffects: {
+                ...(card.initialEffects || {})
+            }
+        }
+        : null;
+
+}
+
+
+function bankContext(context) {
+
+    return {
+
+        source:
+            context?.source === "hub"
+                ? "hub"
+                : "cell",
+
+        audience:
+            [
+                "personal",
+                "business",
+                "investment"
+            ].includes(context?.audience)
+                ? context.audience
+                : "personal"
+
+    };
+
+}
+
+
+function getBankOverdraftLimit(player) {
+
+    const knowledge =
+        Number(player?.knowledge) || 0;
+
+    const reputation =
+        Number(player?.reputation) || 0;
+
+    if (
+        knowledge >= 80 &&
+        reputation >= 85
+    ) {
+        return 80000;
+    }
+
+    if (
+        knowledge >= 55 &&
+        reputation >= 70
+    ) {
+        return 40000;
+    }
+
+    if (
+        knowledge >= 40 &&
+        reputation >= 30
+    ) {
+        return 20000;
+    }
+
+    if (
+        knowledge >= 10 &&
+        reputation >= 20
+    ) {
+        return 10000;
+    }
+
+    return 0;
+
+}
+
+
+function bankActivationProblem(
+    player,
+    card,
+    context
+) {
+
+    if (
+        !player ||
+        !card ||
+        !BANK_PRODUCTS.some(
+            item => item.id === card.productId
+        )
+    ) {
+        return "Картку продукту не знайдено.";
+    }
+
+    const bank =
+        ensureBankState(player);
+
+    if (
+        hasBankProduct(
+            player,
+            card.productId
+        )
+    ) {
+        return "Цей продукт уже підключений.";
+    }
+
+    if (
+        context.source === "hub" &&
+        bank.extraVisits < 1
+    ) {
+        return "Додаткові звернення вичерпано. Можна підключити продукт, коли випадеш на клітинку Банку.";
+    }
+
+    const cost =
+        Math.max(
+            0,
+            -(Number(card.initialEffects?.money) || 0)
+        );
+
+    if (
+        player.money < cost
+    ) {
+        return `Для підключення потрібно ${formatMoney(cost)} грн.`;
+    }
+
+    if (
+        card.moneyRequired &&
+        player.money < card.moneyRequired
+    ) {
+        return `Потрібно мати щонайменше ${formatMoney(card.moneyRequired)} грн.`;
+    }
+
+    if (
+        card.premiumRequired &&
+        !bank.premium &&
+        player.money < 20000
+    ) {
+        return "Для отримання Premium-статусу потрібно мати щонайменше 20 000 грн.";
+    }
+
+    if (
+        card.productId === "overdraft" &&
+        !getBankOverdraftLimit(player)
+    ) {
+        return "Для овердрафту потрібно щонайменше 10 знань та 20 репутації.";
+    }
+
+    return "";
+
+}
+
+
+function bindBankClick(
+    id,
+    callback
+) {
+
+    document
+        .getElementById(id)
+        ?.addEventListener(
+            "click",
+            callback
+        );
+
+}
+
+
+function bankProductName(product) {
+
+    return BANK_PRODUCTS.find(
+        item => item.id === product.id
+    )?.shortName || product.id;
+
+}
+
+
 /* =========================================================
    145.2. БАНК — ОСНОВНИЙ HUB
+
+   Кнопка HUD може передати MouseEvent.
+   У такому випадку відкриваємо «Для себе».
 ========================================================= */
 
 function showBankHub(
     audience = "personal"
 ) {
 
+    if (
+        ![
+            "personal",
+            "business",
+            "investment"
+        ].includes(audience)
+    ) {
+        audience = "personal";
+    }
+
     const player =
         gameState.player;
 
+    if (!player) {
+        return;
+    }
 
     const bank =
-        player.bank || {};
+        ensureBankState(player);
 
+    const owned =
+        bank.products.filter(
+            item => item.active !== false
+        );
 
-    const audienceTitles = {
-
-        personal: {
-            icon: "👤",
-            title: "Для себе"
-        },
-
-        business: {
-            icon: "💼",
-            title: "Для бізнесу"
-        },
-
-        investment: {
-            icon: "📈",
-            title: "Інвестиції"
-        }
-
+    const titles = {
+        personal: "👤 Для себе",
+        business: "💼 Для бізнесу",
+        investment: "📈 Інвестиції"
     };
 
-
-    const currentAudience =
-        audienceTitles[audience]
-        ||
-        audienceTitles.personal;
-
-
-    const products =
+    const cards =
         BANK_PRODUCTS.filter(
-            product =>
-                product.audience === audience
+            item => item.audience === audience
         );
-
-
-    const activeProducts =
-        products.filter(
-            product =>
-                product.gameMode === "active"
-        );
-
-
-    const infoProducts =
-        products.filter(
-            product =>
-                product.gameMode === "info"
-        );
-
-
-    const createProductCards =
-        list => {
-
-            if (!list.length) {
-
-                return `
-                    <p class="progress-help-text">
-                        У цій категорії поки немає продуктів.
-                    </p>
-                `;
-
-            }
-
-
-            return list
-                .map(
-                    product => `
-
-                        <button
-                            class="bank-product-card"
-                            data-bank-product-id="${product.id}"
-                        >
-
-                            <span class="bank-product-icon">
-                                ${product.icon}
-                            </span>
-
-
-                            <div class="bank-product-card-text">
-
-                                <strong>
-                                    ${product.shortName}
-                                </strong>
-
-                                <small>
-                                    Дізнатися більше →
-                                </small>
-
-                            </div>
-
-                        </button>
-
-                    `
-                )
-                .join("");
-
-        };
 
 
     openGameInfoModal(`
 
         <div class="bank-hub-modal">
 
-
             <div class="cycle-notice-icon">
                 🏦
             </div>
-
 
             <h2>
                 Банк
             </h2>
 
-
             <p>
-                Обирай категорію та знайомся
-                з фінансовими продуктами.
+                Перегляд безкоштовний.
+                Підключення через це меню використовує
+                одне додаткове звернення
+                та не завершує твій хід.
             </p>
-
 
             <div class="bank-summary-strip">
 
                 <span>
                     🎟 Звернення:
-                    ${bank.extraVisits || 0}
+                    ${bank.extraVisits}
                 </span>
 
                 <span>
@@ -26948,284 +27149,196 @@ function showBankHub(
 
                 <span>
                     💳 Активних продуктів:
-                    ${
-                        Array.isArray(
-                            bank.products
-                        )
-                            ? bank.products.length
-                            : 0
-                    }
+                    ${owned.length}
                 </span>
 
             </div>
-<!-- =====================================
-     МОЇ АКТИВНІ ПРОДУКТИ
-====================================== -->
 
-${
-    Array.isArray(bank.products)
-    &&
-    bank.products.some(
-        product =>
-            product
-            &&
-            product.active !== false
-    )
 
-    ? `
+            ${
+                owned.length
 
-        <div class="bank-products-section">
+                    ? `
 
-            <h3>
-                💳 Мої активні продукти
-            </h3>
+                        <div class="bank-products-section">
 
-            <div class="bank-products-grid">
+                            <h3>
+                                💳 Мої активні продукти
+                            </h3>
+
+                            <div class="bank-products-grid">
+
+                                ${
+                                    owned.map(
+                                        (product, index) => {
+
+                                            const catalog =
+                                                BANK_PRODUCTS.find(
+                                                    item =>
+                                                        item.id === product.id
+                                                );
+
+                                            const early =
+                                                BANK_EARLY_RETURNS[
+                                                    product.id
+                                                ];
+
+                                            return `
+
+                                                <div class="bank-product-card">
+
+                                                    <span class="bank-product-icon">
+                                                        ${catalog?.icon || "🏦"}
+                                                    </span>
+
+                                                    <div class="bank-product-card-text">
+
+                                                        <strong>
+                                                            ${bankProductName(product)}
+                                                        </strong>
+
+                                                        <small>
+                                                            ${
+                                                                product.id === "overdraft"
+
+                                                                    ? `Борг: ${formatMoney(product.principalDue || 0)} грн`
+
+                                                                    : "Активний продукт"
+                                                            }
+                                                        </small>
+
+                                                        ${
+                                                            early
+
+                                                                ? `
+
+                                                                    <button
+                                                                        class="secondary-game-btn"
+                                                                        data-bank-close-index="${index}"
+                                                                    >
+                                                                        ЗАБРАТИ ${formatMoney(early)} ГРН
+                                                                    </button>
+
+                                                                  `
+
+                                                                : ""
+                                                        }
+
+                                                        ${
+                                                            product.id === "my_fop"
+
+                                                                ? `
+
+                                                                    <button
+                                                                        class="secondary-game-btn"
+                                                                        data-bank-fop-index="${index}"
+                                                                    >
+                                                                        ЗАКРИТИ РАХУНОК «МІЙ ФОП»
+                                                                    </button>
+
+                                                                  `
+
+                                                                : ""
+                                                        }
+
+                                                        ${
+                                                            product.id === "overdraft"
+
+                                                                ? `
+
+                                                                    <button
+                                                                        class="secondary-game-btn"
+                                                                        data-bank-repay-index="${index}"
+                                                                    >
+                                                                        ПОВЕРНУТИ БОРГ
+                                                                    </button>
+
+                                                                  `
+
+                                                                : ""
+                                                        }
+
+                                                    </div>
+
+                                                </div>
+
+                                            `;
+
+                                        }
+                                    ).join("")
+                                }
+
+                            </div>
+
+                        </div>
+
+                      `
+
+                    : ""
+            }
+
+
+            <div class="bank-tabs">
 
                 ${
-                    bank.products
+                    Object.entries(titles).map(
+                        ([key, title]) => `
 
-                        .filter(
-                            product =>
-                                product
-                                &&
-                                product.active !== false
-                        )
+                            <button
+                                class="bank-tab-button ${
+                                    key === audience
+                                        ? "active"
+                                        : ""
+                                }"
+                                data-bank-tab="${key}"
+                            >
+                                ${title}
+                            </button>
 
-                        .map(
-                            product => {
-
-                                const catalogProduct =
-                                    BANK_PRODUCTS.find(
-                                        item =>
-                                            item.id === product.id
-                                    );
-
-
-                                const canCloseDeposit =
-                                    [
-                                        "deposit_growing",
-                                        "deposit_chest"
-                                    ]
-                                        .includes(
-                                            product.id
-                                        );
-
-
-                                const canCloseFop =
-                                    product.id ===
-                                        "my_fop";
-
-
-                                return `
-
-                                    <div class="bank-product-card">
-
-                                        <span class="bank-product-icon">
-                                            ${
-                                                catalogProduct?.icon
-                                                ||
-                                                "🏦"
-                                            }
-                                        </span>
-
-                                        <div class="bank-product-card-text">
-
-                                            <strong>
-                                                ${
-                                                    catalogProduct?.shortName
-                                                    ||
-                                                    product.id
-                                                }
-                                            </strong>
-
-                                            <small>
-                                                Активний продукт
-                                            </small>
-
-
-                                            ${
-                                                canCloseDeposit
-
-                                                ? `
-
-                                                    <button
-                                                        class="secondary-game-btn close-bank-deposit-button"
-                                                        data-product-id="${product.id}"
-                                                    >
-                                                        ЗАБРАТИ 4 000 ГРН
-                                                    </button>
-
-                                                  `
-
-                                                : ""
-                                            }
-
-
-                                            ${
-                                                canCloseFop
-
-                                                ? `
-
-                                                    <button
-                                                        class="secondary-game-btn close-fop-button"
-                                                        data-product-id="${product.id}"
-                                                    >
-                                                        ЗАКРИТИ ФОП
-                                                    </button>
-
-                                                  `
-
-                                                : ""
-                                            }
-
-                                        </div>
-
-                                    </div>
-
-                                `;
-
-                            }
-                        )
-
-                        .join("")
+                        `
+                    ).join("")
                 }
 
             </div>
 
-        </div>
 
-      `
-
-    : ""
-}
+            <h3>
+                ${titles[audience]}
+            </h3>
 
 
-            <!-- =====================================
-                 ВКЛАДКИ
-            ====================================== -->
+            <div class="bank-products-grid">
 
-            <div class="bank-tabs">
+                ${
+                    cards.map(
+                        product => `
 
-                <button
-                    class="
-                        bank-tab-button
-                        ${
-                            audience === "personal"
-                                ? "active"
-                                : ""
-                        }
-                    "
-                    data-bank-tab="personal"
-                >
-                    👤 Для себе
-                </button>
+                            <button
+                                class="bank-product-card"
+                                data-bank-product-id="${product.id}"
+                            >
 
+                                <span class="bank-product-icon">
+                                    ${product.icon}
+                                </span>
 
-                <button
-                    class="
-                        bank-tab-button
-                        ${
-                            audience === "business"
-                                ? "active"
-                                : ""
-                        }
-                    "
-                    data-bank-tab="business"
-                >
-                    💼 Для бізнесу
-                </button>
+                                <div class="bank-product-card-text">
 
+                                    <strong>
+                                        ${product.shortName}
+                                    </strong>
 
-                <button
-                    class="
-                        bank-tab-button
-                        ${
-                            audience === "investment"
-                                ? "active"
-                                : ""
-                        }
-                    "
-                    data-bank-tab="investment"
-                >
-                    📈 Інвестиції
-                </button>
+                                    <small>
+                                        Умови та підключення →
+                                    </small>
 
-            </div>
+                                </div>
 
+                            </button>
 
-            <!-- =====================================
-                 ПОТОЧНА КАТЕГОРІЯ
-            ====================================== -->
-
-            <div class="bank-category-title">
-
-                <span>
-                    ${currentAudience.icon}
-                </span>
-
-                <strong>
-                    ${currentAudience.title}
-                </strong>
-
-            </div>
-
-
-            <!-- =====================================
-                 ПРАЦЮЮТЬ У ГРІ
-            ====================================== -->
-
-            <div class="bank-products-section">
-
-                <h3>
-                    🎮 Працюють у грі
-                </h3>
-
-                <p class="progress-help-text">
-                    Ці продукти можуть впливати
-                    на твої гроші або ресурси.
-                </p>
-
-
-                <div class="bank-products-grid">
-
-                    ${
-                        createProductCards(
-                            activeProducts
-                        )
-                    }
-
-                </div>
-
-            </div>
-
-
-            <!-- =====================================
-                 ІНФОРМАЦІЙНІ ПРОДУКТИ
-            ====================================== -->
-
-            <div class="bank-products-section">
-
-                <h3>
-                    📚 Дізнатися більше
-                </h3>
-
-                <p class="progress-help-text">
-                    Ці продукти є у фінансовому світі,
-                    але в грі вони працюють
-                    лише як навчальні картки.
-                </p>
-
-
-                <div class="bank-products-grid">
-
-                    ${
-                        createProductCards(
-                            infoProducts
-                        )
-                    }
-
-                </div>
+                        `
+                    ).join("")
+                }
 
             </div>
 
@@ -27237,19 +27350,16 @@ ${
                 ПРОДОВЖИТИ ГРУ
             </button>
 
-
         </div>
 
     `);
 
 
-    /* =====================================================
-       ПЕРЕМИКАННЯ ВКЛАДОК
-    ===================================================== */
+    /* ПЕРЕМИКАННЯ ВКЛАДОК */
 
     document
         .querySelectorAll(
-            ".bank-tab-button"
+            "[data-bank-tab]"
         )
         .forEach(
             button => {
@@ -27269,13 +27379,11 @@ ${
         );
 
 
-    /* =====================================================
-       ВІДКРИТТЯ ПРОДУКТУ
-    ===================================================== */
+    /* ВІДКРИТТЯ ІНФОРМАЦІЇ ПРО ПРОДУКТ */
 
     document
         .querySelectorAll(
-            ".bank-product-card"
+            "[data-bank-product-id]"
         )
         .forEach(
             button => {
@@ -27296,140 +27404,146 @@ ${
         );
 
 
+    /* ДОСТРОКОВЕ ПОВЕРНЕННЯ КОШТІВ */
+
     document
-        .getElementById(
-            "closeBankHubButton"
+        .querySelectorAll(
+            "[data-bank-close-index]"
         )
-        ?.addEventListener(
-            "click",
-            closeGameInfoModal
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        const product =
+                            owned[
+                                Number(
+                                    button.dataset.bankCloseIndex
+                                )
+                            ];
+
+                        if (
+                            !product ||
+                            product.active === false
+                        ) {
+                            return;
+                        }
+
+                        closeBankProductWithReturn(
+                            player,
+                            product,
+                            BANK_EARLY_RETURNS[product.id],
+                            bankProductName(product)
+                        );
+
+                        updateGameUI();
+
+                        showBankHub(
+                            audience
+                        );
+
+                    }
+                );
+
+            }
         );
 
 
-/* =====================================================
-   ДОСТРОКОВЕ ЗАКРИТТЯ ДЕПОЗИТІВ
-===================================================== */
+    /* ЗАКРИТТЯ РАХУНКУ «МІЙ ФОП» */
 
-document
-    .querySelectorAll(
-        ".close-bank-deposit-button"
-    )
-    .forEach(
-        button => {
+    document
+        .querySelectorAll(
+            "[data-bank-fop-index]"
+        )
+        .forEach(
+            button => {
 
-            button.addEventListener(
-                "click",
-                () => {
+                button.addEventListener(
+                    "click",
+                    event => {
 
-                    const productId =
-                        button.dataset.productId;
+                        event.stopPropagation();
 
+                        const product =
+                            owned[
+                                Number(
+                                    button.dataset.bankFopIndex
+                                )
+                            ];
 
-                    const product =
-                        bank.products.find(
-                            item =>
-                                item
-                                &&
-                                item.id === productId
-                                &&
-                                item.active !== false
+                        if (
+                            !product ||
+                            product.active === false
+                        ) {
+                            return;
+                        }
+
+                        product.active = false;
+
+                        addLog(
+                            "✅ Рахунок «Мій ФОП» закрито. Реєстрація ФОП не змінюється."
                         );
 
+                        updateGameUI();
 
-                    if (!product) {
-                        return;
-                    }
-
-
-                    closeBankProductWithReturn(
-                        player,
-                        product,
-                        4000,
-                        productId === "deposit_growing"
-
-                            ? "Депозит «Зростаючий»"
-
-                            : "Депозит «Скриня»"
-                    );
-
-
-                    updatePlayerStatsUI();
-
-
-                    showBankHub(
-                        audience
-                    );
-
-                }
-            );
-
-        }
-    );
-
-
-/* =====================================================
-   ЗАКРИТТЯ «МІЙ ФОП»
-===================================================== */
-
-document
-    .querySelectorAll(
-        ".close-fop-button"
-    )
-    .forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    const productId =
-                        button.dataset.productId;
-
-
-                    const product =
-                        bank.products.find(
-                            item =>
-                                item
-                                &&
-                                item.id === productId
-                                &&
-                                item.active !== false
+                        showBankHub(
+                            audience
                         );
 
-
-                    if (!product) {
-                        return;
                     }
+                );
+
+            }
+        );
 
 
-                    product.active =
-                        false;
+    /* ПОВЕРНЕННЯ ОВЕРДРАФТУ */
+
+    document
+        .querySelectorAll(
+            "[data-bank-repay-index]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    event => {
+
+                        event.stopPropagation();
+
+                        showBankOverdraftRepayment(
+                            owned[
+                                Number(
+                                    button.dataset.bankRepayIndex
+                                )
+                            ],
+                            audience
+                        );
+
+                    }
+                );
+
+            }
+        );
 
 
-                    addLog(
-                        "✅ Рахунок «Мій ФОП» закрито."
-                    );
-
-
-                    updatePlayerStatsUI();
-
-
-                    showBankHub(
-                        audience
-                    );
-
-                }
-            );
-
-        }
+    bindBankClick(
+        "closeBankHubButton",
+        closeGameInfoModal
     );
-
 
 }
 
 
 /* =========================================================
    145.2.1. ІНФОРМАЦІЯ ПРО БАНКІВСЬКИЙ ПРОДУКТ
+
+   Звідси можна перейти до підключення.
 ========================================================= */
 
 function showBankProductInfo(
@@ -27439,14 +27553,15 @@ function showBankProductInfo(
 
     const product =
         BANK_PRODUCTS.find(
-            item =>
-                item.id === productId
+            item => item.id === productId
         );
-
 
     if (!product) {
         return;
     }
+
+    const card =
+        bankCatalogCard(productId);
 
 
     openGameInfoModal(`
@@ -27457,35 +27572,44 @@ function showBankProductInfo(
                 ${product.icon}
             </div>
 
-
             <h2>
                 ${product.name}
             </h2>
-
 
             <p>
                 ${product.description}
             </p>
 
-
-            <div class="bank-product-type">
-
+            <div class="decision-card-task">
                 ${
-                    product.gameMode === "active"
-                        ? "🎮 Цей продукт використовується у грі."
-                        : "📚 Цей продукт доданий для знайомства."
+                    card?.rulesText ||
+                    "Картку продукту не знайдено."
                 }
-
             </div>
 
+            ${
+                card
+
+                    ? `
+
+                        <button
+                            id="bankProductConnectButton"
+                            class="main-game-btn"
+                        >
+                            ПЕРЕЙТИ ДО ПІДКЛЮЧЕННЯ
+                        </button>
+
+                      `
+
+                    : ""
+            }
 
             <button
                 id="backToBankButton"
-                class="main-game-btn"
+                class="secondary-game-btn"
             >
                 ← НАЗАД ДО БАНКУ
             </button>
-
 
             <button
                 id="closeBankProductButton"
@@ -27499,188 +27623,87 @@ function showBankProductInfo(
     `);
 
 
-    document
-        .getElementById(
-            "backToBankButton"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
+    bindBankClick(
+        "bankProductConnectButton",
+        () => {
 
-                showBankHub(
+            showBankCard(
+                card,
+                {
+                    source: "hub",
                     audience
-                );
+                }
+            );
 
-            }
-        );
+        }
+    );
 
 
-    document
-        .getElementById(
-            "closeBankProductButton"
-        )
-        ?.addEventListener(
-            "click",
-            closeGameInfoModal
-        );
+    bindBankClick(
+        "backToBankButton",
+        () => {
+
+            showBankHub(
+                audience
+            );
+
+        }
+    );
+
+
+    bindBankClick(
+        "closeBankProductButton",
+        closeGameInfoModal
+    );
 
 }
 
+
 /* =========================================================
    145.2.2. ІГРОВА КАРТКА БАНКУ
+
+   source:
+   cell — картка з клітинки Банку
+   hub  — підключення за додаткове звернення
 ========================================================= */
 
 function showBankCard(
-    card
+    card,
+    context = {}
 ) {
 
     const player =
         gameState.player;
 
+    const ctx =
+        bankContext(context);
 
     if (
-        !card ||
-        !player
+        !player ||
+        !card
     ) {
 
-        finishPlayerCardTurn();
+        if (
+            ctx.source === "cell"
+        ) {
+            finishPlayerCardTurn();
+        }
+
         return;
 
     }
 
-
-    if (!player.bank) {
-
-        player.bank = {
-            extraVisits:
-                GAME_CONFIG.startingBankTokens,
-
-            premium: false,
-
-            premiumExtraGranted: false,
-
-            products: [],
-
-            debts: []
-        };
-
-    }
-
+    const problem =
+        bankActivationProblem(
+            player,
+            card,
+            ctx
+        );
 
     const product =
         BANK_PRODUCTS.find(
-            item =>
-                item.id === card.productId
+            item => item.id === card.productId
         );
-
-
-    const alreadyOwned =
-        hasBankProduct(
-            player,
-            card.productId
-        );
-
-
-    const moneyCost =
-        card.initialEffects?.money < 0
-
-            ? Math.abs(
-                card.initialEffects.money
-            )
-
-            : 0;
-
-
-    const enoughMoneyForCost =
-        player.money >=
-        moneyCost;
-
-
-    const enoughMoneyForRequirement =
-        !card.moneyRequired
-        ||
-        player.money >=
-            card.moneyRequired;
-
-
-    /*
-       За правилами банківського файлу
-       для Premium потрібно мати
-       необхідну суму грошей.
-    */
-
-    const premiumAvailable =
-        !card.premiumRequired
-        ||
-        player.bank.premium
-        ||
-        player.money >= 20000;
-
-
-    const canActivate =
-        !alreadyOwned
-        &&
-        enoughMoneyForCost
-        &&
-        enoughMoneyForRequirement
-        &&
-        premiumAvailable;
-
-
-    let warningHTML =
-        "";
-
-
-    if (alreadyOwned) {
-
-        warningHTML = `
-            <div class="card-requirement-warning">
-                ✅ Цей банківський продукт
-                у тебе вже підключений.
-            </div>
-        `;
-
-    }
-
-    else if (
-        !enoughMoneyForRequirement
-    ) {
-
-        warningHTML = `
-            <div class="card-requirement-warning">
-                ⚠️ Для цього продукту потрібно
-                мати щонайменше
-                ${formatMoney(card.moneyRequired)}.
-            </div>
-        `;
-
-    }
-
-    else if (
-        !premiumAvailable
-    ) {
-
-        warningHTML = `
-            <div class="card-requirement-warning">
-                👑 Цей продукт доступний
-                Premium-клієнтам.
-            </div>
-        `;
-
-    }
-
-    else if (
-        !enoughMoneyForCost
-    ) {
-
-        warningHTML = `
-            <div class="card-requirement-warning">
-                ⚠️ Недостатньо грошей
-                для підключення продукту.
-            </div>
-        `;
-
-    }
 
 
     openGameInfoModal(`
@@ -27691,88 +27714,81 @@ function showBankCard(
                 🏦
             </div>
 
-
             <div class="decision-card-number">
                 Картка Банку №${card.number}
             </div>
-
 
             <h2>
                 ${card.title}
             </h2>
 
-
             <p>
                 ${card.story || ""}
             </p>
 
+            <div class="decision-card-task">
+
+                <strong>
+                    📋 Як працює у грі
+                </strong>
+
+                <br><br>
+
+                ${card.rulesText || ""}
+
+            </div>
+
+            <p>
+                ${product?.description || ""}
+            </p>
 
             ${
-                card.rulesText
+                ctx.source === "hub"
 
                     ? `
-                        <div class="decision-card-task">
 
-                            <strong>
-                                📋 Як працює у грі
-                            </strong>
+                        <p>
+                            🎟 При успішному підключенні:
+                            −1 додаткове звернення.
+                        </p>
 
-                            <br><br>
-
-                            ${card.rulesText}
-
-                        </div>
-                    `
+                      `
 
                     : ""
             }
 
-
             ${
-                product
+                problem
 
                     ? `
-                        <div class="decision-card-task">
 
-                            <strong>
-                                💡 Що це за продукт?
-                            </strong>
-
-                            <br><br>
-
-                            ${product.description}
-
+                        <div class="card-requirement-warning">
+                            ⚠️ ${problem}
                         </div>
-                    `
 
-                    : ""
-            }
+                      `
 
+                    : `
 
-            ${warningHTML}
-
-
-            ${
-                canActivate
-
-                    ? `
                         <button
                             id="activateBankProductButton"
                             class="main-game-btn"
                         >
                             ПІДКЛЮЧИТИ ПРОДУКТ
                         </button>
-                    `
 
-                    : ""
+                      `
             }
-
 
             <button
                 id="declineBankProductButton"
                 class="work-panel-button"
             >
-                НЕ ПІДКЛЮЧАТИ
+                ${
+                    ctx.source === "hub"
+                        ? "НАЗАД ДО БАНКУ"
+                        : "НЕ ПІДКЛЮЧАТИ"
+                }
             </button>
 
         </div>
@@ -27780,95 +27796,81 @@ function showBankCard(
     `);
 
 
-    /* =====================================================
-       ПІДКЛЮЧИТИ
-    ===================================================== */
+    bindBankClick(
+        "activateBankProductButton",
+        () => {
 
-    document
-        .getElementById(
-            "activateBankProductButton"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
+            activateBankProduct(
+                card,
+                ctx
+            );
 
-                activateBankProduct(
-                    card
+        }
+    );
+
+
+    bindBankClick(
+        "declineBankProductButton",
+        () => {
+
+            if (
+                ctx.source === "hub"
+            ) {
+
+                showBankHub(
+                    ctx.audience
                 );
 
+            } else {
+
+                finishPlayerCardTurn();
+
             }
-        );
 
-
-    /* =====================================================
-       НЕ ПІДКЛЮЧАТИ
-    ===================================================== */
-
-    document
-        .getElementById(
-            "declineBankProductButton"
-        )
-        ?.addEventListener(
-            "click",
-            finishPlayerCardTurn
-        );
+        }
+    );
 
 }
+
+
 /* =========================================================
    145.2.3. ПІДКЛЮЧЕННЯ БАНКІВСЬКОГО ПРОДУКТУ
+
+   Перед активацією повторно перевіряємо вимоги.
 ========================================================= */
 
 function activateBankProduct(
-    card
+    card,
+    context = {}
 ) {
 
     const player =
         gameState.player;
 
-
-    /* =====================================================
-       БАЗОВА ПЕРЕВІРКА
-    ===================================================== */
+    const ctx =
+        bankContext(context);
 
     if (
-        !player
-        ||
+        !player ||
         !card
     ) {
         return;
     }
 
-
     const bank =
-        player.bank;
-
-
-    if (
-        !bank
-    ) {
-        return;
-    }
-
-
-    /* =====================================================
-       КЛАСИЧНИЙ СТРОКОВИЙ —
-       СПОЧАТКУ ОБИРАЄМО СТРОК
-
-       1 місяць = 3 ходи
-       3 місяці = 9 ходів
-       6 місяців = 18 ходів
-       12 місяців = 36 ходів
-    ===================================================== */
+        ensureBankState(player);
 
     if (
-        card.productId ===
-            "deposit_classic"
-        &&
-        !card.selectedDepositTerm
+        bankActivationProblem(
+            player,
+            card,
+            ctx
+        )
     ) {
 
-        showClassicDepositTermChoice(
-            card
+        showBankCard(
+            card,
+            ctx
         );
 
         return;
@@ -27876,239 +27878,80 @@ function activateBankProduct(
     }
 
 
-    /* =====================================================
-       ЧИ НЕ ПІДКЛЮЧЕНИЙ ПРОДУКТ УЖЕ
-    ===================================================== */
+    /* КЛАСИЧНИЙ ДЕПОЗИТ — ОБРАНИЙ СТРОК */
+
+    const term =
+        BANK_CLASSIC_TERMS.find(
+            item =>
+                item.months ===
+                Number(
+                    card.selectedDepositTerm?.months
+                )
+        );
 
     if (
-        hasBankProduct(
-            player,
-            card.productId
-        )
+        card.productId === "deposit_classic" &&
+        !term
     ) {
+
+        showClassicDepositTermChoice(
+            card,
+            ctx
+        );
 
         return;
 
     }
 
 
-    /* =====================================================
-       ВАРТІСТЬ ПІДКЛЮЧЕННЯ
-    ===================================================== */
+    /*
+       Ліміт овердрафту визначаємо ДО застосування
+       бонусів знань і репутації самої картки.
+    */
 
-    const moneyCost =
-        card.initialEffects?.money < 0
-
-            ? Math.abs(
-                card.initialEffects.money
-            )
-
+    const overdraftLimit =
+        card.productId === "overdraft"
+            ? getBankOverdraftLimit(player)
             : 0;
 
+    const effects = {
+        ...(card.initialEffects || {})
+    };
 
     if (
-        player.money <
-        moneyCost
+        overdraftLimit
     ) {
-
-        openGameInfoModal(`
-
-            <div class="bank-card-game-modal">
-
-                <div class="cycle-notice-icon">
-                    ⚠️
-                </div>
-
-                <h2>
-                    Недостатньо грошей
-                </h2>
-
-                <p>
-                    Для підключення цього продукту
-                    потрібно ${formatMoney(moneyCost)} грн.
-                </p>
-
-                <button
-                    id="bankNotEnoughMoneyButton"
-                    class="main-game-btn"
-                >
-                    ДОБРЕ
-                </button>
-
-            </div>
-
-        `);
-
-
-        document
-            .getElementById(
-                "bankNotEnoughMoneyButton"
-            )
-            ?.addEventListener(
-                "click",
-                () => {
-
-                    showBankCard(
-                        card
-                    );
-
-                }
-            );
-
-
-        return;
-
+        effects.money = overdraftLimit;
     }
 
 
-    /* =====================================================
-       ДОДАТКОВА ВИМОГА ПО ГРОШАХ
-       Наприклад Business Elite+
-    ===================================================== */
+    /* PREMIUM */
 
     if (
-        card.moneyRequired
-        &&
-        player.money <
-            card.moneyRequired
-    ) {
-
-        openGameInfoModal(`
-
-            <div class="bank-card-game-modal">
-
-                <div class="cycle-notice-icon">
-                    🔒
-                </div>
-
-                <h2>
-                    Продукт поки недоступний
-                </h2>
-
-                <p>
-                    Для цього продукту потрібно мати
-                    щонайменше
-                    ${formatMoney(card.moneyRequired)} грн.
-                </p>
-
-                <button
-                    id="bankRequirementCloseButton"
-                    class="main-game-btn"
-                >
-                    ДОБРЕ
-                </button>
-
-            </div>
-
-        `);
-
-
-        document
-            .getElementById(
-                "bankRequirementCloseButton"
-            )
-            ?.addEventListener(
-                "click",
-                () => {
-
-                    showBankCard(
-                        card
-                    );
-
-                }
-            );
-
-
-        return;
-
-    }
-
-
-    /* =====================================================
-       PREMIUM
-    ===================================================== */
-
-    if (
-        card.premiumRequired
-        &&
+        card.premiumRequired &&
         !bank.premium
     ) {
 
-        if (
-            player.money <
-            20000
-        ) {
-
-            openGameInfoModal(`
-
-                <div class="bank-card-game-modal">
-
-                    <div class="cycle-notice-icon">
-                        ⭐
-                    </div>
-
-                    <h2>
-                        Потрібен Premium-статус
-                    </h2>
-
-                    <p>
-                        Щоб стати Premium-клієнтом,
-                        потрібно мати щонайменше
-                        20 000 грн.
-                    </p>
-
-                    <button
-                        id="premiumRequirementCloseButton"
-                        class="main-game-btn"
-                    >
-                        ДОБРЕ
-                    </button>
-
-                </div>
-
-            `);
-
-
-            document
-                .getElementById(
-                    "premiumRequirementCloseButton"
-                )
-                ?.addEventListener(
-                    "click",
-                    () => {
-
-                        showBankCard(
-                            card
-                        );
-
-                    }
-                );
-
-
-            return;
-
-        }
-
-
-        bank.premium =
-            true;
-
+        bank.premium = true;
 
         if (
             !bank.premiumExtraGranted
         ) {
 
-            bank.extraVisits +=
-                GAME_CONFIG
-                    .premiumExtraBankTokens;
+            const extra =
+                Math.max(
+                    0,
+                    Number(
+                        GAME_CONFIG.premiumExtraBankTokens
+                    ) || 0
+                );
 
+            bank.extraVisits += extra;
 
-            bank.premiumExtraGranted =
-                true;
-
+            bank.premiumExtraGranted = true;
 
             addLog(
-                "⭐ Отримано статус Premium та +1 додаткове звернення до Банку."
+                `⭐ Отримано Premium та +${extra} додаткових звернень до Банку.`
             );
 
         }
@@ -28116,21 +27959,17 @@ function activateBankProduct(
     }
 
 
-    /* =====================================================
-       ЗАСТОСОВУЄМО ПОЧАТКОВІ ЕФЕКТИ КАРТКИ
-    ===================================================== */
+    /* ПОЧАТКОВІ ЕФЕКТИ */
 
     applyEffects(
         player,
-        card.initialEffects || {}
+        effects
     );
 
 
-    /* =====================================================
-       ЗБЕРІГАЄМО АКТИВНИЙ ПРОДУКТ
-    ===================================================== */
+    /* АКТИВНИЙ ПРОДУКТ */
 
-    const bankProduct = {
+    const product = {
 
         id:
             card.productId,
@@ -28138,85 +27977,79 @@ function activateBankProduct(
         cardId:
             card.id,
 
-        /*
-           +1 потрібен тому, що completePlayerTurn()
-           одразу збільшує turnsCompleted.
-
-           Так хід, у якому продукт придбали,
-           не рахується як перший повний хід продукту.
-        */
-        activatedTurn:
-            (player.turnsCompleted || 0) + 1,
-
         active:
-            true
+            true,
+
+        /*
+           Для клітинки Банку хід придбання не рахуємо.
+
+           Для HUB додаткове звернення не завершує хід,
+           тому наступний завершений хід уже рахується.
+        */
+
+        activatedTurn:
+            (
+                Number(
+                    player.turnsCompleted
+                ) || 0
+            ) + (
+                ctx.source === "cell"
+                    ? 1
+                    : 0
+            ),
+
+        lastBankProcessedTurn:
+            0
 
     };
 
 
-    /* =====================================================
-       ДЛЯ КЛАСИЧНОГО ДЕПОЗИТУ
-       ЗБЕРІГАЄМО ОБРАНИЙ СТРОК
-    ===================================================== */
+    if (term) {
+
+        Object.assign(
+            product,
+            {
+                termMonths:
+                    term.months,
+
+                termTurns:
+                    term.turns,
+
+                profit:
+                    term.profit
+            }
+        );
+
+    }
+
 
     if (
-        card.productId ===
-            "deposit_classic"
-        &&
-        card.selectedDepositTerm
+        overdraftLimit
     ) {
-
-        bankProduct.termMonths =
-            card
-                .selectedDepositTerm
-                .months;
-
-
-        bankProduct.termTurns =
-            card
-                .selectedDepositTerm
-                .turns;
-
-
-        bankProduct.profit =
-            card
-                .selectedDepositTerm
-                .profit;
-
+        product.principalDue = overdraftLimit;
     }
 
 
     bank.products.push(
-        bankProduct
+        product
     );
 
 
-    /*
-       selectedDepositTerm був тимчасовим
-       значенням самої картки.
-
-       Після активації очищаємо його,
-       щоб наступному гравцю не залишився
-       строк попереднього гравця.
-    */
+    /* ЗВЕРНЕННЯ СПИСУЄМО ЛИШЕ ПІСЛЯ УСПІХУ */
 
     if (
-        card.productId ===
-            "deposit_classic"
+        ctx.source === "hub"
     ) {
-
-        delete card
-            .selectedDepositTerm;
-
+        bank.extraVisits -= 1;
     }
 
 
-    /* =====================================================
-       ОНОВЛЕННЯ ГРИ
-    ===================================================== */
-
     addLog(
-        `🏦 Підключено банківський продукт: ${card.title}`
+        `🏦 Підключено: ${card.title}${
+            ctx.source === "hub"
+                ? "; використано 1 додаткове звернення"
+                : ""
+        }.`
     );
 
 
@@ -28240,31 +28073,45 @@ function activateBankProduct(
             </p>
 
             ${
-                bankProduct.id ===
-                    "deposit_classic"
+                term
 
                     ? `
-                        <div class="bank-product-status">
 
-                            📅 Строк:
-                            ${bankProduct.termMonths}
-                            міс.
+                        <p>
 
-                            <br>
-
-                            🎲 У грі:
-                            ${bankProduct.termTurns}
-                            ходів
+                            📅 ${term.months} міс.
+                            = ${term.turns} особистих ходів.
 
                             <br>
 
                             💰 Дохід наприкінці:
-                            +${formatMoney(
-                                bankProduct.profit
-                            )} грн
+                            +${formatMoney(term.profit)} грн.
 
-                        </div>
-                    `
+                        </p>
+
+                      `
+
+                    : ""
+            }
+
+            ${
+                overdraftLimit
+
+                    ? `
+
+                        <p>
+
+                            Борг:
+                            ${formatMoney(overdraftLimit)} грн.
+
+                            <br>
+
+                            Відсотки:
+                            20% залишку кожного 2-го ходу.
+
+                        </p>
+
+                      `
 
                     : ""
             }
@@ -28281,22 +28128,174 @@ function activateBankProduct(
     `);
 
 
-    document
-        .getElementById(
-            "bankProductActivatedButton"
-        )
-        ?.addEventListener(
-            "click",
-            finishPlayerCardTurn
-        );
+    bindBankClick(
+        "bankProductActivatedButton",
+        () => {
+
+            if (
+                ctx.source === "hub"
+            ) {
+
+                showBankHub(
+                    ctx.audience
+                );
+
+            } else {
+
+                finishPlayerCardTurn();
+
+            }
+
+        }
+    );
 
 }
+
+
+/* =========================================================
+   ВИБІР СТРОКУ КЛАСИЧНОГО ДЕПОЗИТУ
+
+   1 місяць = 3 ходи
+   3 місяці = 9 ходів
+   6 місяців = 18 ходів
+   12 місяців = 36 ходів
+
+   Передаємо копію картки.
+   Спільну банківську колоду не змінюємо.
+========================================================= */
+
+function showClassicDepositTermChoice(
+    card,
+    context = {}
+) {
+
+    if (!card) {
+        return;
+    }
+
+    const ctx =
+        bankContext(context);
+
+
+    openGameInfoModal(`
+
+        <div class="bank-card-game-modal">
+
+            <h2>
+                Класичний Строковий
+            </h2>
+
+            <p>
+                Обери строк.
+                1 місяць = ${BANK_TURNS_PER_MONTH}
+                особисті ходи.
+            </p>
+
+            <div class="bank-product-options">
+
+                ${
+                    BANK_CLASSIC_TERMS.map(
+                        term => `
+
+                            <button
+                                class="main-game-btn"
+                                data-bank-term="${term.months}"
+                            >
+
+                                ${term.months} місяців
+
+                                <br>
+
+                                <small>
+                                    ${term.turns} ходів
+                                    • дохід
+                                    +${formatMoney(term.profit)} грн
+                                </small>
+
+                            </button>
+
+                        `
+                    ).join("")
+                }
+
+            </div>
+
+            <button
+                id="classicDepositCancelButton"
+                class="secondary-game-btn"
+            >
+                НАЗАД
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            "[data-bank-term]"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const term =
+                            BANK_CLASSIC_TERMS.find(
+                                item =>
+                                    item.months ===
+                                    Number(
+                                        button.dataset.bankTerm
+                                    )
+                            );
+
+                        if (!term) {
+                            return;
+                        }
+
+                        activateBankProduct(
+                            {
+                                ...card,
+
+                                selectedDepositTerm: {
+                                    ...term
+                                }
+                            },
+                            ctx
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    bindBankClick(
+        "classicDepositCancelButton",
+        () => {
+
+            showBankCard(
+                card,
+                ctx
+            );
+
+        }
+    );
+
+}
+
 
 /* =========================================================
    145.2.4. АКТИВНІ БАНКІВСЬКІ ПРОДУКТИ
 
-   Викликається після КОЖНОГО
-   завершеного ходу гравця.
+   Викликається після кожного завершеного
+   особистого ходу гравця.
+
+   Захист від повторної обробки того самого ходу.
 ========================================================= */
 
 function processActiveBankProducts(
@@ -28304,137 +28303,142 @@ function processActiveBankProducts(
 ) {
 
     if (
-        !player
-        ||
-        !player.bank
-        ||
-        !Array.isArray(
-            player.bank.products
-        )
+        !player?.bank
     ) {
         return;
     }
 
+    const bank =
+        ensureBankState(player);
 
-    const products =
-        player.bank.products;
 
-
-    products.forEach(
+    bank.products.forEach(
         product => {
 
             if (
-                !product
-                ||
                 product.active === false
             ) {
                 return;
             }
 
-
-            const elapsedTurns =
-                player.turnsCompleted
-                -
+            const elapsed =
                 (
+                    Number(
+                        player.turnsCompleted
+                    ) || 0
+                ) - (
                     Number(
                         product.activatedTurn
                     ) || 0
                 );
 
-
             if (
-                elapsedTurns <= 0
+                elapsed <= 0 ||
+                product.lastBankProcessedTurn === elapsed
             ) {
                 return;
             }
+
+            product.lastBankProcessedTurn =
+                elapsed;
+
+
+            const income = (
+                amount,
+                interval,
+                end = Infinity
+            ) => {
+
+                if (
+                    elapsed <= end &&
+                    elapsed % interval === 0
+                ) {
+
+                    payBankIncome(
+                        player,
+                        product,
+                        amount,
+                        bankProductName(product)
+                    );
+
+                }
+
+            };
+
+
+            const close = (
+                end,
+                amount
+            ) => {
+
+                if (
+                    elapsed >= end
+                ) {
+
+                    closeBankProductWithReturn(
+                        player,
+                        product,
+                        amount,
+                        bankProductName(product)
+                    );
+
+                }
+
+            };
 
 
             switch (
                 product.id
             ) {
 
-
-                /* ==========================================
-                   1. КЛАСИЧНИЙ СТРОКОВИЙ
-                ========================================== */
+                /* КЛАСИЧНИЙ СТРОКОВИЙ */
 
                 case "deposit_classic":
 
                     processClassicDeposit(
                         player,
                         product,
-                        elapsedTurns
+                        elapsed
                     );
 
                     break;
 
 
-                /* ==========================================
-                   2. ЗРОСТАЮЧИЙ
-                ========================================== */
+                /* ЗРОСТАЮЧИЙ */
 
                 case "deposit_growing":
 
-                    if (
-                        elapsedTurns % 3 === 0
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Депозит «Зростаючий»"
-                        );
-
-                    }
+                    income(
+                        2000,
+                        3
+                    );
 
                     break;
 
 
-                /* ==========================================
-                   3. СКРИНЯ
-                ========================================== */
+                /* СКРИНЯ */
 
                 case "deposit_chest":
 
-                    if (
-                        elapsedTurns % 3 === 0
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            1000,
-                            "Депозит «Скриня»"
-                        );
-
-                    }
+                    income(
+                        1000,
+                        3
+                    );
 
                     break;
 
 
-                /* ==========================================
-                   4. МІЙ ФОП
-                ========================================== */
+                /* МІЙ ФОП */
 
                 case "my_fop":
 
-                    if (
-                        elapsedTurns % 2 === 0
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Рахунок «Мій ФОП»"
-                        );
-
-                    }
-
+                    income(
+                        2000,
+                        2
+                    );
 
                     if (
-                        elapsedTurns % 6 === 0
+                        elapsed % 6 === 0
                     ) {
 
                         chargeBankPayment(
@@ -28449,16 +28453,14 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   5. КРЕДИТ ГОТІВКОЮ
-                ========================================== */
+                /* КРЕДИТ ГОТІВКОЮ */
 
                 case "cash_credit":
 
                     processFixedLoan(
                         player,
                         product,
-                        elapsedTurns,
+                        elapsed,
                         1000,
                         6,
                         "Кредит готівкою"
@@ -28467,34 +28469,30 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   6. КРЕДИТНА КАРТКА
-                ========================================== */
+                /* КРЕДИТНА КАРТКА */
 
                 case "credit_card_100":
 
                     processFixedLoan(
                         player,
                         product,
-                        elapsedTurns,
+                        elapsed,
                         1000,
                         3,
-                        "Кредитна картка «100 днів 2.0»"
+                        "100 днів 2.0"
                     );
 
                     break;
 
 
-                /* ==========================================
-                   7. PREMIUM КРЕДИТ
-                ========================================== */
+                /* PREMIUM КРЕДИТ */
 
                 case "premium_cash_credit":
 
                     processFixedLoan(
                         player,
                         product,
-                        elapsedTurns,
+                        elapsed,
                         6000,
                         6,
                         "Premium кредит"
@@ -28503,16 +28501,14 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   8. PREMIUM КРЕДИТНА КАРТКА
-                ========================================== */
+                /* PREMIUM КРЕДИТНА КАРТКА */
 
                 case "premium_credit_card":
 
                     processFixedLoan(
                         player,
                         product,
-                        elapsedTurns,
+                        elapsed,
                         3000,
                         3,
                         "Premium кредитна картка"
@@ -28521,121 +28517,199 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   9. ОВДП
-                ========================================== */
+                /* ОВДП */
 
                 case "ovdp":
 
-                    if (
-                        elapsedTurns % 2 === 0
-                        &&
-                        elapsedTurns < 7
-                    ) {
+                    income(
+                        1000,
+                        2,
+                        6
+                    );
 
-                        payBankIncome(
-                            player,
-                            product,
-                            1000,
-                            "ОВДП"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns === 7
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            5000,
-                            "ОВДП"
-                        );
-
-                    }
+                    close(
+                        7,
+                        5000
+                    );
 
                     break;
 
 
-                /* ==========================================
-                   10. ETF
-                ========================================== */
+                /* ETF */
 
                 case "etf":
 
-                    if (
-                        elapsedTurns % 2 === 0
-                        &&
-                        elapsedTurns < 7
-                    ) {
+                    income(
+                        1000,
+                        2,
+                        6
+                    );
 
-                        payBankIncome(
-                            player,
-                            product,
-                            1000,
-                            "ETF"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns === 7
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            4000,
-                            "ETF"
-                        );
-
-                    }
+                    close(
+                        7,
+                        4000
+                    );
 
                     break;
 
 
-                /* ==========================================
-                   13. ВАРТА 24/7
-                ========================================== */
+                /* ПРОСТІ АКЦІЇ */
+
+                case "common_stock":
+
+                    income(
+                        3000,
+                        3,
+                        6
+                    );
+
+                    close(
+                        7,
+                        5000
+                    );
+
+                    break;
+
+
+                /* ПРИВІЛЕЙОВАНІ АКЦІЇ */
+
+                case "preferred_stock":
+
+                    income(
+                        2000,
+                        3,
+                        6
+                    );
+
+                    close(
+                        7,
+                        5000
+                    );
+
+                    break;
+
+
+                /* ДИВІДЕНДНІ АКЦІЇ */
+
+                case "dividend_stock":
+
+                    income(
+                        5000,
+                        3,
+                        6
+                    );
+
+                    close(
+                        7,
+                        5000
+                    );
+
+                    break;
+
+
+                /* ДЕПОЗИТНА ЛІНІЯ */
+
+                case "deposit_line":
+
+                    income(
+                        2000,
+                        2,
+                        6
+                    );
+
+                    close(
+                        6,
+                        6000
+                    );
+
+                    break;
+
+
+                /* ВАЛЮТНИЙ РАХУНОК */
+
+                case "currency_account":
+
+                    income(
+                        2000,
+                        1,
+                        6
+                    );
+
+                    close(
+                        6,
+                        6000
+                    );
+
+                    break;
+
+
+                /* ЕКВАЙРИНГ */
+
+                case "acquiring":
+
+                    income(
+                        2000,
+                        1,
+                        6
+                    );
+
+                    close(
+                        6,
+                        0
+                    );
+
+                    break;
+
+
+                /* БІЗНЕС ЕЛІТ+ */
+
+                case "business_elite":
+
+                    income(
+                        3000,
+                        2,
+                        6
+                    );
+
+                    close(
+                        6,
+                        0
+                    );
+
+                    break;
+
+
+                /* ВАРТА 24/7 */
 
                 case "varta_247":
 
-                    if (
-                        elapsedTurns >= 6
-                    ) {
-
-                        product.active =
-                            false;
-
-
-                        addLog(
-                            "🏦 «Варта 24/7»: строк дії завершено."
-                        );
-
-                    }
+                    close(
+                        6,
+                        0
+                    );
 
                     break;
 
 
-                /* ==========================================
-                   14. СТРАХУВАННЯ ЖИТТЯ
-                ========================================== */
+                /* НАКОПИЧУВАЛЬНЕ СТРАХУВАННЯ ЖИТТЯ */
 
                 case "life_insurance":
 
-                    chargeBankPayment(
-                        player,
-                        product,
-                        2000,
-                        "Накопичувальне страхування життя"
-                    );
+                    if (
+                        elapsed % 2 === 0
+                    ) {
 
+                        chargeBankPayment(
+                            player,
+                            product,
+                            2000,
+                            "Внесок: страхування життя"
+                        );
+
+                    }
 
                     if (
-                        elapsedTurns % 6 === 0
+                        elapsed % 6 === 0
                     ) {
 
                         payBankIncome(
@@ -28650,37 +28724,20 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   15. ПРОСТІ АКЦІЇ
-                ========================================== */
+                /* ІНТЕРНЕТ-ЕКВАЙРИНГ */
 
-                case "common_stock":
+                case "internet_acquiring":
 
                     if (
-                        elapsedTurns % 3 === 0
-                        &&
-                        elapsedTurns < 7
+                        elapsed >= 6 &&
+                        !product.bonusPeriodEnded
                     ) {
 
-                        payBankIncome(
-                            player,
-                            product,
-                            3000,
-                            "Прості акції"
-                        );
+                        product.bonusPeriodEnded =
+                            true;
 
-                    }
-
-
-                    if (
-                        elapsedTurns === 7
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            5000,
-                            "Прості акції"
+                        addLog(
+                            "🏦 Інтернет-еквайринг: період бонусів завершено; сервіс залишається підключеним."
                         );
 
                     }
@@ -28688,216 +28745,45 @@ function processActiveBankProducts(
                     break;
 
 
-                /* ==========================================
-                   16. ПРИВІЛЕЙОВАНІ АКЦІЇ
-                ========================================== */
+                /* ОВЕРДРАФТ */
 
-                case "preferred_stock":
+                case "overdraft":
 
                     if (
-                        elapsedTurns % 3 === 0
-                        &&
-                        elapsedTurns < 7
+                        elapsed % 2 === 0
                     ) {
 
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Привілейовані акції"
-                        );
+                        const interest =
+                            Math.round(
+                                (
+                                    Number(
+                                        product.principalDue
+                                    ) || 0
+                                ) * 0.2
+                            );
 
-                    }
+                        if (
+                            !chargeBankPayment(
+                                player,
+                                product,
+                                interest,
+                                "Відсотки за овердрафтом"
+                            )
+                        ) {
 
+                            applyEffects(
+                                player,
+                                {
+                                    reputation: -10,
+                                    energy: -10
+                                }
+                            );
 
-                    if (
-                        elapsedTurns === 7
-                    ) {
+                            addLog(
+                                "⚠️ Овердрафт: несплачений платіж, −10 репутації та −10 енергії."
+                            );
 
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            5000,
-                            "Привілейовані акції"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ==========================================
-                   17. ДИВІДЕНДНІ АКЦІЇ
-                ========================================== */
-
-                case "dividend_stock":
-
-                    if (
-                        elapsedTurns % 3 === 0
-                        &&
-                        elapsedTurns < 7
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            5000,
-                            "Дивідендні акції"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns === 7
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            5000,
-                            "Дивідендні акції"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ==========================================
-                   18. ДЕПОЗИТНА ЛІНІЯ
-                ========================================== */
-
-                case "deposit_line":
-
-                    if (
-                        elapsedTurns % 2 === 0
-                        &&
-                        elapsedTurns <= 6
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Депозитна лінія"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns === 6
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            6000,
-                            "Депозитна лінія"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ==========================================
-                   19. ВАЛЮТНИЙ РАХУНОК
-                ========================================== */
-
-                case "currency_account":
-
-                    if (
-                        elapsedTurns <= 6
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Валютний рахунок"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns === 6
-                    ) {
-
-                        closeBankProductWithReturn(
-                            player,
-                            product,
-                            6000,
-                            "Валютний рахунок"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ==========================================
-                   21. БІЗНЕС ЕЛІТ+
-                ========================================== */
-
-                case "business_elite":
-
-                    if (
-                        elapsedTurns % 2 === 0
-                        &&
-                        elapsedTurns <= 6
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            3000,
-                            "Бізнес Еліт+"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns >= 6
-                    ) {
-
-                        product.active =
-                            false;
-
-                    }
-
-                    break;
-
-
-                /* ==========================================
-                   24. ЕКВАЙРИНГ
-                ========================================== */
-
-                case "acquiring":
-
-                    if (
-                        elapsedTurns <= 6
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            2000,
-                            "Еквайринг"
-                        );
-
-                    }
-
-
-                    if (
-                        elapsedTurns >= 6
-                    ) {
-
-                        product.active =
-                            false;
+                        }
 
                     }
 
@@ -28912,6 +28798,8 @@ function processActiveBankProducts(
     updatePlayerStatsUI();
 
 }
+
+
 /* =========================================================
    145.2.5. ДОХІД ВІД БАНКІВСЬКОГО ПРОДУКТУ
 ========================================================= */
@@ -28923,34 +28811,23 @@ function payBankIncome(
     title
 ) {
 
+    const value =
+        Number(amount);
+
     if (
-        !player
-        ||
-        !product
-        ||
-        product.active === false
+        !player ||
+        !product ||
+        product.active === false ||
+        !Number.isFinite(value) ||
+        value <= 0
     ) {
         return;
     }
 
-
-    const safeAmount =
-        Number(amount) || 0;
-
-
-    if (
-        safeAmount <= 0
-    ) {
-        return;
-    }
-
-
-    player.money +=
-        safeAmount;
-
+    player.money += value;
 
     addLog(
-        `🏦 ${title}: +${formatMoney(safeAmount)} грн`
+        `🏦 ${title}: +${formatMoney(value)} грн`
     );
 
 }
@@ -28967,53 +28844,44 @@ function chargeBankPayment(
     title
 ) {
 
+    const value =
+        Number(amount);
+
     if (
-        !player
-        ||
-        !product
-        ||
-        product.active === false
+        !player ||
+        !product ||
+        product.active === false ||
+        !Number.isFinite(value) ||
+        value < 0
     ) {
         return false;
     }
 
-
-    const safeAmount =
-        Number(amount) || 0;
-
-
     if (
-        safeAmount <= 0
+        !value
     ) {
         return true;
     }
 
-
     if (
-        player.money >=
-        safeAmount
+        player.money < value
     ) {
-
-        player.money -=
-            safeAmount;
-
 
         addLog(
-            `🏦 ${title}: -${formatMoney(safeAmount)} грн`
+            `⚠️ ${title}: недостатньо грошей для платежу ${formatMoney(value)} грн`
         );
 
-
-        return true;
+        return false;
 
     }
 
+    player.money -= value;
 
     addLog(
-        `⚠️ ${title}: недостатньо грошей для платежу ${formatMoney(safeAmount)} грн`
+        `🏦 ${title}: −${formatMoney(value)} грн`
     );
 
-
-    return false;
+    return true;
 
 }
 
@@ -29021,9 +28889,16 @@ function chargeBankPayment(
 /* =========================================================
    145.2.7. КРЕДИТ ІЗ ФІКСОВАНИМИ ПЛАТЕЖАМИ
 
-   За банківськими картками:
-   платіж відбувається кожного 2-го ходу.
+   Основний платіж — кожного 2-го ходу.
+   Несплачений платіж перевіряється наступного ходу.
+
+   Для кредитної картки:
+   за прострочення один окремий четвертий платіж.
+
+   За погодженням:
+   звичайна і Premium — додаткова плата 1 000 грн.
 ========================================================= */
+
 function processFixedLoan(
     player,
     product,
@@ -29032,108 +28907,190 @@ function processFixedLoan(
     totalPayments,
     title
 ) {
+
     if (
         !player ||
         !product ||
         product.active === false ||
-        elapsedTurns <= 0
-    ) {
-        return;
-    }
-
-    product.paymentsMade =
-        Number(product.paymentsMade) || 0;
-
-    product.pendingPayment =
-        product.pendingPayment === true;
-
-    product.lateFeeDue =
-        Number(product.lateFeeDue) || 0;
-
-    if (product.paymentsMade >= totalPayments) {
-        product.active = false;
-        return;
-    }
-
-    // Захист від повторного списання за той самий хід.
-    if (
+        elapsedTurns <= 0 ||
         product.lastLoanProcessedTurn === elapsedTurns
     ) {
         return;
     }
 
-    const paymentIsDue =
-        elapsedTurns % 2 === 0 ||
-        product.pendingPayment;
+    const card100 =
+        [
+            "credit_card_100",
+            "premium_credit_card"
+        ].includes(
+            product.id
+        );
 
-    if (!paymentIsDue) {
+    product.paymentsMade =
+        Math.max(
+            0,
+            Number(
+                product.paymentsMade
+            ) || 0
+        );
+
+    product.pendingPayment =
+        product.pendingPayment === true;
+
+    /*
+       Старі незавершені збереження
+       також переводимо на одноразову плату.
+    */
+
+    product.lateFeeDue =
+        card100 &&
+        Number(product.lateFeeDue) > 0
+            ? 1000
+            : 0;
+
+    const principalDone =
+        product.paymentsMade >= totalPayments;
+
+    if (
+        principalDone &&
+        !product.lateFeeDue
+    ) {
+
+        product.active = false;
+
+        return;
+
+    }
+
+    const due =
+        product.pendingPayment ||
+        elapsedTurns % 2 === 0;
+
+    if (!due) {
         return;
     }
 
-    product.lastLoanProcessedTurn = elapsedTurns;
-
-  const isCreditCard100 =
-    [
-        "credit_card_100",
-        "premium_credit_card"
-    ].includes(product.id);
+    product.lastLoanProcessedTurn =
+        elapsedTurns;
 
 
-    const amountDue =
-        paymentAmount + product.lateFeeDue;
+    /* ОКРЕМИЙ ЧЕТВЕРТИЙ ПЛАТІЖ */
 
-    if (player.money >= amountDue) {
-        player.money -= amountDue;
-
-        product.paymentsMade += 1;
-        product.pendingPayment = false;
-        product.lateFeeDue = 0;
-
-        addLog(
-            `🏦 ${title}: платіж ${product.paymentsMade}/${totalPayments} — ${formatMoney(amountDue)} грн`
-        );
+    if (
+        principalDone
+    ) {
 
         if (
-            product.paymentsMade >= totalPayments
+            chargeBankPayment(
+                player,
+                product,
+                product.lateFeeDue,
+                `${title}: додатковий четвертий платіж`
+            )
         ) {
+
+            product.lateFeeDue = 0;
+
+            product.pendingPayment = false;
+
             product.active = false;
 
             addLog(
                 `✅ ${title}: зобов'язання повністю виконано.`
             );
+
+        } else {
+
+            product.pendingPayment = true;
+
         }
 
         return;
+
     }
 
-    if (isCreditCard100) {
-        // Одна додаткова плата за перенесений платіж.
-        // Повторні спроби його сплатити не додають нову плату.
-        if (!product.pendingPayment) {
-            product.lateFeeDue += 1000;
+
+    /* ОСНОВНИЙ ПЛАТІЖ */
+
+    if (
+        chargeBankPayment(
+            player,
+            product,
+            paymentAmount,
+            title
+        )
+    ) {
+
+        product.paymentsMade += 1;
+
+        product.pendingPayment = false;
+
+        addLog(
+            `🏦 ${title}: платіж ${product.paymentsMade}/${totalPayments}.`
+        );
+
+        if (
+            product.paymentsMade >= totalPayments &&
+            !product.lateFeeDue
+        ) {
+
+            product.active = false;
 
             addLog(
-                `⚠️ ${title}: платіж перенесено. Додаткова плата — 1 000 грн; буде сплачена разом із платежем.`
+                `✅ ${title}: зобов'язання повністю виконано.`
             );
+
         }
+
+        return;
+
+    }
+
+
+    /* ГРОШЕЙ НЕ ВИСТАЧИЛО */
+
+    if (
+        card100
+    ) {
+
+        if (
+            !product.lateFeeAssessed
+        ) {
+
+            product.lateFeeAssessed = true;
+
+            product.lateFeeDue = 1000;
+
+            addLog(
+                `⚠️ ${title}: платіж перенесено. Після трьох основних платежів — один додатковий платіж 1 000 грн.`
+            );
+
+        }
+
     } else {
-        // Для інших кредитів зберігаємо поточну логіку.
-        player.reputation = Math.max(
-            0,
-            player.reputation - 2
+
+        applyEffects(
+            player,
+            {
+                reputation: -2
+            }
         );
 
         addLog(
-            `⚠️ ${title}: платіж перенесено. ⭐ -2 репутації.`
+            `⚠️ ${title}: платіж перенесено; −2 репутації.`
         );
+
     }
 
     product.pendingPayment = true;
+
 }
 
+
 /* =========================================================
-   145.2.8. ЗАКРИТТЯ ПРОДУКТУ
-   З ПОВЕРНЕННЯМ КОШТІВ
+   145.2.8. ЗАКРИТТЯ ПРОДУКТУ З ПОВЕРНЕННЯМ КОШТІВ
+
+   Повернення можливе лише один раз.
 ========================================================= */
 
 function closeBankProductWithReturn(
@@ -29144,53 +29101,154 @@ function closeBankProductWithReturn(
 ) {
 
     if (
-        !player
-        ||
-        !product
-        ||
+        !player ||
+        !product ||
         product.active === false
     ) {
         return;
     }
 
+    const value =
+        Math.max(
+            0,
+            Number(amount) || 0
+        );
 
-    const safeAmount =
-        Number(amount) || 0;
+    player.money += value;
 
-
-    if (
-        safeAmount > 0
-    ) {
-
-        player.money +=
-            safeAmount;
-
-    }
-
-
-    product.active =
-        false;
-
+    product.active = false;
 
     addLog(
-        `✅ ${title}: продукт завершено. Повернення +${formatMoney(safeAmount)} грн`
+        `✅ ${title}: продукт завершено.${
+            value
+                ? ` Повернення +${formatMoney(value)} грн.`
+                : ""
+        }`
     );
 
-}/* =========================================================
-   ВИБІР СТРОКУ —
-   КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
+}
 
-   1 місяць = 3 ходи
-   3 місяці = 9 ходів
-   6 місяців = 18 ходів
-   12 місяців = 36 ходів
+
+/* =========================================================
+   КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ — ЗАВЕРШЕННЯ
+
+   1 місяць = 3 особисті ходи.
 ========================================================= */
 
-function showClassicDepositTermChoice(
-    card
+function processClassicDeposit(
+    player,
+    product,
+    elapsedTurns
 ) {
 
-    if (!card) {
+    if (
+        !player ||
+        !product ||
+        product.active === false
+    ) {
+        return;
+    }
+
+    const months =
+        Number(
+            product.termMonths
+        );
+
+    /*
+       Узгоджуємо календар і для депозитів,
+       підключених до цієї заміни.
+    */
+
+    const termTurns =
+        months > 0
+
+            ? months * BANK_TURNS_PER_MONTH
+
+            : Number(
+                product.termTurns
+            );
+
+    if (
+        !Number.isFinite(termTurns) ||
+        termTurns <= 0 ||
+        elapsedTurns < termTurns
+    ) {
+        return;
+    }
+
+    product.termTurns =
+        termTurns;
+
+    closeBankProductWithReturn(
+        player,
+        product,
+        4000 + (
+            Number(
+                product.profit
+            ) || 0
+        ),
+        "Класичний Строковий"
+    );
+
+}
+
+
+/* =========================================================
+   ПОВЕРНЕННЯ ОВЕРДРАФТУ
+
+   Частково або повністю.
+   Не завершує хід і не витрачає звернення.
+========================================================= */
+
+function repayBankOverdraft(
+    player,
+    product,
+    amount
+) {
+
+    const value =
+        Number(amount);
+
+    if (
+        !player ||
+        product?.id !== "overdraft" ||
+        product.active === false ||
+        !Number.isFinite(value) ||
+        value <= 0 ||
+        value > player.money ||
+        value > product.principalDue
+    ) {
+        return false;
+    }
+
+    product.principalDue -= value;
+
+    player.money -= value;
+
+    addLog(
+        `🏦 Овердрафт: повернуто ${formatMoney(value)} грн; залишок ${formatMoney(product.principalDue)} грн.`
+    );
+
+    if (
+        product.principalDue === 0
+    ) {
+        product.active = false;
+    }
+
+    return true;
+
+}
+
+
+function showBankOverdraftRepayment(
+    product,
+    audience = "business"
+) {
+
+    if (
+        !product ||
+        product.active === false
+    ) {
         return;
     }
 
@@ -29199,67 +29257,40 @@ function showClassicDepositTermChoice(
 
         <div class="bank-card-game-modal">
 
-            <div class="cycle-notice-icon">
-                🏦
-            </div>
-
             <h2>
-                Класичний Строковий
+                Повернути овердрафт
             </h2>
 
             <p>
-                Обери строк депозиту:
+                Залишок боргу:
+                ${formatMoney(product.principalDue || 0)} грн.
             </p>
 
+            <input
+                id="bankOverdraftAmount"
+                type="number"
+                min="1"
+                step="1"
+                max="${product.principalDue}"
+                value="${
+                    Math.min(
+                        gameState.player.money,
+                        product.principalDue
+                    )
+                }"
+            >
 
-            <div class="bank-product-options">
-
-                <button
-                    class="main-game-btn classic-deposit-term-button"
-                    data-months="3"
-                    data-turns="9"
-                    data-profit="1000"
-                >
-                    3 місяці
-                    <br>
-                    <small>
-                        9 ходів • дохід +1 000 грн
-                    </small>
-                </button>
-
-
-                <button
-                    class="main-game-btn classic-deposit-term-button"
-                    data-months="6"
-                    data-turns="18"
-                    data-profit="1500"
-                >
-                    6 місяців
-                    <br>
-                    <small>
-                        18 ходів • дохід +1 500 грн
-                    </small>
-                </button>
-
-
-                <button
-                    class="main-game-btn classic-deposit-term-button"
-                    data-months="12"
-                    data-turns="36"
-                    data-profit="2000"
-                >
-                    12 місяців
-                    <br>
-                    <small>
-                        36 ходів • дохід +2 000 грн
-                    </small>
-                </button>
-
-            </div>
-
+            <p id="bankRepaymentMessage"></p>
 
             <button
-                id="classicDepositCancelButton"
+                id="bankOverdraftRepayButton"
+                class="main-game-btn"
+            >
+                ПОВЕРНУТИ
+            </button>
+
+            <button
+                id="bankOverdraftBackButton"
                 class="secondary-game-btn"
             >
                 НАЗАД
@@ -29270,143 +29301,310 @@ function showClassicDepositTermChoice(
     `);
 
 
-    document
-        .querySelectorAll(
-            ".classic-deposit-term-button"
-        )
-        .forEach(
-            button => {
+    bindBankClick(
+        "bankOverdraftRepayButton",
+        () => {
 
-                button.addEventListener(
-                    "click",
-                    () => {
+            const amount =
+                document
+                    .getElementById(
+                        "bankOverdraftAmount"
+                    )
+                    ?.value;
 
-                        card.selectedDepositTerm = {
+            if (
+                repayBankOverdraft(
+                    gameState.player,
+                    product,
+                    amount
+                )
+            ) {
 
-                            months:
-                                Number(
-                                    button.dataset.months
-                                ),
+                updateGameUI();
 
-                            turns:
-                                Number(
-                                    button.dataset.turns
-                                ),
-
-                            profit:
-                                Number(
-                                    button.dataset.profit
-                                )
-
-                        };
-
-
-                        activateBankProduct(
-                            card
-                        );
-
-                    }
+                showBankHub(
+                    audience
                 );
 
-            }
-        );
+            } else {
 
+                const message =
+                    document.getElementById(
+                        "bankRepaymentMessage"
+                    );
 
-    document
-        .getElementById(
-            "classicDepositCancelButton"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
+                if (message) {
 
-                showBankCard(
-                    card
-                );
+                    message.textContent =
+                        "Вкажи суму в межах боргу та доступних грошей.";
+
+                }
 
             }
-        );
 
-}
-
-/* =========================================================
-   КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
-
-   1 місяць = 3 ходи
-   3 місяці = 9 ходів
-   6 місяців = 18 ходів
-   12 місяців = 36 ходів
-========================================================= */
-
-function processClassicDeposit(
-    player,
-    product,
-    elapsedTurns
-) {
-
-    if (
-        !player
-        ||
-        !product
-        ||
-        product.active === false
-    ) {
-        return;
-    }
-
-
-    const termTurns =
-        Number(
-            product.termTurns
-        ) || 0;
-
-
-    const profit =
-        Number(
-            product.profit
-        ) || 0;
-
-
-    if (
-        termTurns <= 0
-    ) {
-        return;
-    }
-
-
-    if (
-        elapsedTurns <
-        termTurns
-    ) {
-        return;
-    }
-
-
-    const depositAmount =
-        4000;
-
-
-    const totalReturn =
-        depositAmount +
-        profit;
-
-
-    player.money +=
-        totalReturn;
-
-
-    product.active =
-        false;
-
-
-    addLog(
-        `💰 Класичний Строковий завершено: повернення ${formatMoney(depositAmount)} грн + дохід ${formatMoney(profit)} грн.`
+        }
     );
 
 
-    updateGameUI();
+    bindBankClick(
+        "bankOverdraftBackButton",
+        () => {
+
+            showBankHub(
+                audience
+            );
+
+        }
+    );
 
 }
+
+
+/* =========================================================
+   ІНТЕГРАЦІЯ З КАРТКАМИ — БОНУС ОНЛАЙН-ПРОДАЖУ
+
+   Викликати тільки для відповідної події продажу.
+   Будь-яке надходження грошей не є онлайн-продажем.
+
+   До 4 бонусів за період.
+   Не більше одного бонусу за хід.
+========================================================= */
+
+function recordBankOnlineSale(
+    player
+) {
+
+    const product =
+        player?.bank?.products?.find(
+            item =>
+                item?.id === "internet_acquiring" &&
+                item.active !== false
+        );
+
+    if (!product) {
+        return false;
+    }
+
+    const turn =
+        Number(
+            player.turnsCompleted
+        ) || 0;
+
+    const elapsed =
+        turn - (
+            Number(
+                product.activatedTurn
+            ) || 0
+        );
+
+    if (
+        elapsed < 0 ||
+        elapsed >= 6 ||
+        product.bonusPeriodEnded ||
+        (
+            Number(
+                product.saleBonusesPaid
+            ) || 0
+        ) >= 4 ||
+        product.lastOnlineSaleTurn === turn
+    ) {
+        return false;
+    }
+
+    product.lastOnlineSaleTurn =
+        turn;
+
+    product.saleBonusesPaid =
+        (
+            Number(
+                product.saleBonusesPaid
+            ) || 0
+        ) + 1;
+
+    payBankIncome(
+        player,
+        product,
+        2000,
+        "Інтернет-еквайринг: онлайн-продаж"
+    );
+
+    return true;
+
+}
+
+
+/* =========================================================
+   ІНТЕГРАЦІЯ З КАРТКАМИ — БІЗНЕС-ЗАХИСТ
+
+   protectionType:
+   payment_inconvenience — незручна оплата
+   business             — відповідна бізнес-подія
+
+   Повертає копію ефектів.
+   Використаний захист не припиняє роботу продукту.
+========================================================= */
+
+function applyBankBusinessProtection(
+    player,
+    effects,
+    protectionType
+) {
+
+    const productId =
+        protectionType === "payment_inconvenience"
+
+            ? "internet_acquiring"
+
+            : protectionType === "business"
+
+                ? "business_elite"
+
+                : null;
+
+    const product =
+        player?.bank?.products?.find(
+            item =>
+                item?.id === productId &&
+                item.active !== false &&
+                !item.protectionUsed
+        );
+
+    if (!product) {
+        return effects;
+    }
+
+    const elapsed =
+        (
+            Number(
+                player.turnsCompleted
+            ) || 0
+        ) - (
+            Number(
+                product.activatedTurn
+            ) || 0
+        );
+
+    if (
+        elapsed < 0 ||
+        elapsed >= 6
+    ) {
+        return effects;
+    }
+
+    const result = {
+        ...(effects || {})
+    };
+
+    let protectedValue =
+        0;
+
+    if (
+        productId === "business_elite" &&
+        Number(result.energy) <= -15
+    ) {
+
+        result.energy =
+            Number(result.energy) + 15;
+
+        protectedValue =
+            15;
+
+    } else if (
+        Number(result.money) < 0
+    ) {
+
+        protectedValue =
+            Math.min(
+                -Number(result.money),
+                productId === "business_elite"
+                    ? 5000
+                    : 2000
+            );
+
+        result.money =
+            Number(result.money) + protectedValue;
+
+    }
+
+    if (
+        protectedValue > 0
+    ) {
+
+        product.protectionUsed =
+            true;
+
+        addLog(
+            `🛡️ ${bankProductName(product)}: одноразовий захист використано.`
+        );
+
+    }
+
+    return result;
+
+}
+
+
+/* =========================================================
+   УЗГОДЖЕНІ ПОЯСНЕННЯ БАНКІВСЬКИХ КАРТОК
+
+   Оновлюємо rulesText у спільній колоді,
+   щоб показані правила відповідали механіці.
+
+   Початкові ефекти карток тут не змінюємо.
+========================================================= */
+
+const BANK_UPDATED_RULES = {
+
+    deposit_classic:
+        "Вклади 4 000 грн. Обери 3, 6 або 12 місяців: 9, 18 або 36 особистих ходів. Наприкінці повертається вклад та дохід +1 000, +1 500 або +2 000 грн відповідно. 1 місяць = 3 особисті ходи.",
+
+    credit_card_100:
+        "Отримай +3 000 грн. Три платежі по 1 000 грн кожного 2-го ходу. За прострочення — один окремий четвертий платіж 1 000 грн. Несплачений платіж повторно перевіряється наступного ходу.",
+
+    premium_credit_card:
+        "Потрібно мати щонайменше 20 000 грн. Отримай +9 000 грн. Три платежі по 3 000 грн кожного 2-го ходу. Правила прострочення такі самі, як для звичайної картки: один четвертий платіж 1 000 грн.",
+
+    life_insurance:
+        "Сплати 2 000 грн за підключення. Далі внесок 2 000 грн кожного 2-го ходу; виплата 8 000 грн кожного 6-го ходу. Один раз захисти 15 енергії на картці Життя; накопичення продовжується.",
+
+    internet_acquiring:
+        "Сплати 3 000 грн. Протягом наступних 6 ходів після онлайн-продажу отримуй +2 000 грн, максимум 4 рази та не більше одного разу за хід. Один раз скасуй до 2 000 грн втрати через незручну оплату. Після 6 ходів бонуси завершуються, сервіс залишається підключеним.",
+
+    business_elite:
+        "Потрібно мати 25 000 грн. Сплати 10 000 грн. Протягом 6 ходів кожного 2-го ходу отримуй +3 000 грн. Один раз скасуй 15 енергії або до 5 000 грн втрати на відповідній бізнес-події.",
+
+    overdraft:
+        "Ліміти за знаннями/репутацією: 10/20 → 10 000 грн; 40/30 → 20 000 грн; 55/70 → 40 000 грн; 80/85 → 80 000 грн. Кожного 2-го ходу сплачуй 20% залишку боргу. Якщо бракує грошей — −10 репутації та −10 енергії. Повернути борг можна через Банк; після повного повернення відсотки припиняються."
+
+};
+
+
+BANK_CARD_DECK.forEach(
+    card => {
+
+        if (
+            BANK_UPDATED_RULES[
+                card.productId
+            ]
+        ) {
+
+            card.rulesText =
+                BANK_UPDATED_RULES[
+                    card.productId
+                ];
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   КІНЕЦЬ ЗАМІНИ БАНКІВСЬКОГО БЛОКУ.
+
+   Нижче залиш свій розділ:
+   145.3. ЖУРНАЛ ХОДІВ
+========================================================= */
 
 /* =========================================================
    145.3. ЖУРНАЛ ХОДІВ
