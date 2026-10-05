@@ -26805,6 +26805,147 @@ function showBankHub(
                 </span>
 
             </div>
+<!-- =====================================
+     МОЇ АКТИВНІ ПРОДУКТИ
+====================================== -->
+
+${
+    Array.isArray(bank.products)
+    &&
+    bank.products.some(
+        product =>
+            product
+            &&
+            product.active !== false
+    )
+
+    ? `
+
+        <div class="bank-products-section">
+
+            <h3>
+                💳 Мої активні продукти
+            </h3>
+
+            <div class="bank-products-grid">
+
+                ${
+                    bank.products
+
+                        .filter(
+                            product =>
+                                product
+                                &&
+                                product.active !== false
+                        )
+
+                        .map(
+                            product => {
+
+                                const catalogProduct =
+                                    BANK_PRODUCTS.find(
+                                        item =>
+                                            item.id === product.id
+                                    );
+
+
+                                const canCloseDeposit =
+                                    [
+                                        "deposit_growing",
+                                        "deposit_chest"
+                                    ]
+                                        .includes(
+                                            product.id
+                                        );
+
+
+                                const canCloseFop =
+                                    product.id ===
+                                        "my_fop";
+
+
+                                return `
+
+                                    <div class="bank-product-card">
+
+                                        <span class="bank-product-icon">
+                                            ${
+                                                catalogProduct?.icon
+                                                ||
+                                                "🏦"
+                                            }
+                                        </span>
+
+                                        <div class="bank-product-card-text">
+
+                                            <strong>
+                                                ${
+                                                    catalogProduct?.shortName
+                                                    ||
+                                                    product.id
+                                                }
+                                            </strong>
+
+                                            <small>
+                                                Активний продукт
+                                            </small>
+
+
+                                            ${
+                                                canCloseDeposit
+
+                                                ? `
+
+                                                    <button
+                                                        class="secondary-game-btn close-bank-deposit-button"
+                                                        data-product-id="${product.id}"
+                                                    >
+                                                        ЗАБРАТИ 4 000 ГРН
+                                                    </button>
+
+                                                  `
+
+                                                : ""
+                                            }
+
+
+                                            ${
+                                                canCloseFop
+
+                                                ? `
+
+                                                    <button
+                                                        class="secondary-game-btn close-fop-button"
+                                                        data-product-id="${product.id}"
+                                                    >
+                                                        ЗАКРИТИ ФОП
+                                                    </button>
+
+                                                  `
+
+                                                : ""
+                                            }
+
+                                        </div>
+
+                                    </div>
+
+                                `;
+
+                            }
+                        )
+
+                        .join("")
+                }
+
+            </div>
+
+        </div>
+
+      `
+
+    : ""
+}
 
 
             <!-- =====================================
@@ -27010,6 +27151,126 @@ function showBankHub(
             "click",
             closeGameInfoModal
         );
+
+
+/* =====================================================
+   ДОСТРОКОВЕ ЗАКРИТТЯ ДЕПОЗИТІВ
+===================================================== */
+
+document
+    .querySelectorAll(
+        ".close-bank-deposit-button"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const productId =
+                        button.dataset.productId;
+
+
+                    const product =
+                        bank.products.find(
+                            item =>
+                                item
+                                &&
+                                item.id === productId
+                                &&
+                                item.active !== false
+                        );
+
+
+                    if (!product) {
+                        return;
+                    }
+
+
+                    closeBankProductWithReturn(
+                        player,
+                        product,
+                        4000,
+                        productId === "deposit_growing"
+
+                            ? "Депозит «Зростаючий»"
+
+                            : "Депозит «Скриня»"
+                    );
+
+
+                    updatePlayerStatsUI();
+
+
+                    showBankHub(
+                        audience
+                    );
+
+                }
+            );
+
+        }
+    );
+
+
+/* =====================================================
+   ЗАКРИТТЯ «МІЙ ФОП»
+===================================================== */
+
+document
+    .querySelectorAll(
+        ".close-fop-button"
+    )
+    .forEach(
+        button => {
+
+            button.addEventListener(
+                "click",
+                () => {
+
+                    const productId =
+                        button.dataset.productId;
+
+
+                    const product =
+                        bank.products.find(
+                            item =>
+                                item
+                                &&
+                                item.id === productId
+                                &&
+                                item.active !== false
+                        );
+
+
+                    if (!product) {
+                        return;
+                    }
+
+
+                    product.active =
+                        false;
+
+
+                    addLog(
+                        "✅ Рахунок «Мій ФОП» закрито."
+                    );
+
+
+                    updatePlayerStatsUI();
+
+
+                    showBankHub(
+                        audience
+                    );
+
+                }
+            );
+
+        }
+    );
+
 
 }
 
@@ -28792,7 +29053,159 @@ function closeBankProductWithReturn(
         `✅ ${title}: продукт завершено. Повернення +${formatMoney(safeAmount)} грн`
     );
 
+}/* =========================================================
+   ВИБІР СТРОКУ —
+   КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
+
+   1 місяць = 3 ходи
+   3 місяці = 9 ходів
+   6 місяців = 18 ходів
+   12 місяців = 36 ходів
+========================================================= */
+
+function showClassicDepositTermChoice(
+    card
+) {
+
+    if (!card) {
+        return;
+    }
+
+
+    openGameInfoModal(`
+
+        <div class="bank-card-game-modal">
+
+            <div class="cycle-notice-icon">
+                🏦
+            </div>
+
+            <h2>
+                Класичний Строковий
+            </h2>
+
+            <p>
+                Обери строк депозиту:
+            </p>
+
+
+            <div class="bank-product-options">
+
+                <button
+                    class="main-game-btn classic-deposit-term-button"
+                    data-months="3"
+                    data-turns="9"
+                    data-profit="1000"
+                >
+                    3 місяці
+                    <br>
+                    <small>
+                        9 ходів • дохід +1 000 грн
+                    </small>
+                </button>
+
+
+                <button
+                    class="main-game-btn classic-deposit-term-button"
+                    data-months="6"
+                    data-turns="18"
+                    data-profit="1500"
+                >
+                    6 місяців
+                    <br>
+                    <small>
+                        18 ходів • дохід +1 500 грн
+                    </small>
+                </button>
+
+
+                <button
+                    class="main-game-btn classic-deposit-term-button"
+                    data-months="12"
+                    data-turns="36"
+                    data-profit="2000"
+                >
+                    12 місяців
+                    <br>
+                    <small>
+                        36 ходів • дохід +2 000 грн
+                    </small>
+                </button>
+
+            </div>
+
+
+            <button
+                id="classicDepositCancelButton"
+                class="secondary-game-btn"
+            >
+                НАЗАД
+            </button>
+
+        </div>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            ".classic-deposit-term-button"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        card.selectedDepositTerm = {
+
+                            months:
+                                Number(
+                                    button.dataset.months
+                                ),
+
+                            turns:
+                                Number(
+                                    button.dataset.turns
+                                ),
+
+                            profit:
+                                Number(
+                                    button.dataset.profit
+                                )
+
+                        };
+
+
+                        activateBankProduct(
+                            card
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "classicDepositCancelButton"
+        )
+        ?.addEventListener(
+            "click",
+            () => {
+
+                showBankCard(
+                    card
+                );
+
+            }
+        );
+
 }
+
 /* =========================================================
    КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
 
