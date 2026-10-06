@@ -24420,7 +24420,7 @@ function showGameGlossary(returnTerms = false) {
                 "border:1px solid #dddddd;" +
                 "border-radius:12px;" +
                 "text-align:left;";
-
+ 
             const title =
                 document.createElement("strong");
 
