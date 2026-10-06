@@ -4928,15 +4928,15 @@ function showGameBoard() {
 
 
                 <!-- ДОДАТКОВІ ДІЇ -->
+               <!-- ДОДАТКОВІ ДІЇ -->
 
                 <div class="work-panel-actions">
-
 
                     <button
                         id="cellInfoButton"
                         class="work-panel-button"
+                        type="button"
                     >
-
                         <span>
                             ℹ️ Типи полів
                         </span>
@@ -4944,40 +4944,48 @@ function showGameBoard() {
                         <span>
                             →
                         </span>
+                    </button>
 
+
+                    <button
+                        id="glossaryButton"
+                        class="work-panel-button"
+                        type="button"
+                    >
+                        <span>
+                            📖 Словничок
+                        </span>
+
+                        <span>
+                            →
+                        </span>
                     </button>
 
 
                     <button
                         id="journalButton"
                         class="work-panel-button"
+                        type="button"
                     >
-
                         <span>
                             📜 Журнал ходів
                         </span>
 
                         <span id="journalCount">
-
                             ${
                                 gameState.history
                                     ? gameState.history.length
                                     : 0
                             }
-
                         </span>
-
                     </button>
 
 
                     <button
                         id="finishGameButton"
-                        class="
-                            work-panel-button
-                            finish-game-button
-                        "
+                        class="work-panel-button finish-game-button"
+                        type="button"
                     >
-
                         <span>
                             ⏹ Завершити гру
                         </span>
@@ -4985,12 +4993,9 @@ function showGameBoard() {
                         <span>
                             →
                         </span>
-
                     </button>
 
-
                 </div>
-
 
             </aside>
 
@@ -5150,6 +5155,18 @@ document
             showAllCellTypes
         );
 
+   /* =====================================================
+       СЛОВНИЧОК
+    ===================================================== */
+
+    document
+        .getElementById(
+            "glossaryButton"
+        )
+        ?.addEventListener(
+            "click",
+            showGameGlossary
+        );
 
     /* =====================================================
        ЖУРНАЛ
@@ -23926,8 +23943,11 @@ function updateAIPlayersUI() {
 
     list.replaceChildren();
 
-    list.style.display = "grid";
-    list.style.gap = "10px";
+    list.style.cssText =
+        "display:grid;" +
+        "gap:4px;" +
+        "margin:0;" +
+        "padding:0;";
 
     const opponents =
         Array.isArray(gameState.opponents)
@@ -23944,120 +23964,46 @@ function updateAIPlayersUI() {
             document.createElement("button");
 
         button.type = "button";
-        button.className = "mini-opponent-button";
         button.dataset.playerId = ai.id;
 
         button.style.cssText =
             "display:flex;" +
             "align-items:center;" +
-            "gap:12px;" +
+            "justify-content:space-between;" +
             "width:100%;" +
-            "padding:12px;" +
+            "min-height:0;" +
+            "margin:0;" +
+            "padding:6px 0;" +
+            "border:0;" +
+            "border-radius:0;" +
+            "background:transparent;" +
+            "box-shadow:none;" +
+            "color:inherit;" +
+            "font:inherit;" +
+            "font-size:14px;" +
+            "font-weight:600;" +
             "text-align:left;" +
-            "font:inherit;";
-
-        if (ai.token?.image) {
-
-            const image =
-                document.createElement("img");
-
-            image.src = ai.token.image;
-            image.alt = ai.name || "AI-гравець";
-
-            image.style.cssText =
-                "width:48px;" +
-                "height:64px;" +
-                "object-fit:contain;" +
-                "flex-shrink:0;";
-
-            button.append(image);
-        }
-
-        const info =
-            document.createElement("div");
-
-        info.className = "mini-opponent-info";
-
-        info.style.cssText =
-            "display:grid;" +
-            "gap:5px;" +
-            "min-width:0;";
+            "cursor:pointer;";
 
         const name =
-            document.createElement("strong");
+            document.createElement("span");
 
         name.textContent =
-            ai.name || "AI-гравець";
+            ai.name || "Гравець";
 
-        const profession =
-            document.createElement("small");
+        const arrow =
+            document.createElement("span");
 
-        const level =
-            ai.sector?.levels?.[ai.careerLevel];
+        arrow.textContent = "→";
+        arrow.setAttribute("aria-hidden", "true");
 
-        profession.textContent =
-            level
-                ? getProfessionName(level, ai.gender)
-                : "AI-гравець";
-
-        const stats =
-            document.createElement("div");
-
-        stats.className = "mini-opponent-stats";
-
-        stats.style.cssText =
-            "display:flex;" +
-            "flex-wrap:wrap;" +
-            "gap:6px 12px;";
-
-        const values = [
-            `💰 ${formatMoney(ai.money)}`,
-            `⭐ ${ai.reputation}`,
-            `🧠 ${ai.knowledge}`,
-            `⚡ ${ai.energy}`
-        ];
-
-        for (const value of values) {
-
-            const stat =
-                document.createElement("span");
-
-            stat.textContent = value;
-
-            stats.append(stat);
-        }
-
-        const career =
-            document.createElement("small");
-
-        career.textContent =
-            `🏆 Рівень ${getDisplayedCareerLevel(ai)}`;
-
-        info.append(
-            name,
-            profession,
-            stats,
-            career
-        );
-
-        button.append(info);
+        button.append(name, arrow);
 
         button.addEventListener("click", () => {
             showParticipantInfo(ai.id);
         });
 
         list.append(button);
-    }
-
-    if (!opponents.length) {
-
-        const message =
-            document.createElement("p");
-
-        message.textContent =
-            "AI-гравці не додані до цієї гри.";
-
-        list.append(message);
     }
 }
 
@@ -24112,6 +24058,403 @@ function updatePlayerStatsUI() {
 function updateGameUI() {
 
     updatePlayerStatsUI();
+
+}
+/* =========================================================
+   131.1. СЛОВНИЧОК ГРИ
+
+   Фінансові терміни, кар'єра та бізнес.
+   Пошук за назвою або поясненням.
+========================================================= */
+
+function showGameGlossary() {
+
+    const terms = [
+
+        [
+            "3D Secure",
+            "Додаткова перевірка під час оплати карткою в інтернеті. Банк може попросити підтвердити покупку кодом або в застосунку."
+        ],
+
+        [
+            "Apple Pay",
+            "Спосіб оплачувати покупки сумісним пристроєм Apple, використовуючи додану до цифрового гаманця банківську картку."
+        ],
+
+        [
+            "Google Pay",
+            "Спосіб оплачувати покупки за допомогою цифрового гаманця Google та доданої банківської картки."
+        ],
+
+        [
+            "MyRaif",
+            "Мобільний застосунок Райффайзен Банку для керування рахунками, перегляду балансу, переказів та інших банківських операцій."
+        ],
+
+        [
+            "POS-термінал",
+            "Пристрій, через який продавець приймає оплату банківською карткою або сумісним телефоном."
+        ],
+
+        [
+            "Акції",
+            "Цінні папери, які представляють частку власності в компанії. Їхня вартість може зростати або знижуватися; виплати дивідендів не гарантовані."
+        ],
+
+        [
+            "Антикризова команда",
+            "Команда, яка допомагає вирішувати складні проблеми та виходити з кризової ситуації."
+        ],
+
+        [
+            "Бізнес",
+            "Діяльність зі створення та продажу товарів або послуг з метою отримання доходу."
+        ],
+
+        [
+            "Біржовий фонд (ETF)",
+            "Фонд, частки якого продаються на біржі. Він може об'єднувати багато активів, наприклад акції різних компаній. Розподіл вкладень зменшує залежність від одного активу, але не усуває ризик збитків."
+        ],
+
+        [
+            "Дебетова картка",
+            "Банківська картка для використання власних грошей на рахунку. Кредитні можливості, якщо вони є, визначаються окремими умовами."
+        ],
+
+        [
+            "Депозит (вклад)",
+            "Гроші, розміщені в банку на погоджених умовах. Строк, дохід, можливість поповнення та зняття залежать від виду депозиту."
+        ],
+
+        [
+            "Депозитна лінія",
+            "Формат розміщення вільних коштів бізнесу в банку. Поповнення, зняття та нарахування відсотків визначаються умовами договору."
+        ],
+
+        [
+            "Дивіденди",
+            "Частина прибутку компанії, яку за рішенням про виплату можуть отримати її акціонери."
+        ],
+
+        [
+            "Еквайринг",
+            "Послуга, яка дозволяє бізнесу приймати безготівкову оплату банківськими картками, наприклад через термінал."
+        ],
+
+        [
+            "Зелена картка",
+            "Міжнародне страхування відповідальності водія. За умовами страхування воно покриває шкоду, завдану іншим учасникам дорожнього руху під час поїздки за кордон."
+        ],
+
+        [
+            "Інвестор",
+            "Людина або організація, яка вкладає кошти в актив чи проєкт, очікуючи майбутнього доходу та приймаючи пов'язані ризики."
+        ],
+
+        [
+            "Інвестувати кошти",
+            "Вкладати гроші з метою отримання майбутнього доходу. Результат інвестиції може відрізнятися від очікуваного."
+        ],
+
+        [
+            "Інновації",
+            "Нові або вдосконалені ідеї, технології, продукти чи способи роботи."
+        ],
+
+        [
+            "Інноваційний проєкт",
+            "Проєкт, у якому використовують нову ідею, технологію або спосіб вирішення проблеми."
+        ],
+
+        [
+            "Інтеграція",
+            "Поєднання систем, процесів або ресурсів, щоб вони працювали разом."
+        ],
+
+        [
+            "Інтернет-еквайринг",
+            "Послуга для приймання оплати банківськими картками на сайті, в онлайн-магазині або іншому цифровому сервісі."
+        ],
+
+        [
+            "Ключовий клієнт",
+            "Важливий для бізнесу клієнт, який приносить значний дохід або має стратегічне значення."
+        ],
+
+        [
+            "Компанія",
+            "Організація, яка об'єднує людей і ресурси для певної діяльності, зокрема виробництва товарів або надання послуг."
+        ],
+
+        [
+            "Крафтові товари",
+            "Авторські товари, які виготовляють вручну або невеликими партіями."
+        ],
+
+        [
+            "Кредит",
+            "Гроші, які кредитор надає в борг. Їх потрібно повернути відповідно до договору та сплатити передбачені ним відсотки й інші платежі."
+        ],
+
+        [
+            "Кредитна картка",
+            "Картка, яка дозволяє використовувати гроші банку в межах кредитного ліміту. Використані кошти потрібно повертати за умовами договору."
+        ],
+
+        [
+            "Ліквідація компанії",
+            "Процес припинення компанії, під час якого врегульовують її зобов'язання та завершують діяльність."
+        ],
+
+        [
+            "Мікрогрант",
+            "Фінансова підтримка для започаткування або розвитку справи. Використовувати її потрібно за умовами програми."
+        ],
+
+        [
+            "Монетизація експертизи",
+            "Отримання доходу завдяки власним знанням і навичкам, наприклад через консультації або навчання."
+        ],
+
+        [
+            "ОВДП",
+            "Облігації внутрішньої державної позики. Купуючи їх, інвестор позичає гроші державі, яка має повернути кошти та виплатити передбачений умовами дохід."
+        ],
+
+        [
+            "Овердрафт",
+            "Кредитний ліміт на банківському рахунку, який дозволяє провести платіж, коли власних коштів недостатньо. Використану суму потрібно погасити."
+        ],
+
+        [
+            "Підприємець",
+            "Людина, яка організовує власну справу та бере на себе відповідальність за її роботу й результати."
+        ],
+
+        [
+            "Поліс",
+            "Документ, що підтверджує страхування. У ньому та умовах договору визначено, що саме захищено й за яких обставин можлива виплата."
+        ],
+
+        [
+            "Преміум-клієнт",
+            "Клієнт, який користується преміальним банківським обслуговуванням. Послуги, вимоги та вартість залежать від обраного пакета."
+        ],
+
+        [
+            "Рахунок (банківський рахунок)",
+            "Рахунок у банку для зберігання коштів, отримання платежів та проведення інших операцій. До нього може бути прив'язана банківська картка."
+        ],
+
+        [
+            "Реінвестувати капітал",
+            "Повторно вкладати отриманий дохід або накопичені кошти для подальшого розвитку."
+        ],
+
+        [
+            "Річний баланс",
+            "Звіт про активи, зобов'язання та власний капітал на визначену дату наприкінці звітного року."
+        ],
+
+        [
+            "Синергія ресурсів",
+            "Поєднання ресурсів, завдяки якому спільна робота дає більший результат."
+        ],
+
+        [
+            "Стати ментором",
+            "Передавати власний досвід, давати поради та допомагати іншій людині розвиватися."
+        ],
+
+        [
+            "Страхування",
+            "Фінансовий захист від визначених договором ризиків. Страхові внески та можливі виплати залежать від умов страхування."
+        ],
+
+        [
+            "Тайм-менеджмент",
+            "Планування та організація власного часу для виконання завдань і відпочинку."
+        ],
+
+        [
+            "Фізична особа",
+            "Людина як учасник правових відносин."
+        ],
+
+        [
+            "Фінансовий рік",
+            "Звітний період, за який підбивають фінансові підсумки діяльності."
+        ],
+
+        [
+            "ФОП",
+            "Фізична особа — підприємець. Людина, яка зареєструвала підприємницьку діяльність і веде власну справу."
+        ],
+
+        [
+            "Франшиза",
+            "У бізнесі — право працювати за моделлю та брендом іншої компанії на погоджених умовах. У страхуванні — частина збитку, яку за договором не відшкодовує страховик."
+        ],
+
+        [
+            "Хедхантер",
+            "Фахівець, який шукає та залучає потрібних працівників для компаній."
+        ],
+
+        [
+            "Шахрайські операції",
+            "Дії, спрямовані на незаконне отримання грошей або даних через обман, наприклад підроблені повідомлення чи сайти."
+        ],
+
+        [
+            "Юридична особа",
+            "Організація, яка має власні права та обов'язки й діє як окремий учасник правових відносин."
+        ]
+
+    ];
+
+    terms.sort((first, second) => {
+        return first[0].localeCompare(second[0], "uk");
+    });
+
+    openGameInfoModal(`
+
+        <div class="glossary-modal">
+
+            <div class="cycle-notice-icon">
+                📖
+            </div>
+
+            <h2>
+                Словничок
+            </h2>
+
+            <p>
+                Фінанси, кар'єра та бізнес простими словами.
+            </p>
+
+            <label
+                for="glossarySearch"
+                style="display:block;margin-bottom:8px;"
+            >
+                Знайти термін
+            </label>
+
+            <input
+                id="glossarySearch"
+                type="search"
+                placeholder="Наприклад: депозит, ФОП, ментор"
+                style="
+                    display:block;
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:12px;
+                    margin-bottom:16px;
+                    border:1px solid #cccccc;
+                    border-radius:12px;
+                    font:inherit;
+                "
+            >
+
+            <div
+                id="glossaryResults"
+                style="display:grid;gap:12px;"
+            ></div>
+
+            <button
+                id="closeGlossaryButton"
+                class="main-game-btn"
+                type="button"
+                style="margin-top:20px;"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
+
+        </div>
+
+    `);
+
+    const search =
+        document.getElementById("glossarySearch");
+
+    const results =
+        document.getElementById("glossaryResults");
+
+    if (!search || !results) {
+        return;
+    }
+
+    function renderTerms() {
+
+        const query =
+            search.value
+                .trim()
+                .toLocaleLowerCase("uk");
+
+        const matchingTerms =
+            terms.filter(([name, explanation]) => {
+
+                const text =
+                    `${name} ${explanation}`
+                        .toLocaleLowerCase("uk");
+
+                return text.includes(query);
+            });
+
+        results.replaceChildren();
+
+        for (const [name, explanation] of matchingTerms) {
+
+            const item =
+                document.createElement("div");
+
+            item.style.cssText =
+                "padding:14px;" +
+                "border:1px solid #dddddd;" +
+                "border-radius:12px;" +
+                "text-align:left;";
+
+            const title =
+                document.createElement("strong");
+
+            title.textContent = name;
+
+            const description =
+                document.createElement("p");
+
+            description.textContent = explanation;
+
+            description.style.cssText =
+                "margin:8px 0 0;" +
+                "line-height:1.5;";
+
+            item.append(title, description);
+
+            results.append(item);
+        }
+
+        if (!matchingTerms.length) {
+
+            const message =
+                document.createElement("p");
+
+            message.textContent =
+                "Нічого не знайдено. Спробуй інше слово.";
+
+            results.append(message);
+        }
+    }
+
+    search.addEventListener("input", renderTerms);
+
+    document
+        .getElementById("closeGlossaryButton")
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+    renderTerms();
 
 }
 
@@ -26510,9 +26853,26 @@ function showParticipantInfo(
 
         <div class="participant-info-modal">
 
-            <div class="cycle-notice-icon">
-                🤖
+                       <div class="cycle-notice-icon">
+                ${
+                    participant.token?.image
+                        ? `
+                            <img
+                                src="${participant.token.image}"
+                                alt="Фішка гравця"
+                                style="
+                                    display:block;
+                                    width:72px;
+                                    height:72px;
+                                    object-fit:contain;
+                                    margin:0 auto;
+                                "
+                            >
+                        `
+                        : ""
+                }
             </div>
+
 
 
             <h2>
