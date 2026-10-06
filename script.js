@@ -24067,7 +24067,8 @@ function updateGameUI() {
    Пошук за назвою або поясненням.
 ========================================================= */
 
-function showGameGlossary() {
+function showGameGlossary(returnTerms = false) {
+
 
     const terms = [
 
@@ -24313,6 +24314,12 @@ function showGameGlossary() {
 
     ];
 
+      // Повертаємо пояснення для підказок у картках.
+    if (returnTerms === true) {
+        return terms;
+    }
+
+
     terms.sort((first, second) => {
         return first[0].localeCompare(second[0], "uk");
     });
@@ -24457,6 +24464,10 @@ function showGameGlossary() {
     renderTerms();
 
 }
+   // Повертаємо пояснення для підказок у картках.
+    if (returnTerms === true) {
+        return terms;
+    }
 
 /* =========================================================
    132. ТИПИ ПОЛІВ
