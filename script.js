@@ -11637,6 +11637,10 @@ function showCardFinalResult(
 
     `);
 
+   addCardBankButton(
+        document.getElementById("gameInfoContent"),
+        card
+    );
 
     document
         .getElementById(
@@ -17098,6 +17102,8 @@ function queueGameNotice(
 
 /* =========================================================
    78. ПОКАЗ НАСТУПНОГО ПОВІДОМЛЕННЯ
+
+   Зарплата → кар'єра → здійснена Мрія.
 ========================================================= */
 
 function showNextGameNotice(
@@ -17106,335 +17112,467 @@ function showNextGameNotice(
 
     ensureGameRuntimeState();
 
-
-    if (
-        gameState.runtime.processingNotice
-    ) {
-
+    if (gameState.runtime.processingNotice) {
         return;
-
     }
 
+    if (gameState.runtime.gameFinished) {
+        onComplete?.();
+        return;
+    }
 
     const notice =
-        gameState
-            .runtime
-            .noticeQueue
-            .shift();
-
+        gameState.runtime.noticeQueue.shift();
 
     if (!notice) {
-
-        if (
-            typeof onComplete ===
-            "function"
-        ) {
-
-            onComplete();
-
-        }
-
-
+        onComplete?.();
         return;
-
     }
 
+    gameState.runtime.processingNotice = true;
 
-    gameState.runtime.processingNotice =
-        true;
+    if (notice.type === "dream-completed") {
 
-
-    let html = "";
-
-
-    /* =====================================================
-       ЗАРПЛАТА
-    ===================================================== */
-
-    if (
-        notice.type ===
-        "salary"
-    ) {
-
-        html = `
-
-            <div class="cycle-notice salary-notice">
-
-                <div class="cycle-notice-icon">
-                    💰
-                </div>
-
-
-                <h2>
-                    Зарплата надійшла!
-                </h2>
-
-
-                <p>
-
-                    Завершено ще один
-                    фінансовий період.
-
-                </p>
-
-
-                <div class="cycle-notice-main-value">
-
-                    +${formatMoney(notice.salary)} грн
-
-                </div>
-
-
-                ${
-                    notice.passiveIncome > 0
-
-                    ? `
-
-                        <div class="cycle-notice-extra">
-
-                            Додатковий регулярний дохід:
-
-                            <strong>
-
-                                +${formatMoney(notice.passiveIncome)} грн
-
-                            </strong>
-
-                        </div>
-
-                      `
-
-                    : ""
-                }
-
-
-                <div class="cycle-notice-info">
-
-                    Професійний рівень:
-
-                    <strong>
-                        ${notice.careerLevel}
-                    </strong>
-
-                    <br>
-
-                    ${notice.profession}
-
-                </div>
-
-
-                <button
-                    id="continueCycleNoticeButton"
-                    class="main-game-btn"
-                >
-
-                    ПРОДОВЖИТИ
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* =====================================================
-       КАР'ЄРНЕ ЗРОСТАННЯ
-    ===================================================== */
-
-    else if (
-        notice.type ===
-        "career"
-    ) {
-
-        html = `
-
-            <div class="cycle-notice career-notice">
-
-                <div class="cycle-notice-icon">
-                    🎉
-                </div>
-
-
-                <h2>
-                    Вітаємо!
-                </h2>
-
-
-                <p>
-                    Ти переходиш
-                    на наступну кар'єрну сходинку!
-                </p>
-
-
-                <div class="career-notice-change">
-
-                    <span>
-                        ${notice.oldProfession}
-                    </span>
-
-                    <strong>
-                        ↓
-                    </strong>
-
-                    <span>
-                        ${notice.newProfession}
-                    </span>
-
-                </div>
-
-
-                <div class="career-notice-level">
-
-                    Рівень ${notice.level}
-
-                </div>
-
-
-                <div class="career-notice-salary">
-
-                    Нова зарплата:
-
-                    <strong>
-
-                        💰 ${formatMoney(notice.salary)} грн
-
-                    </strong>
-
-                </div>
-
-
-                <button
-                    id="continueCycleNoticeButton"
-                    class="main-game-btn"
-                >
-
-                    КРУТО! ПРОДОВЖУЄМО
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    /* =====================================================
-       ВІДКЛАДЕНИЙ ПЛАТІЖ
-    ===================================================== */
-
-    else if (
-        notice.type ===
-        "delayed"
-    ) {
-
-        html = `
-
-            <div class="cycle-notice delayed-notice">
-
-                <div class="cycle-notice-icon">
-                    ⏳
-                </div>
-
-
-                <h2>
-                    Спрацювала попередня подія
-                </h2>
-
-
-                <p>
-                    ${notice.text}
-                </p>
-
-
-                <div class="revealed-card-effects">
-
-                    ${effectsHTML(notice.effects)}
-
-                </div>
-
-
-                <button
-                    id="continueCycleNoticeButton"
-                    class="main-game-btn"
-                >
-
-                    ПРОДОВЖИТИ
-
-                </button>
-
-            </div>
-
-        `;
-
-    }
-
-
-    else {
-
-        gameState.runtime.processingNotice =
-            false;
-
-
-        showNextGameNotice(
+        showAutomaticDreamCompletionNotice(
+            notice.dream,
             onComplete
         );
 
+        return;
+
+    }
+
+    let html = "";
+
+    if (notice.type === "salary") {
+
+        html = `
+            <div class="cycle-notice salary-notice">
+
+                <div class="cycle-notice-icon">💰</div>
+
+                <h2>Зарплата надійшла!</h2>
+
+                <p>
+                    Завершено ще один фінансовий період.
+                </p>
+
+                <div class="cycle-notice-main-value">
+                    +${formatMoney(notice.salary)} грн
+                </div>
+
+                ${
+                    notice.passiveIncome > 0
+                        ? `
+                            <p>
+                                Додатковий регулярний дохід:
+                                <strong>
+                                    +${formatMoney(
+                                        notice.passiveIncome
+                                    )} грн
+                                </strong>
+                            </p>
+                        `
+                        : ""
+                }
+
+                <div class="cycle-notice-info">
+                    Професійний рівень:
+                    <strong>${notice.careerLevel}</strong>
+                    <br>
+                    ${notice.profession}
+                </div>
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                    type="button"
+                >
+                    ПРОДОВЖИТИ
+                </button>
+
+            </div>
+        `;
+
+    } else if (notice.type === "career") {
+
+        html = `
+            <div class="cycle-notice career-notice">
+
+                <div class="cycle-notice-icon">🎉</div>
+
+                <h2>Вітаємо!</h2>
+
+                <p>
+                    Ти переходиш на наступну
+                    кар'єрну сходинку!
+                </p>
+
+                <div class="career-notice-change">
+                    <span>${notice.oldProfession}</span>
+                    <strong>↓</strong>
+                    <span>${notice.newProfession}</span>
+                </div>
+
+                <div class="career-notice-level">
+                    Рівень ${notice.level}
+                </div>
+
+                <div class="career-notice-salary">
+                    Нова зарплата:
+                    <strong>
+                        💰 ${formatMoney(notice.salary)} грн
+                    </strong>
+                </div>
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                    type="button"
+                >
+                    КРУТО! ПРОДОВЖУЄМО
+                </button>
+
+            </div>
+        `;
+
+    } else if (notice.type === "delayed") {
+
+        html = `
+            <div class="cycle-notice delayed-notice">
+
+                <div class="cycle-notice-icon">⏳</div>
+
+                <h2>Спрацювала попередня подія</h2>
+
+                <p>${notice.text}</p>
+
+                <div class="revealed-card-effects">
+                    ${effectsHTML(notice.effects)}
+                </div>
+
+                <button
+                    id="continueCycleNoticeButton"
+                    class="main-game-btn"
+                    type="button"
+                >
+                    ПРОДОВЖИТИ
+                </button>
+
+            </div>
+        `;
+
+    } else {
+
+        gameState.runtime.processingNotice = false;
+
+        showNextGameNotice(onComplete);
 
         return;
 
     }
 
+    openGameInfoModal(html);
 
-    openGameInfoModal(
-        html
-    );
+    let handled = false;
 
+    const continueNotice = () => {
+
+        if (handled) {
+            return;
+        }
+
+        handled = true;
+
+        closeGameInfoModal();
+
+        gameState.runtime.processingNotice = false;
+
+        showNextGameNotice(onComplete);
+
+    };
 
     const button =
         document.getElementById(
             "continueCycleNoticeButton"
         );
 
-
     if (!button) {
-
-        gameState.runtime.processingNotice =
-            false;
-
-
-        showNextGameNotice(
-            onComplete
-        );
-
-
+        continueNotice();
         return;
-
     }
-
 
     button.addEventListener(
         "click",
-        () => {
-
-            closeGameInfoModal();
-
-
-            gameState.runtime.processingNotice =
-                false;
-
-
-            showNextGameNotice(
-                onComplete
-            );
-
-        }
+        continueNotice
     );
 
 }
 
+
+/* =========================================================
+   78.1. СПОВІЩЕННЯ ПРО ЗДІЙСНЕНУ МРІЮ
+
+   Хід уже завершено.
+   Повторно completePlayerTurn() не викликаємо.
+========================================================= */
+
+function showAutomaticDreamCompletionNotice(
+    dream,
+    onComplete = null
+) {
+
+    const player = gameState.player;
+
+    const closeButton =
+        document.getElementById("gameInfoClose");
+
+    const previousCloseDisplay =
+        closeButton?.style.display || "";
+
+    /*
+       Потрібно обрати одну з дій,
+       щоб черга повідомлень продовжилася.
+    */
+
+    if (closeButton) {
+        closeButton.style.display = "none";
+    }
+
+    let handled = false;
+
+    const restoreCloseButton = () => {
+
+        if (closeButton) {
+            closeButton.style.display =
+                previousCloseDisplay;
+        }
+
+    };
+
+    const continueGame = () => {
+
+        if (handled) {
+            return;
+        }
+
+        handled = true;
+
+        restoreCloseButton();
+
+        closeGameInfoModal();
+
+        gameState.runtime.processingNotice = false;
+
+        showNextGameNotice(onComplete);
+
+    };
+
+    const finishGame = () => {
+
+        if (handled) {
+            return;
+        }
+
+        handled = true;
+
+        restoreCloseButton();
+
+        gameState.runtime.gameFinished = true;
+
+        gameState.runtime.processingNotice = false;
+
+        gameState.runtime.noticeQueue.length = 0;
+
+        closeGameInfoModal();
+
+        onComplete?.();
+
+        showFinalGameResults();
+
+    };
+
+    const showCongratulations = () => {
+
+        const availableDreams = DREAMS.filter(
+            item =>
+                !player.completedDreams.includes(item.id)
+        );
+
+        openGameInfoModal(`
+
+            <div class="dream-ready-modal">
+
+                <div class="cycle-notice-icon">🏆</div>
+
+                <h2>Вітаємо! Мрію здійснено!</h2>
+
+                <div class="dream-ready-name">
+                    ${dream.icon || "✨"}
+                    ${dream.name}
+                </div>
+
+                <p>
+                    ${
+                        player.gender === "girl"
+                            ? "Ти досягла своєї цілі!"
+                            : "Ти досягнув своєї цілі!"
+                    }
+                </p>
+
+                <p>
+                    ✨ Виконано Мрій:
+                    ${player.completedDreams.length}
+                    із ${DREAMS.length}
+                </p>
+
+                ${
+                    availableDreams.length
+                        ? `
+                            <button
+                                id="automaticNextDreamButton"
+                                class="main-game-btn"
+                                type="button"
+                            >
+                                ✨ ОБРАТИ ІНШУ МРІЮ
+                            </button>
+                        `
+                        : "<p>🏆 Усі Мрії здійснено!</p>"
+                }
+
+                <button
+                    id="automaticContinueDreamButton"
+                    class="secondary-game-btn"
+                    type="button"
+                >
+                    ▶ ПРОДОВЖИТИ ГРУ
+                </button>
+
+                <button
+                    id="automaticFinishDreamButton"
+                    class="secondary-game-btn"
+                    type="button"
+                >
+                    🏆 ЗАВЕРШИТИ ГРУ
+                </button>
+
+            </div>
+
+        `);
+
+        document
+            .getElementById("automaticContinueDreamButton")
+            ?.addEventListener("click", continueGame);
+
+        document
+            .getElementById("automaticFinishDreamButton")
+            ?.addEventListener("click", finishGame);
+
+        document
+            .getElementById("automaticNextDreamButton")
+            ?.addEventListener("click", () => {
+
+                openGameInfoModal(`
+
+                    <div class="dream-ready-modal">
+
+                        <div class="cycle-notice-icon">✨</div>
+
+                        <h2>Обери наступну Мрію</h2>
+
+                        <div
+                            style="display:grid;gap:10px;margin:16px 0;"
+                        >
+                            ${
+                                availableDreams.map(
+                                    (item, index) => `
+
+                                        <button
+                                            type="button"
+                                            class="secondary-game-btn"
+                                            data-automatic-dream-index="${index}"
+                                        >
+                                            ${item.icon || "✨"}
+                                            ${item.name}
+                                        </button>
+
+                                    `
+                                ).join("")
+                            }
+                        </div>
+
+                        <button
+                            id="automaticDreamBackButton"
+                            type="button"
+                            class="main-game-btn"
+                        >
+                            ← НАЗАД
+                        </button>
+
+                    </div>
+
+                `);
+
+                document
+                    .querySelectorAll(
+                        "[data-automatic-dream-index]"
+                    )
+                    .forEach(button => {
+
+                        button.addEventListener(
+                            "click",
+                            () => {
+
+                                if (handled) {
+                                    return;
+                                }
+
+                                const nextDream =
+                                    availableDreams[
+                                        Number(
+                                            button.dataset
+                                                .automaticDreamIndex
+                                        )
+                                    ];
+
+                                if (!nextDream) {
+                                    return;
+                                }
+
+                                player.dream = nextDream;
+
+                                gameState.selectedDreamId =
+                                    nextDream.id;
+
+                                addLog(
+                                    `✨ ${player.name} обрав(ла) нову Мрію «${nextDream.name}».`
+                                );
+
+                                updatePlayerStatsUI();
+
+                                continueGame();
+
+                            }
+                        );
+
+                    });
+
+                document
+                    .getElementById(
+                        "automaticDreamBackButton"
+                    )
+                    ?.addEventListener(
+                        "click",
+                        showCongratulations
+                    );
+
+            });
+
+    };
+
+    showCongratulations();
+
+}
 
 /* =========================================================
    79. ПОЧАТОК ХОДУ ГРАВЦЯ
@@ -18993,59 +19131,75 @@ function showAcademyResult(
 
 /* =========================================================
    90. ПЕРЕВІРКА МРІЇ
+
+   Потрібні ресурси, фінальний професійний рівень
+   та погашені банківські кредити.
 ========================================================= */
 
 function canRealizeDream(
-    participant =
-        gameState.player
+    participant = gameState.player
 ) {
 
-    if (
-        !participant ||
-        !participant.dream
-    ) {
-
+    if (!participant?.dream?.requirements) {
         return false;
-
     }
 
+    const req = participant.dream.requirements;
 
-    const req =
-        participant
-            .dream
-            .requirements;
+    const products =
+        Array.isArray(participant.bank?.products)
+            ? participant.bank.products
+            : [];
 
+    const loanPayments = {
+        cash_credit: 6,
+        credit_card_100: 3,
+        premium_cash_credit: 6,
+        premium_credit_card: 3
+    };
+
+    const hasUnpaidLoan = products.some(product => {
+
+        if (!product) {
+            return false;
+        }
+
+        if (product.id === "overdraft") {
+            return Number(product.principalDue) > 0;
+        }
+
+        const requiredPayments =
+            loanPayments[product.id];
+
+        if (!requiredPayments) {
+            return false;
+        }
+
+        if (Number(product.lateFeeDue) > 0) {
+            return true;
+        }
+
+        return (
+            product.active !== false &&
+            (
+                product.pendingPayment === true ||
+                (Number(product.paymentsMade) || 0)
+                    < requiredPayments
+            )
+        );
+
+    });
 
     return (
-
-        hasFinalCareerLevel(
-            participant
-        )
-
-        &&
-
-        participant.money >=
-            req.money
-
-        &&
-
-        participant.reputation >=
-            req.reputation
-
-        &&
-
-        participant.knowledge >=
-            req.knowledge
-
-        &&
-
-        participant.energy >=
-            req.energy
-
+        !hasUnpaidLoan &&
+        hasFinalCareerLevel(participant) &&
+        participant.money >= req.money &&
+        participant.reputation >= req.reputation &&
+        participant.knowledge >= req.knowledge &&
+        participant.energy >= req.energy
     );
 
 }
-
 
 /* =========================================================
    91. КЛІТИНКА ПЕРЕВІРКИ МРІЇ
@@ -19576,6 +19730,58 @@ function showCompletedDreamModal(
 
 }
 
+/* =========================================================
+   93.3. АВТОМАТИЧНЕ ЗАРАХУВАННЯ МРІЇ
+
+   Викликаємо після завершення картки,
+   нарахувань та перевірки кар'єри.
+========================================================= */
+
+function queueAutomaticDreamCompletion() {
+
+    const player = gameState.player;
+
+    if (!canRealizeDream(player)) {
+        return;
+    }
+
+    const dream = player.dream;
+
+    if (!Array.isArray(player.completedDreams)) {
+        player.completedDreams = [];
+    }
+
+    if (player.completedDreams.includes(dream.id)) {
+        return;
+    }
+
+    player.money -=
+        Number(dream.requirements.money) || 0;
+
+    player.reputation += 50;
+
+    player.energy = GAME_CONFIG.maxEnergy;
+
+    clampPlayerResources(player);
+
+    player.completedDreams.push(dream.id);
+
+    player.dream = null;
+
+    gameState.selectedDreamId = null;
+
+    addLog(
+        `🏆 ${player.name} здійснив(ла) Мрію «${dream.name}».`
+    );
+
+    queueGameNotice({
+        type: "dream-completed",
+        dream
+    });
+
+    updatePlayerStatsUI();
+
+}
 
 /* =========================================================
    94. ФІНАЛ ГРИ
@@ -25194,6 +25400,18 @@ if (
     return;
 
 }
+   /* Звернення до банку перед вибором рішення. */
+
+queueMicrotask(() => {
+
+    addCardBankButton(
+        panel,
+        card,
+        () => showDecisionCard(deckName, card)
+    );
+
+});
+
 
     /* =====================================================
        КАРТКА ВЗАГАЛІ НЕДОСТУПНА
@@ -25936,6 +26154,10 @@ if (
 
     `);
 
+   addCardBankButton(
+        document.getElementById("gameInfoContent"),
+        card
+    );
 
     document
         .getElementById(
@@ -26155,9 +26377,19 @@ processActiveBankProducts(
     }
 
 
-  checkCareerProgress(
+ checkCareerProgress(
     player
 );
+
+/* =====================================================
+   ПЕРЕВІРЯЄМО МРІЮ ПІСЛЯ ВСІХ НАРАХУВАНЬ
+   ТА КАР'ЄРНОГО ПІДВИЩЕННЯ
+===================================================== */
+
+queueAutomaticDreamCompletion();
+
+updatePlayerStatsUI();
+
 
 
 updatePlayerStatsUI();
@@ -26490,6 +26722,10 @@ if (
 
     `);
 
+addCardBankButton(
+    document.getElementById("gameInfoContent"),
+    card
+);
 
     document
         .getElementById(
@@ -26650,44 +26886,53 @@ function showCareerProgressModal() {
    Залишаємо універсальною.  
 ========================================================= */
 
-function openGameInfoModal(
-    html
-) {
+function openGameInfoModal(html) {
 
     const modal =
-        document.getElementById(
-            "gameInfoModal"
-        );
-
+        document.getElementById("gameInfoModal");
 
     const content =
-        document.getElementById(
-            "gameInfoContent"
-        );
+        document.getElementById("gameInfoContent");
 
-
-    if (
-        !modal ||
-        !content
-    ) {
-
+    if (!modal || !content) {
         console.warn(
             "Не знайдено gameInfoModal або gameInfoContent"
         );
-
         return;
+    }
+
+    content.innerHTML = html;
+
+    /* Повернення доступне на всіх екранах Банку. */
+
+    if (cardBankReturnState) {
+
+        const backButton =
+            document.createElement("button");
+
+        backButton.type = "button";
+
+        backButton.className = "main-game-btn";
+
+        backButton.style.cssText =
+            "display:block;width:100%;margin-top:16px;";
+
+        backButton.textContent =
+            "← ПОВЕРНУТИСЯ ДО КАРТКИ";
+
+        backButton.addEventListener(
+            "click",
+            returnFromBankToCard
+        );
+
+        content.append(backButton);
 
     }
 
-
-    content.innerHTML =
-        html;
-
-
-    modal.hidden =
-        false;
+    modal.hidden = false;
 
 }
+
 /* =========================================================
    145.1. ПРОГРЕС МРІЇ
 
@@ -27553,6 +27798,327 @@ function bankProductName(product) {
 
 }
 
+/* =========================================================
+   145.1.1. ЗВЕРНЕННЯ ДО БАНКУ З ІГРОВОЇ КАРТКИ
+========================================================= */
+
+let cardBankReturnState = null;
+
+
+/* Визначаємо продукти за умовами та змістом картки. */
+
+function getCardBankProductIds(card) {
+
+    if (!card) {
+        return [];
+    }
+
+    const ids = new Set();
+
+    const add = (...productIds) => {
+        productIds.forEach(id => ids.add(id));
+    };
+
+    if (card.bankRequirement?.product) {
+        add(card.bankRequirement.product);
+    }
+
+    if (card.insuranceProtection?.product) {
+        add(card.insuranceProtection.product);
+    }
+
+    for (const choice of card.choices || []) {
+
+        if (choice.conditionProduct) {
+            add(choice.conditionProduct);
+        }
+
+    }
+
+    const text = [
+        card.title,
+        card.story,
+        card.advice,
+        card.taskText,
+        card.bankRequirement?.text
+    ].filter(Boolean).join(" ").toLocaleLowerCase("uk");
+
+    if (
+        /затоп|страхування житла|страхування оселі|пошкодження майна/.test(text)
+    ) {
+        add("home_insurance");
+    }
+
+    if (/дтп|автоцивіл|автомобільн.*авар/.test(text)) {
+        add("extra_motor_insurance");
+    }
+
+    if (
+        /зелен.*карт|автомобіл.*за кордон|за кордон.*автомобіл/.test(text)
+    ) {
+        add("green_card");
+    }
+
+    if (/шахрай|картков.*безпек/.test(text)) {
+        add("varta_247");
+    }
+
+    if (/страхування життя/.test(text)) {
+        add("life_insurance");
+    }
+
+    if (/інтернет.*магазин|онлайн.*магазин|онлайн.*продаж|навчальн.*курс/.test(text)) {
+        add("internet_acquiring");
+    }
+
+    if (/термінал|безготівков.*оплат|оплат.*картк/.test(text)) {
+        add("acquiring");
+    }
+
+    if (/фоп|власн.*бізнес|відкрити.*бізнес|підприємниц/.test(text)) {
+        add("my_fop");
+    }
+
+    if (/валют|іноземн.*клієнт|міжнародн.*проєкт/.test(text)) {
+        add("currency_account");
+    }
+
+    if (/кредит|позик|нестач.*грош|бракує.*кошт/.test(text)) {
+        add("cash_credit", "credit_card_100");
+    }
+
+    if (/овердрафт|касов.*розрив/.test(text)) {
+        add("overdraft");
+    }
+
+    if (/депозит|заощаджен|фінансов.*подуш/.test(text)) {
+        add(
+            "deposit_classic",
+            "deposit_growing",
+            "deposit_chest"
+        );
+    }
+
+    if (/інвести|інвестувати|цінн.*папер/.test(text)) {
+        add("ovdp", "etf");
+    }
+
+    if (/овдп|облігац/.test(text)) {
+        add("ovdp");
+    }
+
+    if (/etf|біржов.*фонд/.test(text)) {
+        add("etf");
+    }
+
+    return [...ids].filter(
+        id => bankCatalogCard(id)
+    );
+
+}
+
+
+/* Повертаємо збережені елементи, а не копію HTML. */
+
+function returnFromBankToCard() {
+
+    const state = cardBankReturnState;
+
+    if (!state) {
+        return false;
+    }
+
+    cardBankReturnState = null;
+
+    const content =
+        document.getElementById("gameInfoContent");
+
+    const modal =
+        document.getElementById("gameInfoModal");
+
+    if (content) {
+        content.replaceChildren(...state.nodes);
+    }
+
+    if (modal) {
+        modal.hidden = state.modalHidden;
+    }
+
+    updatePlayerStatsUI();
+
+    if (typeof state.refreshCard === "function") {
+        state.refreshCard();
+    }
+
+    return true;
+
+}
+
+
+/* Відкриваємо добірку продуктів без завершення ходу. */
+
+function openBankFromCard(
+    card,
+    productIds,
+    refreshCard = null
+) {
+
+    const content =
+        document.getElementById("gameInfoContent");
+
+    const modal =
+        document.getElementById("gameInfoModal");
+
+    if (!content || !modal || cardBankReturnState) {
+        return;
+    }
+
+    cardBankReturnState = {
+        nodes: [...content.childNodes],
+        modalHidden: modal.hidden,
+        refreshCard
+    };
+
+    openGameInfoModal(`
+
+        <div class="bank-hub-modal">
+
+            <div class="cycle-notice-icon">🏦</div>
+
+            <h2>Банк: можливості для цієї ситуації</h2>
+
+            <p>
+                Перегляд безкоштовний.
+                Успішне підключення використовує
+                одне додаткове звернення до банку.
+            </p>
+
+            <div style="display:grid;gap:10px;margin:16px 0;">
+                ${
+                    productIds.map((id, index) => {
+
+                        const product = BANK_PRODUCTS.find(
+                            item => item.id === id
+                        );
+
+                        return `
+                            <button
+                                type="button"
+                                class="secondary-game-btn"
+                                data-card-bank-index="${index}"
+                            >
+                                ${product?.icon || "🏦"}
+                                ${product?.name || id}
+                            </button>
+                        `;
+
+                    }).join("")
+                }
+            </div>
+
+        </div>
+
+    `);
+
+    document
+        .querySelectorAll("[data-card-bank-index]")
+        .forEach(button => {
+
+            button.addEventListener("click", () => {
+
+                const id = productIds[
+                    Number(button.dataset.cardBankIndex)
+                ];
+
+                const product = BANK_PRODUCTS.find(
+                    item => item.id === id
+                );
+
+                if (!product) {
+                    return;
+                }
+
+                showBankProductInfo(
+                    id,
+                    product.audience
+                );
+
+            });
+
+        });
+
+}
+
+
+/* Додаємо кнопку до вже намальованої картки. */
+
+function addCardBankButton(
+    container,
+    card,
+    refreshCard = null
+) {
+
+    if (
+        !container ||
+        container.querySelector("[data-card-bank-button]")
+    ) {
+        return;
+    }
+
+    let productIds = getCardBankProductIds(card);
+
+    /*
+       До вибору рішення можна підключити продукт,
+       потрібний для банківської умови.
+
+       Страхування пропонуємо після результату:
+       новий поліс не покриває подію, яка вже сталася.
+    */
+
+    if (typeof refreshCard === "function") {
+
+        productIds = productIds.filter(id => {
+
+            const product = BANK_PRODUCTS.find(
+                item => item.id === id
+            );
+
+            return product?.category !== "insurance";
+
+        });
+
+    }
+
+    if (!productIds.length) {
+        return;
+    }
+
+    const button = document.createElement("button");
+
+    button.type = "button";
+
+    button.className = "secondary-game-btn";
+
+    button.dataset.cardBankButton = "true";
+
+    button.style.cssText =
+        "display:block;width:100%;margin-top:12px;";
+
+    button.textContent = "🏦 ЗВЕРНУТИСЯ ДО БАНКУ";
+
+    button.addEventListener("click", () => {
+
+        openBankFromCard(
+            card,
+            productIds,
+            refreshCard
+        );
+
+    });
+
+    container.append(button);
+
+}
 
 /* =========================================================
    145.2. БАНК — ОСНОВНИЙ HUB
@@ -30242,18 +30808,24 @@ function showGameJournal() {
 
 function closeGameInfoModal() {
 
-    const modal =
-        document.getElementById(
-            "gameInfoModal"
-        );
-    if (!modal) {
+    /*
+       Якщо Банк відкритий із картки,
+       закриття повертає до цієї картки.
+    */
 
+    if (returnFromBankToCard()) {
         return;
     }
 
-    modal.hidden =
-        true;
+    const modal =
+        document.getElementById("gameInfoModal");
+
+    if (modal) {
+        modal.hidden = true;
+    }
+
 }
+
 
 
 /* =========================================================
