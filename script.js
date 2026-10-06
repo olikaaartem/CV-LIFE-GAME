@@ -16143,14 +16143,15 @@ OUTER_CARD_DECKS.life = [
             {
                 id: "realize-dream",
 
-                title:
-                    "Оплатити вартість своєї Мрії",
+               title:
+    "Перейти до здійснення Мрії",
 
-                costText:
-                    "💰 Вартість залежить від обраної картки Мрії",
+costText:
+    "💰 ⭐ 🧠 ⚡ Потрібні ресурси зазначені в обраній Мрії. Списання — після підтвердження.",
 
-                resultText:
-                    "⭐ +50 репутації | ⚡ енергія до 100 | ✨ МРІЮ ДОСЯГНУТО",
+resultText:
+    "Після завершення ходу, якщо всі умови Мрії виконані, відкриється вікно підтвердження. Натисни «Здійснити Мрію», щоб списати потрібні ресурси та зарахувати її.",
+
 
                 effects: {},
 
@@ -17341,7 +17342,18 @@ function showNextGameNotice(
 
     openGameInfoModal(html);
 
-    let handled = false;
+const noticeCloseButton =
+    document.getElementById("gameInfoClose");
+
+const previousNoticeCloseDisplay =
+    noticeCloseButton?.style.display || "";
+
+if (noticeCloseButton) {
+    noticeCloseButton.style.display = "none";
+}
+
+let handled = false;
+
 
     const continueNotice = () => {
 
@@ -17351,7 +17363,13 @@ function showNextGameNotice(
 
         handled = true;
 
-        closeGameInfoModal();
+if (noticeCloseButton) {
+    noticeCloseButton.style.display =
+        previousNoticeCloseDisplay;
+}
+
+closeGameInfoModal();
+
 
         gameState.runtime.processingNotice = false;
 
@@ -17388,258 +17406,287 @@ function showAutomaticDreamCompletionNotice(
     dream,
     onComplete = null
 ) {
-
     const player = gameState.player;
-
+    const runtime = gameState.runtime;
     const closeButton =
         document.getElementById("gameInfoClose");
 
     const previousCloseDisplay =
         closeButton?.style.display || "";
 
-    /*
-       Потрібно обрати одну з дій,
-       щоб черга повідомлень продовжилася.
-    */
-
-    if (closeButton) {
-        closeButton.style.display = "none";
-    }
-
     let handled = false;
+    let realized = false;
 
     const restoreCloseButton = () => {
-
         if (closeButton) {
             closeButton.style.display =
                 previousCloseDisplay;
         }
+    };
 
+    const showWindow = html => {
+        openGameInfoModal(html);
+
+        if (closeButton) {
+            closeButton.style.display = "none";
+        }
     };
 
     const continueGame = () => {
-
-        if (handled) {
-            return;
-        }
+        if (handled) return;
 
         handled = true;
-
         restoreCloseButton();
-
         closeGameInfoModal();
 
-        gameState.runtime.processingNotice = false;
-
+        runtime.processingNotice = false;
         showNextGameNotice(onComplete);
-
     };
 
     const finishGame = () => {
-
-        if (handled) {
-            return;
-        }
+        if (handled) return;
 
         handled = true;
-
         restoreCloseButton();
 
-        gameState.runtime.gameFinished = true;
-
-        gameState.runtime.processingNotice = false;
-
-        gameState.runtime.noticeQueue.length = 0;
+        runtime.gameFinished = true;
+        runtime.processingNotice = false;
+        runtime.noticeQueue.length = 0;
 
         closeGameInfoModal();
-
         onComplete?.();
-
         showFinalGameResults();
-
     };
 
-    const showCongratulations = () => {
+    const showDreamSelection = () => {
+        if (handled || !realized) return;
 
         const availableDreams = DREAMS.filter(
             item =>
                 !player.completedDreams.includes(item.id)
         );
 
-        openGameInfoModal(`
-
+        showWindow(`
             <div class="dream-ready-modal">
+                <h2>✨ Обери наступну Мрію</h2>
 
+                <div style="display:grid;gap:10px;margin:16px 0;">
+                    ${availableDreams.map((item, index) => `
+                        <button
+                            type="button"
+                            class="secondary-game-btn"
+                            data-next-dream-index="${index}"
+                        >
+                            ${item.icon || "✨"} ${item.name}
+                        </button>
+                    `).join("")}
+                </div>
+
+                <button
+                    id="dreamSelectionBackButton"
+                    type="button"
+                    class="main-game-btn"
+                >
+                    НАЗАД
+                </button>
+            </div>
+        `);
+
+        document
+            .querySelectorAll("[data-next-dream-index]")
+            .forEach(button => {
+                button.addEventListener("click", () => {
+                    if (handled) return;
+
+                    const nextDream = availableDreams[
+                        Number(button.dataset.nextDreamIndex)
+                    ];
+
+                    if (!nextDream) return;
+
+                    player.dream = nextDream;
+                    gameState.selectedDreamId = nextDream.id;
+
+                    addLog(
+                        `✨ ${player.name} обрав(ла) нову Мрію «${nextDream.name}».`
+                    );
+
+                    updatePlayerStatsUI();
+                    continueGame();
+                });
+            });
+
+        document
+            .getElementById("dreamSelectionBackButton")
+            ?.addEventListener("click", showCongratulations);
+    };
+
+    const showCongratulations = () => {
+        if (handled || !realized) return;
+
+        const hasNextDream = DREAMS.some(
+            item =>
+                !player.completedDreams.includes(item.id)
+        );
+
+        showWindow(`
+            <div class="dream-ready-modal">
                 <div class="cycle-notice-icon">🏆</div>
 
-                <h2>Вітаємо! Мрію здійснено!</h2>
+                <h2>Вітаю! Ти здійснив / здійснила свою Мрію!</h2>
 
                 <div class="dream-ready-name">
-                    ${dream.icon || "✨"}
-                    ${dream.name}
+                    ${dream.icon || "✨"} ${dream.name}
                 </div>
 
                 <p>
-                    ${
-                        player.gender === "girl"
-                            ? "Ти досягла своєї цілі!"
-                            : "Ти досягнув своєї цілі!"
-                    }
-                </p>
-
-                <p>
-                    ✨ Виконано Мрій:
+                    Здійснено Мрій у цій грі:
                     ${player.completedDreams.length}
                     із ${DREAMS.length}
                 </p>
 
-                ${
-                    availableDreams.length
-                        ? `
-                            <button
-                                id="automaticNextDreamButton"
-                                class="main-game-btn"
-                                type="button"
-                            >
-                                ✨ ОБРАТИ ІНШУ МРІЮ
-                            </button>
-                        `
-                        : "<p>🏆 Усі Мрії здійснено!</p>"
-                }
+                <p>
+                    Потрібні ресурси списано.
+                    Залишок ресурсів та кар'єрний рівень збережено.
+                </p>
 
                 <button
-                    id="automaticContinueDreamButton"
-                    class="secondary-game-btn"
+                    id="dreamContinueButton"
                     type="button"
+                    class="main-game-btn"
                 >
-                    ▶ ПРОДОВЖИТИ ГРУ
+                    ПРОДОВЖИТИ ГРУ
                 </button>
 
-                <button
-                    id="automaticFinishDreamButton"
-                    class="secondary-game-btn"
-                    type="button"
-                >
-                    🏆 ЗАВЕРШИТИ ГРУ
-                </button>
-
+                ${hasNextDream ? `
+                    <button
+                        id="dreamChooseNextButton"
+                        type="button"
+                        class="secondary-game-btn"
+                    >
+                        ОБРАТИ ІНШУ МРІЮ
+                    </button>
+                ` : "<p>🏆 Ти здійснив / здійснила всі Мрії!</p>"}
             </div>
-
         `);
 
         document
-            .getElementById("automaticContinueDreamButton")
+            .getElementById("dreamContinueButton")
             ?.addEventListener("click", continueGame);
 
         document
-            .getElementById("automaticFinishDreamButton")
-            ?.addEventListener("click", finishGame);
-
-        document
-            .getElementById("automaticNextDreamButton")
-            ?.addEventListener("click", () => {
-
-                openGameInfoModal(`
-
-                    <div class="dream-ready-modal">
-
-                        <div class="cycle-notice-icon">✨</div>
-
-                        <h2>Обери наступну Мрію</h2>
-
-                        <div
-                            style="display:grid;gap:10px;margin:16px 0;"
-                        >
-                            ${
-                                availableDreams.map(
-                                    (item, index) => `
-
-                                        <button
-                                            type="button"
-                                            class="secondary-game-btn"
-                                            data-automatic-dream-index="${index}"
-                                        >
-                                            ${item.icon || "✨"}
-                                            ${item.name}
-                                        </button>
-
-                                    `
-                                ).join("")
-                            }
-                        </div>
-
-                        <button
-                            id="automaticDreamBackButton"
-                            type="button"
-                            class="main-game-btn"
-                        >
-                            ← НАЗАД
-                        </button>
-
-                    </div>
-
-                `);
-
-                document
-                    .querySelectorAll(
-                        "[data-automatic-dream-index]"
-                    )
-                    .forEach(button => {
-
-                        button.addEventListener(
-                            "click",
-                            () => {
-
-                                if (handled) {
-                                    return;
-                                }
-
-                                const nextDream =
-                                    availableDreams[
-                                        Number(
-                                            button.dataset
-                                                .automaticDreamIndex
-                                        )
-                                    ];
-
-                                if (!nextDream) {
-                                    return;
-                                }
-
-                                player.dream = nextDream;
-
-                                gameState.selectedDreamId =
-                                    nextDream.id;
-
-                                addLog(
-                                    `✨ ${player.name} обрав(ла) нову Мрію «${nextDream.name}».`
-                                );
-
-                                updatePlayerStatsUI();
-
-                                continueGame();
-
-                            }
-                        );
-
-                    });
-
-                document
-                    .getElementById(
-                        "automaticDreamBackButton"
-                    )
-                    ?.addEventListener(
-                        "click",
-                        showCongratulations
-                    );
-
-            });
-
+            .getElementById("dreamChooseNextButton")
+            ?.addEventListener("click", showDreamSelection);
     };
 
-    showCongratulations();
+    const realizeDream = () => {
+        if (handled || realized) return;
 
+        if (
+            player.dream?.id !== dream.id ||
+            player.completedDreams?.includes(dream.id) ||
+            !canRealizeDream(player)
+        ) {
+            continueGame();
+            return;
+        }
+
+        realized = true;
+
+        const requirements = dream.requirements;
+
+        for (const resource of [
+            "money",
+            "reputation",
+            "knowledge",
+            "energy"
+        ]) {
+            player[resource] -=
+                Number(requirements[resource]) || 0;
+        }
+
+        clampPlayerResources(player);
+
+        if (!Array.isArray(player.completedDreams)) {
+            player.completedDreams = [];
+        }
+
+        player.completedDreams.push(dream.id);
+        player.dream = null;
+        gameState.selectedDreamId = null;
+
+        addLog(
+            `🏆 ${player.name} здійснив(ла) Мрію «${dream.name}». ` +
+            `Списано: 💰 ${requirements.money} грн, ` +
+            `⭐ ${requirements.reputation}, ` +
+            `🧠 ${requirements.knowledge}, ` +
+            `⚡ ${requirements.energy}.`
+        );
+
+        updatePlayerStatsUI();
+        showCongratulations();
+    };
+
+    // Якщо умови вже змінилися, продовжуємо чергу.
+    if (
+        player.dream?.id !== dream.id ||
+        player.completedDreams?.includes(dream.id) ||
+        !canRealizeDream(player)
+    ) {
+        continueGame();
+        return;
+    }
+
+    const requirements = dream.requirements;
+
+    showWindow(`
+        <div class="dream-ready-modal">
+            <div class="cycle-notice-icon">✨</div>
+
+            <h2>Усі умови Мрії виконані!</h2>
+
+            <div class="dream-ready-name">
+                ${dream.icon || "✨"} ${dream.name}
+            </div>
+
+            <p>
+                Для здійснення Мрії буде списано:
+            </p>
+
+            <p>
+                💰 ${formatMoney(requirements.money)} грн<br>
+                ⭐ ${requirements.reputation} репутації<br>
+                🧠 ${requirements.knowledge} знань<br>
+                ⚡ ${requirements.energy} енергії
+            </p>
+
+            <button
+                id="confirmRealizeDreamButton"
+                type="button"
+                class="main-game-btn"
+            >
+                ЗДІЙСНИТИ МРІЮ
+            </button>
+
+            <button
+                id="finishBeforeDreamButton"
+                type="button"
+                class="secondary-game-btn"
+            >
+                ЗАВЕРШИТИ ГРУ
+            </button>
+        </div>
+    `);
+
+    document
+        .getElementById("confirmRealizeDreamButton")
+        ?.addEventListener("click", realizeDream);
+
+    document
+        .getElementById("finishBeforeDreamButton")
+        ?.addEventListener("click", finishGame);
 }
+
 
 /* =========================================================
    79. ПОЧАТОК ХОДУ ГРАВЦЯ
@@ -19580,106 +19627,36 @@ function handleDreamCheckCell(
 /* =========================================================
    92. МРІЯ ГОТОВА ДО РЕАЛІЗАЦІЇ
 ========================================================= */
+/* =========================================================
+   92. МРІЯ ГОТОВА ДО РЕАЛІЗАЦІЇ
+========================================================= */
 
 function showDreamReadyModal(
-    participant
+    participant = gameState.player
 ) {
+    if (
+        participant !== gameState.player ||
+        !canRealizeDream(participant)
+    ) {
+        return;
+    }
 
-    const dream =
-        participant.dream;
+    queueAutomaticDreamCompletion();
 
-
-    openGameInfoModal(`
-
-        <div class="dream-ready-modal">
-
-            <div class="cycle-notice-icon">
-                ✨
-            </div>
-
-
-            <h2>
-                Усі умови виконані!
-            </h2>
-
-
-            <p>
-
-                Ти готовий / готова
-                реалізувати свою Мрію:
-
-            </p>
-
-
-            <div class="dream-ready-name">
-
-                ${dream.icon}
-
-                ${dream.name}
-
-            </div>
-
-
-            <div class="dream-ready-price">
-
-                💰 ${formatMoney(
-                    dream.requirements.money
-                )} грн
-
-            </div>
-
-
-            <button
-                id="realizeDreamButton"
-                class="main-game-btn"
-            >
-                ✨ ЗДІЙСНИТИ МРІЮ
-            </button>
-
-
-            <button
-                id="continueWithoutDreamButton"
-                class="secondary-game-btn"
-            >
-                ПОКИ ПРОДОВЖИТИ ГРУ
-            </button>
-
-        </div>
-
-    `);
-
-
-    document
-        .getElementById(
-            "realizeDreamButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                realizePlayerDream();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "continueWithoutDreamButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                closeGameInfoModal();
-
-                completePlayerTurn();
-
-            }
-        );
-
+    showNextGameNotice(() => {
+        completePlayerTurn();
+    });
 }
 
+/* =========================================================
+   92.1 . ПЕРЕДАЄМО МРІЮ НА ПІДТВЕРДЖЕННЯ
+
+   Списання відбувається в новому модальному вікні.
+========================================================= */
+
+function realizePlayerDream() {
+    queueAutomaticDreamCompletion();
+}
 
 /* =========================================================
    93. РЕАЛІЗАЦІЯ МРІЇ
@@ -19969,52 +19946,52 @@ function showCompletedDreamModal(
    Викликаємо після завершення картки,
    нарахувань та перевірки кар'єри.
 ========================================================= */
+/* =========================================================
+   93.3. ПЕРЕВІРКА ГОТОВНОСТІ ДО ЗДІЙСНЕННЯ МРІЇ
+
+   Ресурси списуємо лише після підтвердження гравця.
+========================================================= */
 
 function queueAutomaticDreamCompletion() {
 
-    const player = gameState.player;
+    ensureGameRuntimeState();
 
-    if (!canRealizeDream(player)) {
+    const player = gameState.player;
+    const runtime = gameState.runtime;
+
+    if (
+        runtime.gameFinished ||
+        !canRealizeDream(player)
+    ) {
         return;
     }
 
     const dream = player.dream;
 
-    if (!Array.isArray(player.completedDreams)) {
-        player.completedDreams = [];
-    }
-
-    if (player.completedDreams.includes(dream.id)) {
+    if (
+        player.completedDreams?.includes(dream.id)
+    ) {
         return;
     }
 
-    player.money -=
-        Number(dream.requirements.money) || 0;
-
-    player.reputation += 50;
-
-    player.energy = GAME_CONFIG.maxEnergy;
-
-    clampPlayerResources(player);
-
-    player.completedDreams.push(dream.id);
-
-    player.dream = null;
-
-    gameState.selectedDreamId = null;
-
-    addLog(
-        `🏆 ${player.name} здійснив(ла) Мрію «${dream.name}».`
+    // Не додаємо однакове сповіщення двічі.
+    const alreadyQueued = runtime.noticeQueue.some(
+        notice =>
+            notice.type === "dream-completed" &&
+            notice.dream?.id === dream.id
     );
+
+    if (alreadyQueued) {
+        return;
+    }
 
     queueGameNotice({
         type: "dream-completed",
         dream
     });
 
-    updatePlayerStatsUI();
-
 }
+
 
 /* =========================================================
    94. ФІНАЛ ГРИ
@@ -23335,7 +23312,7 @@ function applyCardSpecialAction(
                     )
                 ) {
 
-                    realizePlayerDream();
+                    queueAutomaticDreamCompletion();
 
                 }
 
