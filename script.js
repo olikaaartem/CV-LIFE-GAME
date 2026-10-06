@@ -4440,6 +4440,19 @@ function ensurePlayerBankState() {
 ========================================================= */
 
 function showGameBoard() {
+    // Створюємо AI, якщо список гравців порожній.
+     // Наявних AI та їхній прогрес зберігаємо.
+    if (
+        GAME_CONFIG.aiPlayers > 0 &&
+        (
+            !Array.isArray(gameState.opponents) ||
+            gameState.opponents.length === 0
+        )
+    ) {
+        createAIPlayers();
+    }
+
+    ensureGameRuntimeState();
 
     gameState.phase =
         "game";
@@ -20250,9 +20263,14 @@ async function startAITurnsCore() {
         }
 
 
-        await runAITurnCore(
+              await runAITurnCore(
             ai
         );
+
+        // Оновлюємо картки AI у боковій панелі.
+        updateAIPlayersUI();
+
+    }
 
     }
 
@@ -23932,26 +23950,171 @@ function effectsHTML(
 
 
 /* =========================================================
-   131. ОНОВЛЕННЯ HUD
+   131. ОНОВЛЕННЯ HUD ТА КАРТОК AI
 ========================================================= */
+
+function updateAIPlayersUI() {
+
+    const list =
+        document.querySelector(".mini-opponents-list");
+
+    if (!list) {
+        return;
+    }
+
+    list.replaceChildren();
+
+    list.style.display = "grid";
+    list.style.gap = "10px";
+
+    const opponents =
+        Array.isArray(gameState.opponents)
+            ? gameState.opponents
+            : [];
+
+    for (const ai of opponents) {
+
+        if (!ai) {
+            continue;
+        }
+
+        const button =
+            document.createElement("button");
+
+        button.type = "button";
+        button.className = "mini-opponent-button";
+        button.dataset.playerId = ai.id;
+
+        button.style.cssText =
+            "display:flex;" +
+            "align-items:center;" +
+            "gap:12px;" +
+            "width:100%;" +
+            "padding:12px;" +
+            "text-align:left;" +
+            "font:inherit;";
+
+        if (ai.token?.image) {
+
+            const image =
+                document.createElement("img");
+
+            image.src = ai.token.image;
+            image.alt = ai.name || "AI-гравець";
+
+            image.style.cssText =
+                "width:48px;" +
+                "height:64px;" +
+                "object-fit:contain;" +
+                "flex-shrink:0;";
+
+            button.append(image);
+        }
+
+        const info =
+            document.createElement("div");
+
+        info.className = "mini-opponent-info";
+
+        info.style.cssText =
+            "display:grid;" +
+            "gap:5px;" +
+            "min-width:0;";
+
+        const name =
+            document.createElement("strong");
+
+        name.textContent =
+            ai.name || "AI-гравець";
+
+        const profession =
+            document.createElement("small");
+
+        const level =
+            ai.sector?.levels?.[ai.careerLevel];
+
+        profession.textContent =
+            level
+                ? getProfessionName(level, ai.gender)
+                : "AI-гравець";
+
+        const stats =
+            document.createElement("div");
+
+        stats.className = "mini-opponent-stats";
+
+        stats.style.cssText =
+            "display:flex;" +
+            "flex-wrap:wrap;" +
+            "gap:6px 12px;";
+
+        const values = [
+            `💰 ${formatMoney(ai.money)}`,
+            `⭐ ${ai.reputation}`,
+            `🧠 ${ai.knowledge}`,
+            `⚡ ${ai.energy}`
+        ];
+
+        for (const value of values) {
+
+            const stat =
+                document.createElement("span");
+
+            stat.textContent = value;
+
+            stats.append(stat);
+        }
+
+        const career =
+            document.createElement("small");
+
+        career.textContent =
+            `🏆 Рівень ${getDisplayedCareerLevel(ai)}`;
+
+        info.append(
+            name,
+            profession,
+            stats,
+            career
+        );
+
+        button.append(info);
+
+        button.addEventListener("click", () => {
+            showParticipantInfo(ai.id);
+        });
+
+        list.append(button);
+    }
+
+    if (!opponents.length) {
+
+        const message =
+            document.createElement("p");
+
+        message.textContent =
+            "AI-гравці не додані до цієї гри.";
+
+        list.append(message);
+    }
+}
+
 
 function updatePlayerStatsUI() {
 
     const player =
         gameState.player;
 
+    if (!player) {
+        return;
+    }
 
-    clampPlayerResources(
-        player
-    );
-
+    clampPlayerResources(player);
 
     const fields = {
 
         moneyValue:
-            formatMoney(
-                player.money
-            ),
+            formatMoney(player.money),
 
         reputationValue:
             player.reputation,
@@ -23964,37 +24127,31 @@ function updatePlayerStatsUI() {
 
     };
 
+    for (const [id, value] of Object.entries(fields)) {
 
-    Object
-        .entries(
-            fields
-        )
-        .forEach(
-            ([id, value]) => {
+        const element =
+            document.getElementById(id);
 
-                const element =
-                    document.getElementById(
-                        id
-                    );
+        if (element) {
+            element.textContent = value;
+        }
+    }
 
+    updateCareerHUD(player);
 
-                if (element) {
-
-                    element.textContent =
-                        value;
-
-                }
-
-            }
-        );
-
-
-    updateCareerHUD(
-        player
-    );
-
+    updateAIPlayersUI();
 }
 
+
+/* =========================================================
+   ОНОВЛЕННЯ ПІСЛЯ ОПЕРАЦІЙ БАНКУ
+========================================================= */
+
+function updateGameUI() {
+
+    updatePlayerStatsUI();
+
+}
 
 /* =========================================================
    132. ТИПИ ПОЛІВ
@@ -27278,28 +27435,51 @@ function showBankHub(
             }
 
 
-            <div class="bank-tabs">
+                     <div
+                class="bank-tabs"
+                style="
+                    display:flex;
+                    flex-wrap:wrap;
+                    gap:10px;
+                    margin:16px 0;
+                "
+            >
 
                 ${
-                    Object.entries(titles).map(
-                        ([key, title]) => `
+                    Object.entries(titles)
+                        .map(([key, title]) => `
 
                             <button
-                                class="bank-tab-button ${
+                                type="button"
+                                class="main-game-btn bank-tab-button ${
                                     key === audience
                                         ? "active"
                                         : ""
                                 }"
                                 data-bank-tab="${key}"
+                                aria-pressed="${key === audience}"
+                                style="
+                                    flex:1 1 150px;
+                                    width:auto;
+                                    margin:0;
+                                    padding:14px 18px;
+
+                                    ${
+                                        key === audience
+                                            ? "box-shadow:inset 0 0 0 3px #6b5200;"
+                                            : ""
+                                    }
+                                "
                             >
                                 ${title}
                             </button>
 
-                        `
-                    ).join("")
+                        `)
+                        .join("")
                 }
 
             </div>
+
 
 
             <h3>
