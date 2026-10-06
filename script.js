@@ -20216,91 +20216,53 @@ function startAITurns() {
 /* =========================================================
    98. ОСНОВНИЙ ЦИКЛ AI
 ========================================================= */
+/* =========================================================
+   98. ОСНОВНИЙ ЦИКЛ AI
+========================================================= */
 
 async function startAITurnsCore() {
 
     ensureGameRuntimeState();
 
-
-    if (
-        gameState.runtime.gameFinished
-    ) {
-
+    if (gameState.runtime.gameFinished) {
         return;
-
     }
 
-
-    gameState.currentTurn =
-        "ai";
-
+    gameState.currentTurn = "ai";
 
     const rollButton =
-        document.getElementById(
-            "rollDiceButton"
-        );
-
+        document.getElementById("rollDiceButton");
 
     if (rollButton) {
-
-        rollButton.disabled =
-            true;
-
+        rollButton.disabled = true;
     }
 
+    for (const ai of gameState.opponents) {
 
-    for (
-        const ai of
-        gameState.opponents
-    ) {
-
-        if (
-            gameState.runtime.gameFinished
-        ) {
-
+        if (gameState.runtime.gameFinished) {
             return;
-
         }
 
-
-              await runAITurnCore(
-            ai
-        );
+        await runAITurnCore(ai);
 
         // Оновлюємо картки AI у боковій панелі.
         updateAIPlayersUI();
-
     }
-
-    }
-
 
     /* =====================================================
        AI ЗАВЕРШИЛИ ХОДИ
 
-       Тепер:
-       1. показуємо зарплату /
-          кар'єрні повідомлення;
-       2. готуємо наступний
-          хід людини.
+       Показуємо зарплату / кар'єрні повідомлення
+       та готуємо наступний хід людини.
     ===================================================== */
 
-    gameState.currentTurn =
-        "between-turns";
+    gameState.currentTurn = "between-turns";
 
-
-    showNextGameNotice(
-
-        () => {
-
-            beginNextPlayerTurn();
-
-        }
-
-    );
+    showNextGameNotice(() => {
+        beginNextPlayerTurn();
+    });
 
 }
-
 
 /* =========================================================
    99. ПОЧАТОК НАСТУПНОГО ХОДУ
