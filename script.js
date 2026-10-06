@@ -1240,13 +1240,14 @@ const CELL_TYPES = {
        ПЕРЕВІРКА МРІЇ
     ===================================================== */
 
-    dreamCheck: {
-        id: "dreamCheck",
-        icon: "✨",
-        name: "Перевірка Мрії",
-        description:
-            "Перевіряємо фінальний професійний рівень та всі умови твоєї Мрії."
-    }
+ dreamCheck: {
+    id: "dreamCheck",
+    icon: "📊",
+    name: "Підсумки шляху",
+    description:
+        "Переглянь свої ресурси, кар’єрний рівень та прогрес на шляху до Мрії."
+}
+
 
 };
 
@@ -4909,95 +4910,68 @@ function showGameBoard() {
                 </div>
 
 
-                <!-- ГРАВЦІ -->
+              <!-- =====================================
+     ГРАВЦІ ТА ДОДАТКОВІ ДІЇ
+====================================== -->
 
-                <div class="other-players-block">
+<div class="work-panel-actions">
 
-                    <h3>
-                        ГРАВЦІ
-                    </h3>
+    <div class="other-players-block">
 
+        <h3>ГРАВЦІ</h3>
 
-                    <div class="mini-opponents-list">
+        <div class="mini-opponents-list">
+            ${opponentsHTML}
+        </div>
 
-                        ${opponentsHTML}
+    </div>
 
-                    </div>
+    <button
+        id="cellInfoButton"
+        class="work-panel-button"
+        type="button"
+    >
+        <span>ℹ️ Правила гри </span>
+        <span>→</span>
+    </button>
 
-                </div>
+    <button
+        id="glossaryButton"
+        class="work-panel-button"
+        type="button"
+    >
+        <span>📖 Словничок</span>
+        <span>→</span>
+    </button>
 
+    <button
+        id="journalButton"
+        class="work-panel-button"
+        type="button"
+    >
+        <span>📜 Журнал ходів</span>
 
-                <!-- ДОДАТКОВІ ДІЇ -->
-               <!-- ДОДАТКОВІ ДІЇ -->
+        <span id="journalCount">
+            ${
+                gameState.history
+                    ? gameState.history.length
+                    : 0
+            }
+        </span>
+    </button>
 
-                <div class="work-panel-actions">
+    <button
+        id="finishGameButton"
+        class="work-panel-button finish-game-button"
+        type="button"
+    >
+        <span>⏹ Завершити гру</span>
+        <span>→</span>
+    </button>
 
-                    <button
-                        id="cellInfoButton"
-                        class="work-panel-button"
-                        type="button"
-                    >
-                        <span>
-                            ℹ️ Типи полів
-                        </span>
+</div>
 
-                        <span>
-                            →
-                        </span>
-                    </button>
-
-
-                    <button
-                        id="glossaryButton"
-                        class="work-panel-button"
-                        type="button"
-                    >
-                        <span>
-                            📖 Словничок
-                        </span>
-
-                        <span>
-                            →
-                        </span>
-                    </button>
-
-
-                    <button
-                        id="journalButton"
-                        class="work-panel-button"
-                        type="button"
-                    >
-                        <span>
-                            📜 Журнал ходів
-                        </span>
-
-                        <span id="journalCount">
-                            ${
-                                gameState.history
-                                    ? gameState.history.length
-                                    : 0
-                            }
-                        </span>
-                    </button>
-
-
-                    <button
-                        id="finishGameButton"
-                        class="work-panel-button finish-game-button"
-                        type="button"
-                    >
-                        <span>
-                            ⏹ Завершити гру
-                        </span>
-
-                        <span>
-                            →
-                        </span>
-                    </button>
-
-                </div>
-
-            </aside>
+</aside>
 
 
             <!-- =====================================
@@ -5210,11 +5184,104 @@ document
         );
 
 
-    showRaifikCurrentCardMessage(
-
+      showRaifikCurrentCardMessage(
         "Починаємо зі START. Кидай кубик 🎲"
-
     );
+
+    if (
+        !gameState.player.gameIntroShown &&
+        (Number(gameState.player.turnsCompleted) || 0) === 0
+    ) {
+
+        gameState.player.gameIntroShown = true;
+
+        showGameIntro();
+
+    }
+
+}
+
+/* =========================================================
+   29.1. ПОЯСНЕННЯ НА ПОЧАТКУ ГРИ
+========================================================= */
+
+function showGameIntro() {
+
+    openGameInfoModal(`
+
+        <div class="all-cell-types-popup">
+
+            <div class="cycle-notice-icon">🛤️</div>
+
+            <h2>Твій шлях у CV ЖИТТЯ</h2>
+
+            <div style="
+                text-align: left;
+                line-height: 1.6;
+            ">
+
+                <p>
+                    Починай із малого кола:
+                    знайомся із ситуаціями,
+                    розвивай навички та будуй кар’єру.
+                </p>
+
+                <p>
+                    🎓 Пройди щонайменше одне повне
+                    мале коло та досягни другого
+                    професійного рівня.
+                    Після цього ти автоматично
+                    перейдеш на велике коло
+                    перед наступним ходом.
+                </p>
+
+                <p>
+                    ✨ Твоя мета — здійснити свою Мрію.
+                    Для цього потрібно досягти
+                    найвищого професійного рівня,
+                    накопичити необхідні ресурси
+                    та погасити кредитні зобов’язання.
+                </p>
+
+                <p>
+                    🎉 Коли всі умови виконані,
+                    гра повідомить про здійснення Мрії.
+                    Ти зможеш обрати наступну Мрію,
+                    продовжити гру або завершити її.
+                    Спробуй здійснити всі Мрії в грі!
+                </p>
+
+                <p>
+                    ℹ️ Правила завжди доступні
+                    у правій панелі.
+                    Там же є словничок,
+                    журнал ходів та імена гравців,
+                    на які можна натиснути.
+                </p>
+
+            </div>
+
+            <button
+                id="startGameJourneyButton"
+                class="main-game-btn"
+                type="button"
+            >
+                ПОЧАТИ СВІЙ ШЛЯХ
+            </button>
+
+        </div>
+
+    `);
+
+    document
+        .getElementById("startGameJourneyButton")
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
+
+}
+
 
 }
 
@@ -19204,142 +19271,308 @@ function canRealizeDream(
 /* =========================================================
    91. КЛІТИНКА ПЕРЕВІРКИ МРІЇ
 ========================================================= */
-
 function handleDreamCheckCell(
-    participant =
-        gameState.player
+    participant = gameState.player
 ) {
 
-    const dream =
-        participant.dream;
+    if (!participant || participant !== gameState.player) {
+        return;
+    }
 
+    const closeButton =
+        document.getElementById("gameInfoClose");
 
-    if (!dream) {
+    const previousCloseDisplay =
+        closeButton?.style.display || "";
 
+    let finished = false;
+
+    const finishCheckpoint = () => {
+
+        if (finished) {
+            return;
+        }
+
+        finished = true;
+
+        if (closeButton) {
+            closeButton.style.display =
+                previousCloseDisplay;
+        }
+
+        closeGameInfoModal();
         completePlayerTurn();
 
-        return;
+    };
 
-    }
+    const showCheckpoint = () => {
 
+        const dream = participant.dream;
+        const req = dream?.requirements;
 
-    const success =
-        canRealizeDream(
-            participant
+        const completed = Array.isArray(
+            participant.completedDreams
+        )
+            ? participant.completedDreams
+            : [];
+
+        const products = Array.isArray(
+            participant.bank?.products
+        )
+            ? participant.bank.products
+            : [];
+
+        const loanIds = [
+            "cash_credit",
+            "credit_card_100",
+            "premium_cash_credit",
+            "premium_credit_card",
+            "overdraft"
+        ];
+
+        const loans = products.filter(product => {
+
+            if (!product || !loanIds.includes(product.id)) {
+                return false;
+            }
+
+            if (product.id === "overdraft") {
+                return Number(product.principalDue) > 0;
+            }
+
+            return product.active !== false ||
+                Number(product.lateFeeDue) > 0;
+
+        });
+
+        const availableDreams = DREAMS.filter(
+            item => !completed.includes(item.id)
         );
 
+        openGameInfoModal(`
 
-    if (success) {
+            <div class="dream-check-modal">
 
-        showDreamReadyModal(
-            participant
-        );
+                <div class="cycle-notice-icon">📊</div>
 
+                <h2>Підсумки шляху</h2>
 
-        return;
+                <p>
+                    Зупинись на мить:
+                    подивись, чого вже досягнуто
+                    і що допоможе рухатися далі.
+                </p>
 
-    }
+                <p>
+                    🎓 Професійний рівень:
+                    <strong>
+                        ${(Number(participant.careerLevel) || 0) + 1}
+                    </strong>
+                </p>
 
+                <p>
+                    ✨ Здійснено Мрій:
+                    <strong>
+                        ${completed.length} із ${DREAMS.length}
+                    </strong>
+                </p>
 
-    const req =
-        dream.requirements;
-
-
-    openGameInfoModal(`
-
-        <div class="dream-check-modal">
-
-            <div class="cycle-notice-icon">
-                ✨
-            </div>
-
-
-            <h2>
-                Мрія вже близько
-            </h2>
-
-
-            <p>
-
-                Поки що не всі умови
-                виконані.
-
-            </p>
-
-
-            ${createDreamProgressRow(
-                "💰",
-                "Гроші",
-                participant.money,
-                req.money
-            )}
-
-
-            ${createDreamProgressRow(
-                "⭐",
-                "Репутація",
-                participant.reputation,
-                req.reputation
-            )}
-
-
-            ${createDreamProgressRow(
-                "🧠",
-                "Знання",
-                participant.knowledge,
-                req.knowledge
-            )}
-
-
-            ${createDreamProgressRow(
-                "⚡",
-                "Енергія",
-                participant.energy,
-                req.energy
-            )}
-
-
-            <div class="dream-career-check">
+                <p>
+                    💳 Кредитні зобов’язання:
+                    <strong>
+                        ${
+                            loans.length
+                                ? "є — потрібно погасити"
+                                : "немає"
+                        }
+                    </strong>
+                </p>
 
                 ${
-                    hasFinalCareerLevel(
-                        participant
-                    )
+                    req
+                        ? `
+                            <h3>
+                                ${dream.icon || "✨"}
+                                ${dream.name}
+                            </h3>
 
-                    ? "✅ Фінальний професійний рівень досягнуто"
+                            ${createDreamProgressRow(
+                                "💰",
+                                "Гроші",
+                                participant.money,
+                                req.money
+                            )}
 
-                    : "❌ Потрібно досягти 4-го професійного рівня"
+                            ${createDreamProgressRow(
+                                "⭐",
+                                "Репутація",
+                                participant.reputation,
+                                req.reputation
+                            )}
+
+                            ${createDreamProgressRow(
+                                "🧠",
+                                "Знання",
+                                participant.knowledge,
+                                req.knowledge
+                            )}
+
+                            ${createDreamProgressRow(
+                                "⚡",
+                                "Енергія",
+                                participant.energy,
+                                req.energy
+                            )}
+
+                            <p>
+                                ${
+                                    hasFinalCareerLevel(participant)
+                                        ? "✅ Найвищий професійний рівень досягнуто."
+                                        : "🎓 Для здійснення Мрії потрібен найвищий професійний рівень."
+                                }
+                            </p>
+
+                            <p>
+                                Здійснення Мрії перевіряється
+                                автоматично наприкінці твого ходу.
+                            </p>
+                        `
+                        : `
+                            <p>
+                                💰 ${formatMoney(participant.money)} грн<br>
+                                ⭐ Репутація: ${participant.reputation}<br>
+                                🧠 Знання: ${participant.knowledge}<br>
+                                ⚡ Енергія: ${participant.energy}
+                            </p>
+
+                            <p>
+                                ${
+                                    availableDreams.length
+                                        ? "Зараз нову Мрію не обрано. Можна обрати наступну або продовжити свій шлях."
+                                        : "Усі Мрії здійснено! Можна продовжити гру або завершити її через праву панель."
+                                }
+                            </p>
+                        `
                 }
+
+                ${
+                    !dream && availableDreams.length
+                        ? `
+                            <button
+                                id="checkpointChooseDreamButton"
+                                class="secondary-game-btn"
+                                type="button"
+                            >
+                                ОБРАТИ НОВУ МРІЮ
+                            </button>
+                        `
+                        : ""
+                }
+
+                <button
+                    id="continueDreamCheckButton"
+                    class="main-game-btn"
+                    type="button"
+                >
+                    ПРОДОВЖИТИ ШЛЯХ
+                </button>
 
             </div>
 
+        `);
 
-            <button
-                id="continueDreamCheckButton"
-                class="main-game-btn"
-            >
-                ПРОДОВЖИТИ ГРУ
-            </button>
+        if (closeButton) {
+            closeButton.style.display = "none";
+        }
 
-        </div>
+        document
+            .getElementById("continueDreamCheckButton")
+            ?.addEventListener(
+                "click",
+                finishCheckpoint
+            );
 
-    `);
+        document
+            .getElementById("checkpointChooseDreamButton")
+            ?.addEventListener("click", () => {
 
+                openGameInfoModal(`
 
-    document
-        .getElementById(
-            "continueDreamCheckButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
+                    <div class="dream-check-modal">
 
-                closeGameInfoModal();
+                        <h2>✨ Обери наступну Мрію</h2>
 
-                completePlayerTurn();
+                        <div class="bank-product-options">
 
-            }
-        );
+                            ${
+                                availableDreams.map(
+                                    (item, index) => `
+                                        <button
+                                            class="secondary-game-btn"
+                                            type="button"
+                                            data-checkpoint-dream="${index}"
+                                        >
+                                            ${item.icon || "✨"}
+                                            ${item.name}
+                                        </button>
+                                    `
+                                ).join("")
+                            }
+
+                        </div>
+
+                        <button
+                            id="backToCheckpointButton"
+                            class="main-game-btn"
+                            type="button"
+                        >
+                            НАЗАД ДО ПІДСУМКІВ
+                        </button>
+
+                    </div>
+
+                `);
+
+                document
+                    .querySelectorAll("[data-checkpoint-dream]")
+                    .forEach(button => {
+
+                        button.addEventListener("click", () => {
+
+                            const selected = availableDreams[
+                                Number(button.dataset.checkpointDream)
+                            ];
+
+                            if (!selected || finished) {
+                                return;
+                            }
+
+                            participant.dream = selected;
+                            gameState.selectedDreamId = selected.id;
+
+                            addLog(
+                                `✨ Обрано нову Мрію «${selected.name}».`
+                            );
+
+                            updatePlayerStatsUI();
+                            showCheckpoint();
+
+                        });
+
+                    });
+
+                document
+                    .getElementById("backToCheckpointButton")
+                    ?.addEventListener(
+                        "click",
+                        showCheckpoint
+                    );
+
+            });
+
+    };
+
+    showCheckpoint();
 
 }
 
@@ -24681,10 +24914,10 @@ function showGameGlossary(returnTerms = false) {
    Тепер є START.
 ========================================================= */
 
+
 function showAllCellTypes() {
 
     const typeIds = [
-
         "start",
         "bank",
         "event",
@@ -24692,89 +24925,200 @@ function showAllCellTypes() {
         "fate",
         "lounge",
         "academy",
-        "transition",
         "dreamCheck"
-
     ];
 
+    const rows = typeIds
+        .map(id => {
 
-    const types =
-        typeIds
+            const type = CELL_TYPES[id];
 
-            .map(
-                id =>
-                    CELL_TYPES[id]
-            )
+            if (!type) {
+                return "";
+            }
 
-            .filter(
-                Boolean
-            );
+            const name = id === "dreamCheck"
+                ? "Підсумки шляху"
+                : type.name;
 
+            const description = id === "dreamCheck"
+                ? "Контрольна точка: переглянь свої досягнення та прогрес на шляху до Мрії."
+                : type.description;
 
-    const rows =
-        types
+            return `
+                <div class="all-cell-type-row">
 
-            .map(
-                type => `
+                    <span>${type.icon}</span>
 
-                    <div class="all-cell-type-row">
-
-                        <span>
-                            ${type.icon}
-                        </span>
-
-
-                        <div>
-
-                            <strong>
-                                ${type.name}
-                            </strong>
-
-                            <small>
-                                ${type.description}
-                            </small>
-
-                        </div>
-
+                    <div>
+                        <strong>${name}</strong>
+                        <small>${description}</small>
                     </div>
 
-                `
-            )
-
-            .join("");
-
+                </div>
+            `;
+        })
+        .join("");
 
     openGameInfoModal(`
 
         <div class="all-cell-types-popup">
 
-            <h2>
-                Поля гри
-            </h2>
+            <h2>ℹ️ Правила гри</h2>
 
+            <div style="
+                text-align: left;
+                line-height: 1.6;
+            ">
 
-            <p>
+                <h3>🎯 Твоя мета</h3>
 
-                Кожен тип поля запускає
-                окрему життєву,
-                кар'єрну або
-                фінансову ситуацію.
+                <p>
+                    Розвивай кар’єру, накопичуй ресурси
+                    та здійснюй свої Мрії.
+                    Здійснення однієї Мрії не завершує гру:
+                    можна обрати наступну, продовжити
+                    без нової Мрії або завершити гру.
+                </p>
 
-            </p>
+                <h3>🛤️ Як рухатися</h3>
 
+                <p>
+                    Починай із малого кола.
+                    Щоб перейти на велике, потрібно
+                    пройти щонайменше одне повне мале коло
+                    та досягти другого професійного рівня.
+                    Коли обидві умови виконані,
+                    перехід відбувається автоматично
+                    перед наступним ходом.
+                </p>
 
-            <div class="all-cell-types-list">
+                <h3>🎲 Твій хід</h3>
 
-                ${rows}
+                <p>
+                    Кинь кубик і перемісти фішку
+                    на підсвічену клітинку.
+                    Прочитай ситуацію та виконай
+                    запропоновану дію.
+                    Якщо з’явиться другий кидок,
+                    він визначить картку.
+                    Після завершення твого ходу
+                    ходять інші гравці.
+                </p>
+
+                <h3>📊 Твої ресурси</h3>
+
+                <p>
+                    💰 Гроші — для витрат, накопичень
+                    та фінансових рішень.<br>
+                    ⭐ Репутація — довіра до тебе.<br>
+                    🧠 Знання — твої навички й досвід.<br>
+                    ⚡ Енергія — сили для дій.
+                </p>
+
+                <h3>🎓 Кар’єра</h3>
+
+                <p>
+                    Для підвищення потрібно виконати
+                    вимоги наступного професійного рівня.
+                    Перше підвищення можливе
+                    не раніше п’ятого власного ходу.
+                    Між наступними підвищеннями
+                    має пройти щонайменше чотири власні ходи.
+                </p>
+
+                <h3>💰 Зарплата</h3>
+
+                <p>
+                    Фінансовий період триває
+                    ${GAME_CONFIG.financialPeriodTurns}
+                    власні ходи.
+                    Зарплата залежить від твого
+                    професійного рівня.
+                    Клітинка START сама по собі
+                    не нараховує зарплату.
+                </p>
+
+                <h3>✨ Здійснення Мрії</h3>
+
+                <p>
+                    Досягни найвищого професійного рівня,
+                    накопич потрібні гроші, репутацію,
+                    знання й енергію та погаси
+                    кредитні зобов’язання.
+                    Умови своєї Мрії можна переглянути
+                    кнопкою «Моя Мрія».
+                </p>
+
+                <p>
+                    Наприкінці твого ходу гра перевіряє
+                    виконання умов.
+                    Коли Мрія здійснюється,
+                    її вартість списується з твоїх грошей
+                    і з’являється привітання.
+                    Вже здійснену Мрію не можна
+                    обрати повторно.
+                </p>
+
+                <h3>🏦 Банк</h3>
+
+                <p>
+                    Перегляд продуктів безкоштовний.
+                    Підключення через меню банку
+                    використовує одне додаткове звернення
+                    та не завершує твій хід.
+                    Умови, платежі й доходи кожного
+                    продукту зазначені в його картці.
+                </p>
+
+                <p>
+                    Якщо в ситуації є кнопка
+                    «Звернутися до банку»,
+                    можна переглянути відповідні продукти
+                    та повернутися до картки.
+                    Страхування оформлюють для захисту
+                    від майбутніх подій:
+                    воно не скасовує вже застосовані збитки.
+                </p>
+
+                <h3>👥 Гравці та підказки</h3>
+
+                <p>
+                    Натисни на ім’я іншого гравця,
+                    щоб побачити його показники.
+                    У «Словничку» шукай пояснення термінів,
+                    а в «Журналі ходів» — історію подій.
+                </p>
+
+                <h3>🗺️ Типи полів</h3>
+
+                <div class="all-cell-types-list">
+                    ${rows}
+                </div>
 
             </div>
+
+            <button
+                id="closeGameRulesButton"
+                class="main-game-btn"
+                type="button"
+                style="margin-top: 16px;"
+            >
+                ПРОДОВЖИТИ ГРУ
+            </button>
 
         </div>
 
     `);
 
-}
+    document
+        .getElementById("closeGameRulesButton")
+        ?.addEventListener(
+            "click",
+            closeGameInfoModal
+        );
 
+}
 
 /* =========================================================
    133. ДРУГИЙ КИДОК ДЛЯ КАРТКИ
