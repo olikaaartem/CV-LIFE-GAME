@@ -24464,10 +24464,16 @@ function showGameGlossary(returnTerms = false) {
     renderTerms();
 
 }
-   // Повертаємо пояснення для підказок у картках.
+    ];
+
+    // Повертаємо пояснення для підказок у картках.
     if (returnTerms === true) {
         return terms;
     }
+
+    terms.sort((first, second) => {
+        return first[0].localeCompare(second[0], "uk");
+    });
 
 /* =========================================================
    132. ТИПИ ПОЛІВ
