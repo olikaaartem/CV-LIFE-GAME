@@ -5064,15 +5064,24 @@ document
     /* =====================================================
        БАНК
     ===================================================== */
+   document
+        .getElementById("bankHudButton")
+        ?.addEventListener("click", () => {
+            const cardBankButton = document
+                .getElementById("currentCardPanel")
+                ?.querySelector("[data-card-bank-button]");
 
-    document
-        .getElementById(
-            "bankHudButton"
-        )
-        .addEventListener(
-            "click",
-            showBankHub
-        );
+            if (
+                cardBankButton &&
+                !cardBankReturnState
+            ) {
+                cardBankButton.click();
+                return;
+            }
+
+            showBankHub();
+        });
+
 
 
     /* =====================================================
@@ -14008,8 +14017,9 @@ const BANK_CARD_DECK = [
         story:
             "Рахунок для зберігання та проведення операцій в іноземній валюті.",
 
-        rulesText:
-            "Розмісти 6 000 грн. Рахунок діє 6 ходів. Отримуй +2 000 грн кожного ходу. Після 6-го ходу поверни вкладені 6 000 грн.",
+         rulesText:
+            "Розмісти 6 000 грн. Протягом наступних 6 особистих ходів отримуй +2 000 грн кожного ходу. На 6-му ході вкладені 6 000 грн повертаються один раз. Після цього бонусні виплати припиняються, а валютний рахунок залишається підключеним і виконує умови карток для міжнародних операцій.",
+
 
         initialEffects: {
             money: -6000,
@@ -17725,13 +17735,7 @@ function showAutomaticDreamCompletionNotice(
                 ЗДІЙСНИТИ МРІЮ
             </button>
 
-                      <button
-                id="finishBeforeDreamButton"
-                type="button"
-                class="secondary-game-btn"
-            >
-                ЗАВЕРШИТИ ГРУ
-            </button>
+                     
 
                   </div>
     `);
@@ -29230,22 +29234,25 @@ function activateBankProduct(
     };
 
 
-    if (term) {
-
-        Object.assign(
-            product,
-            {
-                termMonths:
-                    term.months,
-
-                termTurns:
-                    term.turns,
-
-                profit:
-                    term.profit
-            }
+       if (
+        card.productId === "deposit_classic" &&
+        term
+    ) {
+        const depositAmount = Math.max(
+            0,
+            -Number(effects.money)
         );
 
+        const depositProfit = Math.round(
+            term.profit * depositAmount / 4000
+        );
+
+        Object.assign(product, {
+            depositAmount,
+            termMonths: term.months,
+            termTurns: term.turns,
+            profit: depositProfit
+        });
     }
 
 
@@ -29255,6 +29262,36 @@ function activateBankProduct(
         product.principalDue = overdraftLimit;
     }
 
+   const flexibleInvestmentIds = [
+        "deposit_growing",
+        "deposit_chest",
+        "deposit_line",
+        "ovdp",
+        "etf",
+        "common_stock",
+        "preferred_stock",
+        "dividend_stock"
+    ];
+
+    if (flexibleInvestmentIds.includes(card.productId)) {
+        const originalCard = bankCatalogCard(card.productId);
+
+        const baseAmount = Math.max(
+            0,
+            -Number(originalCard?.initialEffects?.money || 0)
+        );
+
+        const investedAmount = Math.max(
+            0,
+            -Number(effects.money || 0)
+        );
+
+        if (baseAmount > 0 && investedAmount > 0) {
+            product.depositAmount = investedAmount;
+            product.investmentMultiplier =
+                investedAmount / baseAmount;
+        }
+    }
 
     bank.products.push(
         product
@@ -29311,7 +29348,8 @@ function activateBankProduct(
                             <br>
 
                             💰 Дохід наприкінці:
-                            +${formatMoney(term.profit)} грн.
+                           +${formatMoney(product.profit)} грн.
+
 
                         </p>
 
@@ -29357,24 +29395,20 @@ function activateBankProduct(
     bindBankClick(
         "bankProductActivatedButton",
         () => {
-
-            if (
-                ctx.source === "hub"
-            ) {
-
-                showBankHub(
-                    ctx.audience
-                );
-
-            } else {
-
-                finishPlayerCardTurn();
-
+            if (cardBankReturnState) {
+                returnFromBankToCard();
+                return;
             }
 
+            if (ctx.source === "hub") {
+                showBankHub(ctx.audience);
+            } else {
+                finishPlayerCardTurn();
+            }
         }
     );
 
+   
 }
 
 
@@ -29390,128 +29424,158 @@ function activateBankProduct(
    Спільну банківську колоду не змінюємо.
 ========================================================= */
 
-function showClassicDepositTermChoice(
-    card,
-    context = {}
-) {
+function showClassicDepositTermChoice(card, context = {}) {
+    if (!card || !gameState.player) return;
 
-    if (!card) {
-        return;
-    }
-
-    const ctx =
-        bankContext(context);
-
+    const ctx = bankContext(context);
+    const player = gameState.player;
 
     openGameInfoModal(`
-
         <div class="bank-card-game-modal">
-
-            <h2>
-                Класичний Строковий
-            </h2>
+            <h2>Класичний Строковий</h2>
 
             <p>
-                Обери строк.
-                1 місяць = ${BANK_TURNS_PER_MONTH}
-                особисті ходи.
+                Мінімальний вклад — 4 000 грн.
+                Можна вкласти більше в межах своїх коштів.
             </p>
 
-            <div class="bank-product-options">
+            <p>
+                Доступно: ${formatMoney(player.money)} грн.<br>
+                1 місяць = ${BANK_TURNS_PER_MONTH} особисті ходи.
+            </p>
 
-                ${
-                    BANK_CLASSIC_TERMS.map(
-                        term => `
+            <label for="classicDepositAmount">
+                Сума вкладу, грн
+            </label>
 
-                            <button
-                                class="main-game-btn"
-                                data-bank-term="${term.months}"
-                            >
+            <input
+                id="classicDepositAmount"
+                type="number"
+                min="4000"
+                max="${Math.floor(player.money)}"
+                step="1"
+                value="4000"
+                style="display:block;width:100%;box-sizing:border-box;padding:12px;margin:8px 0 16px;"
+            >
 
-                                ${term.months} місяців
+            <label for="classicDepositTerm">
+                Термін депозиту
+            </label>
 
-                                <br>
+            <select
+                id="classicDepositTerm"
+                style="display:block;width:100%;padding:12px;margin:8px 0 16px;"
+            >
+                ${BANK_CLASSIC_TERMS.map(term => `
+                    <option value="${term.months}">
+                        ${term.months} міс. — ${term.turns} особистих ходів
+                    </option>
+                `).join("")}
+            </select>
 
-                                <small>
-                                    ${term.turns} ходів
-                                    • дохід
-                                    +${formatMoney(term.profit)} грн
-                                </small>
+            <p id="classicDepositPreview" aria-live="polite"></p>
 
-                            </button>
-
-                        `
-                    ).join("")
-                }
-
-            </div>
+            <button
+                id="classicDepositConfirmButton"
+                type="button"
+                class="main-game-btn"
+                disabled
+            >
+                ПІДТВЕРДИТИ ВКЛАД
+            </button>
 
             <button
                 id="classicDepositCancelButton"
+                type="button"
                 class="secondary-game-btn"
             >
                 НАЗАД
             </button>
-
         </div>
-
     `);
 
+    const amountInput =
+        document.getElementById("classicDepositAmount");
+    const termSelect =
+        document.getElementById("classicDepositTerm");
+    const preview =
+        document.getElementById("classicDepositPreview");
+    const confirmButton =
+        document.getElementById("classicDepositConfirmButton");
 
-    document
-        .querySelectorAll(
-            "[data-bank-term]"
-        )
-        .forEach(
-            button => {
+    let submitted = false;
 
-                button.addEventListener(
-                    "click",
-                    () => {
-
-                        const term =
-                            BANK_CLASSIC_TERMS.find(
-                                item =>
-                                    item.months ===
-                                    Number(
-                                        button.dataset.bankTerm
-                                    )
-                            );
-
-                        if (!term) {
-                            return;
-                        }
-
-                        activateBankProduct(
-                            {
-                                ...card,
-
-                                selectedDepositTerm: {
-                                    ...term
-                                }
-                            },
-                            ctx
-                        );
-
-                    }
-                );
-
-            }
+    const getSelection = () => {
+        const amount = Number(amountInput.value);
+        const term = BANK_CLASSIC_TERMS.find(
+            item => item.months === Number(termSelect.value)
         );
 
+        const valid =
+            Number.isSafeInteger(amount) &&
+            amount >= 4000 &&
+            amount <= player.money &&
+            Boolean(term);
+
+        return { amount, term, valid };
+    };
+
+    const updatePreview = () => {
+        const { amount, term, valid } = getSelection();
+
+        confirmButton.disabled = !valid || submitted;
+
+        if (!valid) {
+            preview.textContent =
+                "Введи цілу суму від 4 000 грн, не більшу за доступні кошти.";
+            return;
+        }
+
+        const profit = Math.round(term.profit * amount / 4000);
+
+        preview.innerHTML = `
+            Зараз буде списано: ${formatMoney(amount)} грн.<br>
+            Термін: ${term.months} міс. — ${term.turns} особистих ходів.<br>
+            Дохід наприкінці: +${formatMoney(profit)} грн.<br>
+            Загалом повернеться: ${formatMoney(amount + profit)} грн.
+        `;
+    };
+
+    amountInput.addEventListener("input", updatePreview);
+    termSelect.addEventListener("change", updatePreview);
+
+    confirmButton.addEventListener("click", () => {
+        if (submitted) return;
+
+        const { amount, term, valid } = getSelection();
+
+        if (!valid) {
+            updatePreview();
+            return;
+        }
+
+        submitted = true;
+        confirmButton.disabled = true;
+
+        activateBankProduct(
+            {
+                ...card,
+                initialEffects: {
+                    ...(card.initialEffects || {}),
+                    money: -amount
+                },
+                selectedDepositTerm: { ...term }
+            },
+            ctx
+        );
+    });
 
     bindBankClick(
         "classicDepositCancelButton",
-        () => {
-
-            showBankCard(
-                card,
-                ctx
-            );
-
-        }
+        () => showBankCard(card, ctx)
     );
 
+    updatePreview();
 }
 
 
@@ -29853,20 +29917,31 @@ function processActiveBankProducts(
 
                 /* ВАЛЮТНИЙ РАХУНОК */
 
-                case "currency_account":
+                               case "currency_account":
 
-                    income(
-                        2000,
-                        1,
-                        6
-                    );
+                    income(2000, 1, 6);
 
-                    close(
-                        6,
-                        6000
-                    );
+                    if (
+                        elapsed >= 6 &&
+                        !product.bonusPeriodEnded
+                    ) {
+                        product.bonusPeriodEnded = true;
+
+                        payBankIncome(
+                            player,
+                            product,
+                            6000,
+                            "Валютний рахунок: повернення вкладених коштів"
+                        );
+
+                        addLog(
+                            "🏦 Валютний рахунок: бонусний період завершено. " +
+                            "Рахунок залишається підключеним для міжнародних операцій."
+                        );
+                    }
 
                     break;
+
 
 
                 /* ЕКВАЙРИНГ */
@@ -30360,13 +30435,11 @@ function closeBankProductWithReturn(
 
    1 місяць = 3 особисті ходи.
 ========================================================= */
-
 function processClassicDeposit(
     player,
     product,
     elapsedTurns
 ) {
-
     if (
         !player ||
         !product ||
@@ -30375,24 +30448,11 @@ function processClassicDeposit(
         return;
     }
 
-    const months =
-        Number(
-            product.termMonths
-        );
+    const months = Number(product.termMonths);
 
-    /*
-       Узгоджуємо календар і для депозитів,
-       підключених до цієї заміни.
-    */
-
-    const termTurns =
-        months > 0
-
-            ? months * BANK_TURNS_PER_MONTH
-
-            : Number(
-                product.termTurns
-            );
+    const termTurns = months > 0
+        ? months * BANK_TURNS_PER_MONTH
+        : Number(product.termTurns);
 
     if (
         !Number.isFinite(termTurns) ||
@@ -30402,21 +30462,29 @@ function processClassicDeposit(
         return;
     }
 
-    product.termTurns =
-        termTurns;
+    // Для раніше підключених депозитів — 4 000 грн.
+    const savedAmount = Number(product.depositAmount);
+
+    const depositAmount =
+        Number.isFinite(savedAmount) && savedAmount > 0
+            ? savedAmount
+            : 4000;
+
+    const profit = Math.max(
+        0,
+        Number(product.profit) || 0
+    );
+
+    product.termTurns = termTurns;
 
     closeBankProductWithReturn(
         player,
         product,
-        4000 + (
-            Number(
-                product.profit
-            ) || 0
-        ),
+        depositAmount + profit,
         "Класичний Строковий"
     );
-
 }
+
 
 
 /* =========================================================
@@ -30781,8 +30849,8 @@ function applyBankBusinessProtection(
 
 const BANK_UPDATED_RULES = {
 
-    deposit_classic:
-        "Вклади 4 000 грн. Обери 3, 6 або 12 місяців: 9, 18 або 36 особистих ходів. Наприкінці повертається вклад та дохід +1 000, +1 500 або +2 000 грн відповідно. 1 місяць = 3 особисті ходи.",
+      deposit_classic:
+        "Мінімальний вклад - 4 000 грн. Перед підключенням введи суму в межах доступних коштів та обери термін: 3, 6 або 12 місяців - 9, 18 або 36 особистих ходів. Дохід за весь термін становить відповідно 25%, 37,5% або 50% суми вкладу, з округленням до цілої гривні. Наприкінці вклад і дохід повертаються один раз. До підтвердження ти побачиш суму списання та суму повернення. 1 місяць = 3 особисті ходи.",
 
     credit_card_100:
         "Отримай +3 000 грн. Три платежі по 1 000 грн кожного 2-го ходу. За прострочення — один окремий четвертий платіж 1 000 грн. Несплачений платіж повторно перевіряється наступного ходу.",
