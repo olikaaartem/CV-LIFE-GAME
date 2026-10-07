@@ -4746,39 +4746,24 @@ function showGameBoard() {
 
                     <!-- МРІЯ -->
 
-                    <button
+                                  <button
                         id="dreamHudButton"
-                        class="
-                            hud-feature-button
-                            hud-dream-button
-                        "
+                        type="button"
+                        class="hud-feature-button hud-dream-button"
                     >
-
                         <span class="hud-feature-icon">
-
-    ${player.dream?.icon || "✨"}
-
-</span>
-
-
+                            ✨
+                        </span>
 
                         <div>
+                            <strong>
+                                МОЯ МРІЯ
+                            </strong>
 
                             <small>
-                                МОЯ МРІЯ
+                                Переглянути ціль і прогрес
                             </small>
-
-                            <strong>
-    ${
-        player.dream
-            ? player.dream.name
-            : "Обрати нову Мрію"
-    }
-</strong>
-
-
                         </div>
-
                     </button>
 
 
@@ -17443,20 +17428,25 @@ function showAutomaticDreamCompletionNotice(
         showNextGameNotice(onComplete);
     };
 
-    const finishGame = () => {
+       const finishGame = () => {
         if (handled) return;
 
-        handled = true;
-        restoreCloseButton();
+        showFinishGameModal(() => {
+            if (handled) return;
 
-        runtime.gameFinished = true;
-        runtime.processingNotice = false;
-        runtime.noticeQueue.length = 0;
+            handled = true;
+            restoreCloseButton();
 
-        closeGameInfoModal();
-        onComplete?.();
-        showFinalGameResults();
+            runtime.gameFinished = true;
+            runtime.processingNotice = false;
+            runtime.noticeQueue.length = 0;
+
+            closeGameInfoModal();
+            onComplete?.();
+            showFinalGameResults();
+        });
     };
+
 
     const showDreamSelection = () => {
     if (handled || !realized) return;
@@ -17468,7 +17458,7 @@ function showAutomaticDreamCompletionNotice(
 
     let selectedDream = null;
 
-    showWindow(`
+   showWindow(`
         <div class="dream-ready-modal">
             <h2>✨ Обери наступну Мрію</h2>
 
@@ -17484,8 +17474,20 @@ function showAutomaticDreamCompletionNotice(
                         class="secondary-game-btn"
                         data-next-dream-index="${index}"
                         aria-pressed="false"
+                        style="text-align:left;white-space:normal;"
                     >
-                        ${item.icon || "✨"} ${item.name}
+                        <strong style="display:block;margin-bottom:8px;">
+                            ${item.icon || "✨"} ${item.name}
+                        </strong>
+
+                        <span style="display:block;font-size:14px;line-height:1.6;">
+                            💰 Гроші: ${formatMoney(item.requirements.money)} грн<br>
+                            ⭐ Репутація: ${item.requirements.reputation}<br>
+                            🧠 Знання: ${item.requirements.knowledge}<br>
+                            ⚡ Енергія: ${item.requirements.energy}<br>
+                            🏆 Досягнути найвищого рівня своєї професії<br>
+                            🏦 Погасити кредитні зобов’язання
+                        </span>
                     </button>
                 `).join("")}
             </div>
@@ -17512,6 +17514,7 @@ function showAutomaticDreamCompletionNotice(
             </button>
         </div>
     `);
+
 
     const confirmButton =
         document.getElementById("confirmNextDreamButton");
@@ -17722,23 +17725,22 @@ function showAutomaticDreamCompletionNotice(
                 ЗДІЙСНИТИ МРІЮ
             </button>
 
-            <button
+                      <button
                 id="finishBeforeDreamButton"
                 type="button"
                 class="secondary-game-btn"
             >
                 ЗАВЕРШИТИ ГРУ
             </button>
-        </div>
+
+                  </div>
     `);
 
     document
         .getElementById("confirmRealizeDreamButton")
         ?.addEventListener("click", realizeDream);
 
-    document
-        .getElementById("finishBeforeDreamButton")
-        ?.addEventListener("click", finishGame);
+    
 }
 
 
@@ -19847,24 +19849,8 @@ function showCompletedDreamModal(
 
 
     document
-        .getElementById(
-            "finishGameAfterDreamButton"
-        )
-        ?.addEventListener(
-            "click",
-            () => {
-
-                gameState.runtime.gameFinished =
-                    true;
-
-
-                closeGameInfoModal();
-
-
-                showFinalGameResults();
-
-            }
-        );
+        .getElementById("finishGameAfterDreamButton")
+        ?.addEventListener("click", showFinishGameModal);
 
 }
 
@@ -24019,116 +24005,32 @@ function resolvePendingFateCard() {
    Кнопка справа
    "Завершити гру".
 ========================================================= */
+function showFinishGameModal(onConfirm = null) {
+    const confirmed = window.confirm(
+        "Ти справді хочеш завершити гру?\n\n" +
+        "Після підтвердження ця партія завершиться.\n" +
+        "Щоб залишитися у грі, натисни «Скасувати»."
+    );
 
-function showFinishGameModal() {
+    if (!confirmed) {
+        return;
+    }
 
-    const player =
-        gameState.player;
+    // Окреме завершення після здійснення Мрії.
+    if (typeof onConfirm === "function") {
+        onConfirm();
+        return;
+    }
 
+    ensureGameRuntimeState();
 
-    openGameInfoModal(`
+    gameState.runtime.gameFinished = true;
+    gameState.runtime.processingNotice = false;
+    gameState.runtime.noticeQueue.length = 0;
 
-        <div class="finish-game-modal">
-
-            <div class="cycle-notice-icon">
-                ⏹
-            </div>
-
-
-            <h2>
-                Завершити гру?
-            </h2>
-
-
-            <p>
-
-                Поточний прогрес:
-
-            </p>
-
-
-            <div class="finish-game-stats">
-
-                <span>
-                    🎲 Ходів:
-                    <strong>
-                        ${player.turnsCompleted || 0}
-                    </strong>
-                </span>
-
-                <span>
-                    💰 Гроші:
-                    <strong>
-                        ${formatMoney(player.money)} грн
-                    </strong>
-                </span>
-
-                <span>
-                    🏆 Кар'єрний рівень:
-                    <strong>
-                        ${getDisplayedCareerLevel(player)}
-                    </strong>
-                </span>
-
-                <span>
-                    ✨ Мрія:
-                    <strong>
-                        ${player.dream.name}
-                    </strong>
-                </span>
-
-            </div>
-
-
-            <button
-                id="confirmFinishGameButton"
-                class="main-game-btn"
-            >
-                ТАК, ЗАВЕРШИТИ
-            </button>
-
-
-            <button
-                id="cancelFinishGameButton"
-                class="secondary-game-btn"
-            >
-                ПРОДОВЖИТИ ГРУ
-            </button>
-
-        </div>
-
-    `);
-
-
-    document
-        .getElementById(
-            "confirmFinishGameButton"
-        )
-        .addEventListener(
-            "click",
-            () => {
-
-                gameState.runtime.gameFinished =
-                    true;
-
-
-                showFinalGameResults();
-
-            }
-        );
-
-
-    document
-        .getElementById(
-            "cancelFinishGameButton"
-        )
-        .addEventListener(
-            "click",
-            closeGameInfoModal
-        );
-
+    closeGameInfoModal();
+    showFinalGameResults();
 }
-
 
 /* =========================================================
    128. ПЕРШИЙ ЗАПУСК ЦИКЛУ
