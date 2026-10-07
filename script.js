@@ -29587,518 +29587,499 @@ function showClassicDepositTermChoice(card, context = {}) {
 
    Захист від повторної обробки того самого ходу.
 ========================================================= */
+function activateBankProduct(card, context = {}) {
+    const player = gameState.player;
+    if (!player || !card) return;
 
-function processActiveBankProducts(
-    player
-) {
+    const ctx = bankContext(context);
+    const bank = ensureBankState(player);
 
+    const investmentIds = [
+        "deposit_classic",
+        "deposit_growing",
+        "deposit_chest",
+        "deposit_line",
+        "ovdp",
+        "etf",
+        "common_stock",
+        "preferred_stock",
+        "dividend_stock"
+    ];
+
+    const isInvestment = investmentIds.includes(card.productId);
+    const isClassic = card.productId === "deposit_classic";
+    const originalCard = bankCatalogCard(card.productId);
+
+    const baseAmount = Math.max(
+        0,
+        -Number(originalCard?.initialEffects?.money || 0)
+    );
+
+    const term = isClassic
+        ? BANK_CLASSIC_TERMS.find(
+            item =>
+                item.months ===
+                Number(card.selectedDepositTerm?.months)
+        )
+        : null;
+
+    /*
+       До підтвердження відкриваємо вибір суми.
+       Для строкового депозиту також потрібен термін.
+    */
     if (
-        !player?.bank
+        isInvestment &&
+        (
+            card.investmentConfirmed !== true ||
+            (isClassic && !term)
+        )
     ) {
+        showClassicDepositTermChoice(card, ctx);
         return;
     }
 
-    const bank =
-        ensureBankState(player);
-
-
-    bank.products.forEach(
-        product => {
-
-            if (
-                product.active === false
-            ) {
-                return;
-            }
-
-            const elapsed =
-                (
-                    Number(
-                        player.turnsCompleted
-                    ) || 0
-                ) - (
-                    Number(
-                        product.activatedTurn
-                    ) || 0
-                );
-
-            if (
-                elapsed <= 0 ||
-                product.lastBankProcessedTurn === elapsed
-            ) {
-                return;
-            }
-
-            product.lastBankProcessedTurn =
-                elapsed;
-
-
-            const income = (
-                amount,
-                interval,
-                end = Infinity
-            ) => {
-
-                if (
-                    elapsed <= end &&
-                    elapsed % interval === 0
-                ) {
-
-                    payBankIncome(
-                        player,
-                        product,
-                        amount,
-                        bankProductName(product)
-                    );
-
-                }
-
-            };
-
-
-            const close = (
-                end,
-                amount
-            ) => {
-
-                if (
-                    elapsed >= end
-                ) {
-
-                    closeBankProductWithReturn(
-                        player,
-                        product,
-                        amount,
-                        bankProductName(product)
-                    );
-
-                }
-
-            };
-
-
-            switch (
-                product.id
-            ) {
-
-                /* КЛАСИЧНИЙ СТРОКОВИЙ */
-
-                case "deposit_classic":
-
-                    processClassicDeposit(
-                        player,
-                        product,
-                        elapsed
-                    );
-
-                    break;
-
-
-                /* ЗРОСТАЮЧИЙ */
-
-                case "deposit_growing":
-
-                    income(
-                        2000,
-                        3
-                    );
-
-                    break;
-
-
-                /* СКРИНЯ */
-
-                case "deposit_chest":
-
-                    income(
-                        1000,
-                        3
-                    );
-
-                    break;
-
-
-                /* МІЙ ФОП */
-
-                case "my_fop":
-
-                    income(
-                        2000,
-                        2
-                    );
-
-                    if (
-                        elapsed % 6 === 0
-                    ) {
-
-                        chargeBankPayment(
-                            player,
-                            product,
-                            1000,
-                            "Обслуговування «Мій ФОП»"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* КРЕДИТ ГОТІВКОЮ */
-
-                case "cash_credit":
-
-                    processFixedLoan(
-                        player,
-                        product,
-                        elapsed,
-                        1000,
-                        6,
-                        "Кредит готівкою"
-                    );
-
-                    break;
-
-
-                /* КРЕДИТНА КАРТКА */
-
-                case "credit_card_100":
-
-                    processFixedLoan(
-                        player,
-                        product,
-                        elapsed,
-                        1000,
-                        3,
-                        "100 днів 2.0"
-                    );
-
-                    break;
-
-
-                /* PREMIUM КРЕДИТ */
-
-                case "premium_cash_credit":
-
-                    processFixedLoan(
-                        player,
-                        product,
-                        elapsed,
-                        6000,
-                        6,
-                        "Premium кредит"
-                    );
-
-                    break;
-
-
-                /* PREMIUM КРЕДИТНА КАРТКА */
-
-                case "premium_credit_card":
-
-                    processFixedLoan(
-                        player,
-                        product,
-                        elapsed,
-                        3000,
-                        3,
-                        "Premium кредитна картка"
-                    );
-
-                    break;
-
-
-                /* ОВДП */
-
-                case "ovdp":
-
-                    income(
-                        1000,
-                        2,
-                        6
-                    );
-
-                    close(
-                        7,
-                        5000
-                    );
-
-                    break;
-
-
-                /* ETF */
-
-                case "etf":
-
-                    income(
-                        1000,
-                        2,
-                        6
-                    );
-
-                    close(
-                        7,
-                        4000
-                    );
-
-                    break;
-
-
-                /* ПРОСТІ АКЦІЇ */
-
-                case "common_stock":
-
-                    income(
-                        3000,
-                        3,
-                        6
-                    );
-
-                    close(
-                        7,
-                        5000
-                    );
-
-                    break;
-
-
-                /* ПРИВІЛЕЙОВАНІ АКЦІЇ */
-
-                case "preferred_stock":
-
-                    income(
-                        2000,
-                        3,
-                        6
-                    );
-
-                    close(
-                        7,
-                        5000
-                    );
-
-                    break;
-
-
-                /* ДИВІДЕНДНІ АКЦІЇ */
-
-                case "dividend_stock":
-
-                    income(
-                        5000,
-                        3,
-                        6
-                    );
-
-                    close(
-                        7,
-                        5000
-                    );
-
-                    break;
-
-
-                /* ДЕПОЗИТНА ЛІНІЯ */
-
-                case "deposit_line":
-
-                    income(
-                        2000,
-                        2,
-                        6
-                    );
-
-                    close(
-                        6,
-                        6000
-                    );
-
-                    break;
-
-
-                /* ВАЛЮТНИЙ РАХУНОК */
-
-                               case "currency_account":
-
-                    income(2000, 1, 6);
-
-                    if (
-                        elapsed >= 6 &&
-                        !product.bonusPeriodEnded
-                    ) {
-                        product.bonusPeriodEnded = true;
-
-                        payBankIncome(
-                            player,
-                            product,
-                            6000,
-                            "Валютний рахунок: повернення вкладених коштів"
-                        );
-
-                        addLog(
-                            "🏦 Валютний рахунок: бонусний період завершено. " +
-                            "Рахунок залишається підключеним для міжнародних операцій."
-                        );
-                    }
-
-                    break;
-
-
-
-                /* ЕКВАЙРИНГ */
-
-                case "acquiring":
-
-                    income(
-                        2000,
-                        1,
-                        6
-                    );
-
-                    close(
-                        6,
-                        0
-                    );
-
-                    break;
-
-
-                /* БІЗНЕС ЕЛІТ+ */
-
-                case "business_elite":
-
-                    income(
-                        3000,
-                        2,
-                        6
-                    );
-
-                    close(
-                        6,
-                        0
-                    );
-
-                    break;
-
-
-                /* ВАРТА 24/7 */
-
-                case "varta_247":
-
-                    close(
-                        6,
-                        0
-                    );
-
-                    break;
-
-
-                /* НАКОПИЧУВАЛЬНЕ СТРАХУВАННЯ ЖИТТЯ */
-
-                case "life_insurance":
-
-                    if (
-                        elapsed % 2 === 0
-                    ) {
-
-                        chargeBankPayment(
-                            player,
-                            product,
-                            2000,
-                            "Внесок: страхування життя"
-                        );
-
-                    }
-
-                    if (
-                        elapsed % 6 === 0
-                    ) {
-
-                        payBankIncome(
-                            player,
-                            product,
-                            8000,
-                            "Накопичувальне страхування життя"
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ІНТЕРНЕТ-ЕКВАЙРИНГ */
-
-                case "internet_acquiring":
-
-                    if (
-                        elapsed >= 6 &&
-                        !product.bonusPeriodEnded
-                    ) {
-
-                        product.bonusPeriodEnded =
-                            true;
-
-                        addLog(
-                            "🏦 Інтернет-еквайринг: період бонусів завершено; сервіс залишається підключеним."
-                        );
-
-                    }
-
-                    break;
-
-
-                /* ОВЕРДРАФТ */
-
-                case "overdraft":
-
-                    if (
-                        elapsed % 2 === 0
-                    ) {
-
-                        const interest =
-                            Math.round(
-                                (
-                                    Number(
-                                        product.principalDue
-                                    ) || 0
-                                ) * 0.2
-                            );
-
-                        if (
-                            !chargeBankPayment(
-                                player,
-                                product,
-                                interest,
-                                "Відсотки за овердрафтом"
-                            )
-                        ) {
-
-                            applyEffects(
-                                player,
-                                {
-                                    reputation: -10,
-                                    energy: -10
-                                }
-                            );
-
-                            addLog(
-                                "⚠️ Овердрафт: несплачений платіж, −10 репутації та −10 енергії."
-                            );
-
-                        }
-
-                    }
-
-                    break;
-
-            }
-
-        }
+    const effects = {
+        ...(card.initialEffects || {})
+    };
+
+    const investedAmount = Math.max(
+        0,
+        -Number(effects.money || 0)
     );
 
+    /*
+       Повторна перевірка перед списанням.
+       Сума має бути цілою, не меншою за мінімальний вклад.
+    */
+    if (
+        isInvestment &&
+        (
+            !Number.isSafeInteger(investedAmount) ||
+            baseAmount <= 0 ||
+            investedAmount < baseAmount ||
+            investedAmount > player.money
+        )
+    ) {
+        showClassicDepositTermChoice(card, ctx);
+        return;
+    }
 
-    updatePlayerStatsUI();
+    if (bankActivationProblem(player, card, ctx)) {
+        showBankCard(card, ctx);
+        return;
+    }
 
+    /*
+       Ліміт визначаємо до бонусів самої картки.
+    */
+    const overdraftLimit =
+        card.productId === "overdraft"
+            ? getBankOverdraftLimit(player)
+            : 0;
+
+    if (overdraftLimit) {
+        effects.money = overdraftLimit;
+    }
+
+    if (card.premiumRequired && !bank.premium) {
+        bank.premium = true;
+
+        if (!bank.premiumExtraGranted) {
+            const extra = Math.max(
+                0,
+                Number(GAME_CONFIG.premiumExtraBankTokens) || 0
+            );
+
+            bank.extraVisits += extra;
+            bank.premiumExtraGranted = true;
+
+            addLog(
+                `⭐ Отримано Premium та +${extra} додаткових звернень до Банку.`
+            );
+        }
+    }
+
+    applyEffects(player, effects);
+
+    const product = {
+        id: card.productId,
+        cardId: card.id,
+        active: true,
+
+        activatedTurn:
+            (Number(player.turnsCompleted) || 0) +
+            (ctx.source === "cell" ? 1 : 0),
+
+        lastBankProcessedTurn: 0
+    };
+
+    if (isInvestment) {
+        product.depositAmount = investedAmount;
+        product.investmentMultiplier =
+            investedAmount / baseAmount;
+    }
+
+    if (isClassic) {
+        Object.assign(product, {
+            termMonths: term.months,
+            termTurns: term.turns,
+            profit: Math.round(
+                term.profit * investedAmount / baseAmount
+            )
+        });
+    }
+
+    if (overdraftLimit) {
+        product.principalDue = overdraftLimit;
+    }
+
+    bank.products.push(product);
+
+    /*
+       Звернення витрачається лише після підключення.
+    */
+    if (ctx.source === "hub") {
+        bank.extraVisits -= 1;
+    }
+
+    addLog(
+        `🏦 Підключено: ${card.title}` +
+        (
+            isInvestment
+                ? `; вкладено ${formatMoney(investedAmount)} грн`
+                : ""
+        ) +
+        (
+            ctx.source === "hub"
+                ? "; використано 1 додаткове звернення"
+                : ""
+        ) +
+        "."
+    );
+
+    updateGameUI();
+
+    openGameInfoModal(`
+        <div class="bank-card-game-modal">
+            <div class="cycle-notice-icon">✅</div>
+
+            <h2>Продукт підключено</h2>
+
+            <p>${card.title}</p>
+
+            ${
+                isInvestment
+                    ? `
+                        <p>
+                            💰 Вкладено:
+                            ${formatMoney(investedAmount)} грн.
+                        </p>
+                    `
+                    : ""
+            }
+
+            ${
+                isClassic
+                    ? `
+                        <p>
+                            📅 ${term.months} міс. =
+                            ${term.turns} особистих ходів.
+                            <br>
+                            Дохід наприкінці:
+                            +${formatMoney(product.profit)} грн.
+                            <br>
+                            Разом повернеться:
+                            ${formatMoney(
+                                investedAmount + product.profit
+                            )} грн.
+                        </p>
+                    `
+                    : ""
+            }
+
+            ${
+                overdraftLimit
+                    ? `
+                        <p>
+                            Борг:
+                            ${formatMoney(overdraftLimit)} грн.
+                            <br>
+                            Відсотки: 20% залишку
+                            кожного 2-го особистого ходу.
+                        </p>
+                    `
+                    : ""
+            }
+
+            <button
+                id="bankProductActivatedButton"
+                type="button"
+                class="main-game-btn"
+            >
+                ПРОДОВЖИТИ
+            </button>
+        </div>
+    `);
+
+    bindBankClick("bankProductActivatedButton", () => {
+        if (cardBankReturnState) {
+            returnFromBankToCard();
+            return;
+        }
+
+        if (ctx.source === "hub") {
+            showBankHub(ctx.audience);
+        } else {
+            finishPlayerCardTurn();
+        }
+    });
 }
+
+
+/*
+   Спільне вікно суми для депозитів та інвестицій.
+   Назву функції залишаємо, щоб зберегти наявні виклики.
+*/
+function showClassicDepositTermChoice(card, context = {}) {
+    const player = gameState.player;
+    if (!player || !card) return;
+
+    const ctx = bankContext(context);
+    const originalCard = bankCatalogCard(card.productId);
+    if (!originalCard) return;
+
+    const isClassic = card.productId === "deposit_classic";
+
+    const minimumAmount = Math.max(
+        0,
+        -Number(originalCard.initialEffects?.money || 0)
+    );
+
+    if (!Number.isSafeInteger(minimumAmount) || minimumAmount <= 0) {
+        return;
+    }
+
+    const previousAmount = -Number(card.initialEffects?.money);
+
+    const initialAmount =
+        Number.isSafeInteger(previousAmount) &&
+        previousAmount >= minimumAmount &&
+        previousAmount <= player.money
+            ? previousAmount
+            : minimumAmount;
+
+    openGameInfoModal(`
+        <div class="bank-card-game-modal">
+            <div class="cycle-notice-icon">🏦</div>
+
+            <h2>${originalCard.title}</h2>
+
+            <p>
+                Мінімальний вклад:
+                ${formatMoney(minimumAmount)} грн.
+                <br>
+                Можна вкласти більше в межах своїх коштів.
+            </p>
+
+            <p>
+                Доступно: ${formatMoney(player.money)} грн.
+            </p>
+
+            <label for="bankInvestmentAmount">
+                Сума вкладу, грн
+            </label>
+
+            <input
+                id="bankInvestmentAmount"
+                type="number"
+                min="${minimumAmount}"
+                max="${Math.floor(player.money)}"
+                step="1"
+                value="${initialAmount}"
+                style="
+                    display:block;
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:12px;
+                    margin:8px 0 16px;
+                "
+            >
+
+            ${
+                isClassic
+                    ? `
+                        <label for="bankInvestmentTerm">
+                            Термін депозиту
+                        </label>
+
+                        <select
+                            id="bankInvestmentTerm"
+                            style="
+                                display:block;
+                                width:100%;
+                                padding:12px;
+                                margin:8px 0 16px;
+                            "
+                        >
+                            ${BANK_CLASSIC_TERMS.map(term => `
+                                <option
+                                    value="${term.months}"
+                                    ${
+                                        term.months === Number(
+                                            card.selectedDepositTerm?.months
+                                        )
+                                            ? "selected"
+                                            : ""
+                                    }
+                                >
+                                    ${term.months} міс. —
+                                    ${term.turns} особистих ходів
+                                </option>
+                            `).join("")}
+                        </select>
+                    `
+                    : `
+                        <p>
+                            Періодичність виплат і строк залишаються
+                            такими, як у картці цього продукту.
+                            Грошові виплати залежать від суми вкладу.
+                        </p>
+                    `
+            }
+
+            <p id="bankInvestmentPreview" aria-live="polite"></p>
+
+            <button
+                id="bankInvestmentConfirmButton"
+                type="button"
+                class="main-game-btn"
+                disabled
+            >
+                ПІДТВЕРДИТИ ВКЛАД
+            </button>
+
+            <button
+                id="bankInvestmentCancelButton"
+                type="button"
+                class="secondary-game-btn"
+            >
+                НАЗАД
+            </button>
+        </div>
+    `);
+
+    const amountInput =
+        document.getElementById("bankInvestmentAmount");
+
+    const termSelect =
+        document.getElementById("bankInvestmentTerm");
+
+    const preview =
+        document.getElementById("bankInvestmentPreview");
+
+    const confirmButton =
+        document.getElementById("bankInvestmentConfirmButton");
+
+    let submitted = false;
+
+    const getSelection = () => {
+        const amount = Number(amountInput.value);
+
+        const term = isClassic
+            ? BANK_CLASSIC_TERMS.find(
+                item => item.months === Number(termSelect?.value)
+            )
+            : null;
+
+        const valid =
+            Number.isSafeInteger(amount) &&
+            amount >= minimumAmount &&
+            amount <= player.money &&
+            (!isClassic || Boolean(term));
+
+        return { amount, term, valid };
+    };
+
+    const updatePreview = () => {
+        const { amount, term, valid } = getSelection();
+
+        confirmButton.disabled = !valid || submitted;
+
+        if (!valid) {
+            preview.textContent =
+                `Введи цілу суму від ` +
+                `${formatMoney(minimumAmount)} грн, ` +
+                `не більшу за доступні кошти.`;
+            return;
+        }
+
+        if (isClassic) {
+            const profit = Math.round(
+                term.profit * amount / minimumAmount
+            );
+
+            preview.innerHTML = `
+                Зараз буде списано:
+                ${formatMoney(amount)} грн.<br>
+
+                Термін: ${term.months} міс. —
+                ${term.turns} особистих ходів.<br>
+
+                Дохід наприкінці:
+                +${formatMoney(profit)} грн.<br>
+
+                Разом повернеться:
+                ${formatMoney(amount + profit)} грн.
+            `;
+        } else {
+            preview.textContent =
+                `Зараз буде списано ${formatMoney(amount)} грн.`;
+        }
+    };
+
+    amountInput.addEventListener("input", updatePreview);
+    termSelect?.addEventListener("change", updatePreview);
+
+    confirmButton.addEventListener("click", () => {
+        if (submitted) return;
+
+        const { amount, term, valid } = getSelection();
+
+        if (!valid) {
+            updatePreview();
+            return;
+        }
+
+        submitted = true;
+        confirmButton.disabled = true;
+
+        activateBankProduct(
+            {
+                ...originalCard,
+
+                initialEffects: {
+                    ...(originalCard.initialEffects || {}),
+                    money: -amount
+                },
+
+                investmentConfirmed: true,
+
+                selectedDepositTerm: isClassic
+                    ? { ...term }
+                    : undefined
+            },
+            ctx
+        );
+    });
+
+    bindBankClick(
+        "bankInvestmentCancelButton",
+        () => showBankCard(originalCard, ctx)
+    );
+
+    updatePreview();
+}
+
 
 
 /* =========================================================
