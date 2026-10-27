@@ -9295,6 +9295,8 @@ INNER_CARD_DECKS.event = [
                     reputation: 10
                 },
 
+               bankBusinessProtection: "business",
+
                 delayedEffect: {
                     turns: 1,
                     effects: {
@@ -9984,7 +9986,68 @@ INNER_CARD_DECKS.event = [
         }
     ]
 },
+/* =====================================================
+   БАНКІВСЬКА СТРАХОВА ПОДІЯ
+   GREEN CARD — АВТОПОДОРОЖ ЗА КОРДОН
+===================================================== */
 
+{
+    id: "inner-event-green-card",
+
+    title:
+        "Автоподорож за кордон",
+
+    story:
+        "Під час поїздки автомобілем за кордоном стається дорожня пригода. Відшкодування збитків становить 4 000 грн. Перевір, чи маєш Зелену картку!",
+
+    requirementText:
+        "Дорожня пригода під час поїздки за кордон",
+
+    requirements: {},
+
+    choices: [
+
+        {
+            id: "green-card-insured",
+
+            title:
+                "Скористатися Зеленою карткою",
+
+            conditionProduct:
+                "green_card",
+
+            costText:
+                "💰 0 грн",
+
+            resultText:
+                "🛡️ Зелена картка покриває 4 000 грн збитків",
+
+            effects: {},
+
+            consumeBankProduct:
+                "green_card"
+        },
+
+        {
+            id: "green-card-not-insured",
+
+            title:
+                "Відшкодувати збитки самостійно",
+
+            costText:
+                "💰 -4 000 грн",
+
+            resultText:
+                "Дорожні витрати доведеться покрити власним коштом",
+
+            effects: {
+                money: -4000
+            }
+        }
+
+    ]
+},
+   
     /* =====================================================
        КАРТКА 17
     ===================================================== */
@@ -10050,7 +10113,46 @@ INNER_CARD_DECKS.event = [
     ]
 },
 
+/* =====================================================
+   БАНКІВСЬКА ПОДІЯ — ОНЛАЙН-ПРОДАЖ
+===================================================== */
 
+{
+    id: "inner-event-online-sale",
+
+    title:
+        "Замовлення в онлайн-магазині",
+
+    story:
+        "Через твій онлайн-магазин надійшло нове замовлення. Покупець оплатив товар банківською карткою на сайті.",
+
+    requirementText:
+        "Онлайн-продаж",
+
+    requirements: {},
+
+    choices: [
+        {
+            id: "complete-online-sale",
+
+            title:
+                "Підтвердити та виконати замовлення",
+
+            costText:
+                "⚡ -5 енергії",
+
+            resultText:
+                "💰 +5 000 грн за продаж",
+
+            effects: {
+                money: 5000,
+                energy: -5
+            },
+
+            bankOnlineSale: true
+        }
+    ]
+},
 
     /* =====================================================
        КАРТКА 18
@@ -13762,7 +13864,8 @@ const BANK_CARD_DECK = [
             "Кредитна картка з підвищеним кредитним лімітом для Premium-клієнтів.",
 
         rulesText:
-            "Доступна при статусі Premium та наявності щонайменше 20 000 грн. Отримай +9 000 грн. Повертай по 3 000 грн кожного 2-го ходу.",
+            rulesText:
+    "Доступна при статусі Premium та наявності щонайменше 20 000 грн. Отримай +9 000 грн. Повертай по 3 000 грн кожного 2-го ходу, загалом 3 платежі. Якщо прострочив хоча б один платіж — після трьох основних платежів додається один додатковий платіж 2 000 грн.",
 
         premiumRequired: true,
         moneyRequired: 20000,
@@ -13903,8 +14006,8 @@ const BANK_CARD_DECK = [
             "Поєднання довгострокового накопичення грошей і страхового захисту.",
 
         rulesText:
-            "Сплачуй по 2 000 грн кожного ходу. На кожному 6-му ході отримуй 8 000 грн. Один раз можна скасувати втрату 15 енергії від життєвої події.",
-
+       "Сплати 2 000 грн за підключення. Далі сплачуй по 2 000 грн кожного 2-го ходу. На кожному 6-му ході отримуй 8 000 грн. Один раз можна скасувати втрату 15 енергії від життєвої події."
+       
         initialEffects: {
             money: -2000,
             reputation: 5,
@@ -14089,8 +14192,8 @@ const BANK_CARD_DECK = [
         story:
             "Додатковий страховий захист відповідальності водія.",
 
-        rulesText:
-            "Сплати 2 000 грн. Один раз страховка може скасувати до 12 000 грн втрати через ДТП з твоєї вини.",
+       rulesText:
+    "Сплати 2 000 грн. Один раз страховка може покрити 5 000 грн збитків через ДТП з твоєї вини.",
 
         initialEffects: {
             money: -2000,
@@ -22159,10 +22262,36 @@ async function resolveCardChoice(
         addLog(protectionMessage);
     }
 
-    applyEffects(
-        player,
-        choice.effects || {}
+    let finalChoiceEffects =
+    choice.effects || {};
+
+if (choice.bankBusinessProtection) {
+
+    finalChoiceEffects =
+        applyBankBusinessProtection(
+            player,
+            finalChoiceEffects,
+            choice.bankBusinessProtection
+        );
+
+}
+
+applyEffects(
+    player,
+    finalChoiceEffects
+);
+   
+   /* =====================================================
+   ІНТЕРНЕТ-ЕКВАЙРИНГ — БОНУС ЗА ОНЛАЙН-ПРОДАЖ
+===================================================== */
+
+if (choice.bankOnlineSale === true) {
+
+    recordBankOnlineSale(
+        player
     );
+
+}
 
     /* =====================================================
        ОДНОРАЗОВЕ ВИКОРИСТАННЯ БАНКІВСЬКОГО ЗАХИСТУ
@@ -30399,6 +30528,24 @@ function chargeBankPayment(
    За погодженням:
    звичайна і Premium — додаткова плата 1 000 грн.
 ========================================================= */
+/* =========================================================
+   145.2.7. КРЕДИТ ІЗ ФІКСОВАНИМИ ПЛАТЕЖАМИ
+
+   Основний платіж — кожного 2-го ходу.
+   Несплачений платіж перевіряється наступного ходу.
+
+   ПРОСТРОЧЕННЯ:
+
+   Кредит готівкою:
+   -2 репутації;
+   платіж переноситься.
+
+   Звичайна кредитна картка:
+   один додатковий 4-й платіж 1 000 грн.
+
+   Premium кредитна картка:
+   один додатковий 4-й платіж 2 000 грн.
+========================================================= */
 
 function processFixedLoan(
     player,
@@ -30419,13 +30566,38 @@ function processFixedLoan(
         return;
     }
 
-    const card100 =
-        [
-            "credit_card_100",
-            "premium_credit_card"
-        ].includes(
-            product.id
-        );
+
+    /* =====================================================
+       ВИЗНАЧАЄМО ТИП КРЕДИТУ
+    ===================================================== */
+
+    const isRegularCreditCard =
+        product.id === "credit_card_100";
+
+    const isPremiumCreditCard =
+        product.id === "premium_credit_card";
+
+    const isCreditCard =
+        isRegularCreditCard ||
+        isPremiumCreditCard;
+
+
+    /*
+       Розмір одноразового додаткового платежу
+       за прострочення кредитної картки.
+    */
+
+    const lateFeeAmount =
+        isPremiumCreditCard
+            ? 2000
+            : isRegularCreditCard
+                ? 1000
+                : 0;
+
+
+    /* =====================================================
+       ІНІЦІАЛІЗАЦІЯ СТАНУ КРЕДИТУ
+    ===================================================== */
 
     product.paymentsMade =
         Math.max(
@@ -30435,83 +30607,127 @@ function processFixedLoan(
             ) || 0
         );
 
+
     product.pendingPayment =
         product.pendingPayment === true;
 
+
     /*
-       Старі незавершені збереження
-       також переводимо на одноразову плату.
+       Якщо в продукті вже був записаний штраф,
+       зберігаємо його.
+
+       Для старого збереження:
+       - звичайна картка -> 1 000 грн;
+       - Premium -> 2 000 грн.
     */
 
-    product.lateFeeDue =
-        card100 &&
+    if (
+        isCreditCard &&
         Number(product.lateFeeDue) > 0
-            ? 1000
-            : 0;
+    ) {
+
+        product.lateFeeDue =
+            lateFeeAmount;
+
+    } else {
+
+        product.lateFeeDue =
+            0;
+
+    }
+
 
     const principalDone =
-        product.paymentsMade >= totalPayments;
+        product.paymentsMade >=
+        totalPayments;
+
+
+    /* =====================================================
+       КРЕДИТ ПОВНІСТЮ ПОГАШЕНИЙ
+    ===================================================== */
 
     if (
         principalDone &&
         !product.lateFeeDue
     ) {
 
-        product.active = false;
+        product.active =
+            false;
 
         return;
-
     }
+
+
+    /* =====================================================
+       ЧИ НАСТАВ ЧАС ПЛАТЕЖУ
+    ===================================================== */
 
     const due =
         product.pendingPayment ||
         elapsedTurns % 2 === 0;
 
+
     if (!due) {
         return;
     }
+
 
     product.lastLoanProcessedTurn =
         elapsedTurns;
 
 
-    /* ОКРЕМИЙ ЧЕТВЕРТИЙ ПЛАТІЖ */
+    /* =====================================================
+       ОКРЕМИЙ ДОДАТКОВИЙ ПЛАТІЖ
+       ПІСЛЯ ОСНОВНИХ ПЛАТЕЖІВ
+    ===================================================== */
 
     if (
-        principalDone
+        principalDone &&
+        product.lateFeeDue > 0
     ) {
+
+        const extraPayment =
+            product.lateFeeDue;
+
 
         if (
             chargeBankPayment(
                 player,
                 product,
-                product.lateFeeDue,
+                extraPayment,
                 `${title}: додатковий четвертий платіж`
             )
         ) {
 
-            product.lateFeeDue = 0;
+            product.lateFeeDue =
+                0;
 
-            product.pendingPayment = false;
+            product.pendingPayment =
+                false;
 
-            product.active = false;
+            product.active =
+                false;
+
 
             addLog(
-                `✅ ${title}: зобов'язання повністю виконано.`
+                `✅ ${title}: додатковий платіж ${formatMoney(extraPayment)} грн сплачено. Зобов'язання повністю виконано.`
             );
 
         } else {
 
-            product.pendingPayment = true;
+            product.pendingPayment =
+                true;
 
         }
 
-        return;
 
+        return;
     }
 
 
-    /* ОСНОВНИЙ ПЛАТІЖ */
+    /* =====================================================
+       ОСНОВНИЙ ПЛАТІЖ
+    ===================================================== */
 
     if (
         chargeBankPayment(
@@ -30522,20 +30738,27 @@ function processFixedLoan(
         )
     ) {
 
-        product.paymentsMade += 1;
+        product.paymentsMade +=
+            1;
 
-        product.pendingPayment = false;
+        product.pendingPayment =
+            false;
+
 
         addLog(
             `🏦 ${title}: платіж ${product.paymentsMade}/${totalPayments}.`
         );
 
+
         if (
-            product.paymentsMade >= totalPayments &&
+            product.paymentsMade >=
+                totalPayments &&
             !product.lateFeeDue
         ) {
 
-            product.active = false;
+            product.active =
+                false;
+
 
             addLog(
                 `✅ ${title}: зобов'язання повністю виконано.`
@@ -30543,32 +30766,71 @@ function processFixedLoan(
 
         }
 
-        return;
 
+        return;
     }
 
 
-    /* ГРОШЕЙ НЕ ВИСТАЧИЛО */
+    /* =====================================================
+       ГРОШЕЙ НА ПЛАТІЖ НЕ ВИСТАЧИЛО
+    ===================================================== */
+
+
+    /* -----------------------------------------------------
+       КРЕДИТНА КАРТКА
+
+       Штраф за прострочення додається
+       тільки ОДИН раз за весь кредит.
+    ----------------------------------------------------- */
 
     if (
-        card100
+        isCreditCard
     ) {
 
         if (
             !product.lateFeeAssessed
         ) {
 
-            product.lateFeeAssessed = true;
+            product.lateFeeAssessed =
+                true;
 
-            product.lateFeeDue = 1000;
+            product.lateFeeDue =
+                lateFeeAmount;
+
 
             addLog(
-                `⚠️ ${title}: платіж перенесено. Після трьох основних платежів — один додатковий платіж 1 000 грн.`
+                `⚠️ ${title}: платіж перенесено. Після основних платежів буде додатковий платіж ${formatMoney(lateFeeAmount)} грн.`
             );
 
         }
 
-    } else {
+    }
+
+
+    /* -----------------------------------------------------
+       ЗВИЧАЙНИЙ КРЕДИТ ГОТІВКОЮ /
+       PREMIUM КРЕДИТ ГОТІВКОЮ
+
+       За несплату:
+       -2 репутації.
+    ----------------------------------------------------- */
+
+/* -----------------------------------------------------
+   КРЕДИТИ ГОТІВКОЮ
+
+   Звичайний кредит:
+   -2 репутації за несплату.
+
+   Premium кредит:
+   без штрафу репутації,
+   платіж просто переноситься.
+----------------------------------------------------- */
+
+else {
+
+    if (
+        product.id === "cash_credit"
+    ) {
 
         applyEffects(
             player,
@@ -30577,13 +30839,29 @@ function processFixedLoan(
             }
         );
 
+
         addLog(
             `⚠️ ${title}: платіж перенесено; −2 репутації.`
         );
 
+    } else {
+
+        addLog(
+            `⚠️ ${title}: грошей на платіж недостатньо. Платіж перенесено на наступний особистий хід.`
+        );
+
     }
 
-    product.pendingPayment = true;
+}
+
+
+    /*
+       Несплачений основний платіж
+       перевіримо наступного особистого ходу.
+    */
+
+    product.pendingPayment =
+        true;
 
 }
 
@@ -31055,10 +31333,10 @@ const BANK_UPDATED_RULES = {
     credit_card_100:
         "Отримай +3 000 грн. Три платежі по 1 000 грн кожного 2-го ходу. За прострочення — один окремий четвертий платіж 1 000 грн. Несплачений платіж повторно перевіряється наступного ходу.",
 
-    premium_credit_card:
-        "Потрібно мати щонайменше 20 000 грн. Отримай +9 000 грн. Три платежі по 3 000 грн кожного 2-го ходу. Правила прострочення такі самі, як для звичайної картки: один четвертий платіж 1 000 грн.",
-
-    life_insurance:
+   premium_credit_card:
+    "Потрібно мати щонайменше 20 000 грн. Отримай +9 000 грн. Три платежі по 3 000 грн кожного 2-го ходу. Якщо хоча б один платіж прострочено — після трьох основних платежів потрібно сплатити один додатковий четвертий платіж 2 000 грн. Несплачений платіж повторно перевіряється наступного ходу.",
+    
+   life_insurance:
         "Сплати 2 000 грн за підключення. Далі внесок 2 000 грн кожного 2-го ходу; виплата 8 000 грн кожного 6-го ходу. Один раз захисти 15 енергії на картці Життя; накопичення продовжується.",
 
     internet_acquiring:
