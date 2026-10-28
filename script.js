@@ -10114,6 +10114,48 @@ INNER_CARD_DECKS.event = [
 },
 
 /* =====================================================
+   БАНКІВСЬКА ПОДІЯ — НЕЗРУЧНА ОПЛАТА
+===================================================== */
+
+{
+    id: "inner-event-payment-inconvenience",
+
+    title:
+        "Проблема з онлайн-оплатою",
+
+    story:
+        "Покупець не зміг одразу оплатити замовлення через незручний спосіб оплати. Частину продажу та часу втрачено.",
+
+    requirementText:
+        "Проблема з онлайн-оплатою",
+
+    requirements: {},
+
+    choices: [
+        {
+            id: "solve-payment-problem",
+
+            title:
+                "Вирішити проблему з оплатою",
+
+            costText:
+                "💰 -2 000 грн | ⚡ -5 енергії",
+
+            resultText:
+                "Ти владнав ситуацію та зберіг клієнта.",
+
+            effects: {
+                money: -2000,
+                energy: -5
+            },
+
+            bankBusinessProtection:
+                "payment_inconvenience"
+        }
+    ]
+},
+   
+/* =====================================================
    БАНКІВСЬКА ПОДІЯ — ОНЛАЙН-ПРОДАЖ
 ===================================================== */
 
@@ -15337,38 +15379,33 @@ OUTER_CARD_DECKS.life = [
                 }
             },
 
-            {
-                id: "inheritance-invest",
+           {
+    id: "inheritance-invest",
 
-                title:
-                    "Реінвестувати у високоврожайний інвестфонд",
+    title:
+        "Реінвестувати спадщину у високодохідний інвестфонд",
 
-                costText:
-                    "💰 60 000 грн вкладаються на 2 ходи",
+    costText:
+        "💰 60 000 грн спадщини інвестуються на 2 ходи",
 
-                resultText:
-                    "Через 2 ходи 💰 +90 000 грн | ⭐ +15 репутації",
+    resultText:
+        "Через 2 ходи 💰 +90 000 грн | ⭐ +15 репутації",
 
-                minimum: {
-                    money: 60000
-                },
+    effects: {
+        reputation: 15
+    },
 
-                effects: {
-                    money: -60000,
-                    reputation: 15
-                },
+    delayedEffect: {
+        turns: 2,
 
-                delayedEffect: {
-                    turns: 2,
+        effects: {
+            money: 90000
+        },
 
-                    effects: {
-                        money: 90000
-                    },
-
-                    text:
-                        "Повернення інвестиції зі спадщини"
-                }
-            }
+        text:
+            "Повернення інвестованої спадщини"
+    }
+}
 
         ]
     },
@@ -30583,9 +30620,9 @@ function recordBankOnlineSale(
 /* =========================================================
    ІНТЕГРАЦІЯ З КАРТКАМИ — БІЗНЕС-ЗАХИСТ
 
-   protectionType:
-   payment_inconvenience — незручна оплата
-   business             — відповідна бізнес-подія
+ protectionType:
+payment_inconvenience — незручна оплата
+business             — відповідна бізнес-подія
 
    Повертає копію ефектів.
    Використаний захист не припиняє роботу продукту.
@@ -30597,16 +30634,16 @@ function applyBankBusinessProtection(
     protectionType
 ) {
 
-    const productId =
-        protectionType === "payment_inconvenience"
+  const productId =
+    protectionType === "payment_inconvenience"
 
-            ? "internet_acquiring"
+        ? "internet_acquiring"
 
-            : protectionType === "business"
+        : protectionType === "business"
 
-                ? "business_elite"
+            ? "business_elite"
 
-                : null;
+            : null;
 
     const product =
         player?.bank?.products?.find(
