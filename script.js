@@ -25538,7 +25538,6 @@ function applyAllSpecialActions(
    БАНК:
    - окремо доробимо пізніше.
 ========================================================= */
-
 function showDecisionCard(
     deckName,
     card
@@ -25548,27 +25547,24 @@ function showDecisionCard(
         gameState.player;
 
 
-    const panel =
-        document.getElementById(
-            "currentCardPanel"
-        );
-
-
-    /*
-       На випадок, якщо стара модалка
-       ще залишилась відкритою.
-    */
-
-    closeGameInfoModal();
-
-
-    if (
-        !card ||
-        !panel
-    ) {
+    if (!card) {
 
         finishPlayerCardTurn();
+        return;
 
+    }
+
+
+    /* =====================================================
+       БАНК
+       ЗАЛИШАЄМО ЙОГО ВЛАСНУ МОДАЛКУ
+    ===================================================== */
+
+    if (
+        deckName === "bank"
+    ) {
+
+        showBankCard(card);
         return;
 
     }
@@ -25594,33 +25590,6 @@ function showDecisionCard(
             card
         );
 
-/* =====================================================
-   БАНКІВСЬКА КАРТКА
-===================================================== */
-
-if (
-    deckName === "bank"
-) {
-
-    showBankCard(
-        card
-    );
-
-    return;
-
-}
-   /* Звернення до банку перед вибором рішення. */
-
-queueMicrotask(() => {
-
-    addCardBankButton(
-        panel,
-        card,
-        () => showDecisionCard(deckName, card)
-    );
-
-});
-
 
     /* =====================================================
        КАРТКА ВЗАГАЛІ НЕДОСТУПНА
@@ -25630,30 +25599,27 @@ queueMicrotask(() => {
         !requirementCheck.passed
     ) {
 
-        panel.innerHTML = `
+        openGameInfoModal(`
 
-            <div class="revealed-current-card">
+            <div class="decision-card-modal">
 
                 <div class="decision-card-number">
                     Картка №${card.number}
                 </div>
 
 
-                <div class="revealed-card-type">
-
+                <div class="decision-card-type">
                     ${type.icon || "🎴"}
-
                     ${type.name || ""}
-
                 </div>
 
 
-                <h3>
+                <h2>
                     ${card.title}
-                </h3>
+                </h2>
 
 
-                <p class="decision-card-text">
+                <p class="decision-card-story">
                     ${card.story || ""}
                 </p>
 
@@ -25675,22 +25641,22 @@ queueMicrotask(() => {
                 </div>
 
 
-               <button
-    id="finishUnavailableCardButton"
-    class="side-card-finish-btn"
->
-    ПРОПУСТИТИ КАРТКУ І ЗАВЕРШИТИ ХІД
-</button>
-
+                <button
+                    id="finishUnavailableCardButton"
+                    class="main-game-btn finish-turn-btn"
+                    type="button"
+                >
+                    ПРОПУСТИТИ КАРТКУ І ЗАВЕРШИТИ ХІД
+                </button>
 
             </div>
 
-        `;
+        `);
 
 
-        panel
-            .querySelector(
-                "#finishUnavailableCardButton"
+        document
+            .getElementById(
+                "finishUnavailableCardButton"
             )
             ?.addEventListener(
                 "click",
@@ -25708,37 +25674,34 @@ queueMicrotask(() => {
 
 
     /* =====================================================
-       ЯКЩО В КАРТЦІ НЕМАЄ ВАРІАНТІВ
+       КАРТКА БЕЗ ВАРІАНТІВ
     ===================================================== */
 
     if (
         availableChoices.length === 0
     ) {
 
-        panel.innerHTML = `
+        openGameInfoModal(`
 
-            <div class="revealed-current-card">
+            <div class="decision-card-modal">
 
                 <div class="decision-card-number">
                     Картка №${card.number}
                 </div>
 
 
-                <div class="revealed-card-type">
-
+                <div class="decision-card-type">
                     ${type.icon || "🎴"}
-
                     ${type.name || ""}
-
                 </div>
 
 
-                <h3>
+                <h2>
                     ${card.title}
-                </h3>
+                </h2>
 
 
-                <p class="decision-card-text">
+                <p class="decision-card-story">
                     ${card.story || ""}
                 </p>
 
@@ -25746,18 +25709,19 @@ queueMicrotask(() => {
                 <button
                     id="finishNoChoiceCardButton"
                     class="main-game-btn finish-turn-btn"
+                    type="button"
                 >
                     ПРОДОВЖИТИ
                 </button>
 
             </div>
 
-        `;
+        `);
 
 
-        panel
-            .querySelector(
-                "#finishNoChoiceCardButton"
+        document
+            .getElementById(
+                "finishNoChoiceCardButton"
             )
             ?.addEventListener(
                 "click",
@@ -25776,7 +25740,6 @@ queueMicrotask(() => {
 
     const choicesHTML =
         availableChoices
-
             .map(
                 (
                     choice,
@@ -25823,6 +25786,7 @@ queueMicrotask(() => {
                                     ? "disabled"
                                     : ""
                             }
+                            type="button"
                         >
 
                             <strong>
@@ -25849,21 +25813,36 @@ queueMicrotask(() => {
 
                             </span>
 
+
+                            ${
+                                !productAllowed
+
+                                    ? `
+
+                                        <span class="card-choice-warning">
+                                            🏦 Немає необхідного
+                                            банківського продукту
+                                        </span>
+
+                                      `
+
+                                    : ""
+                            }
+
                         </button>
 
                     `;
 
                 }
             )
-
             .join("");
 
 
     /* =====================================================
-       КНОПКА ВІДМОВИ
+       ВІДМОВА
 
-       ТІЛЬКИ ДЛЯ ПОДІЇ.
-       ДЛЯ ЖИТТЯ ЇЇ НЕМАЄ.
+       ПОДІЯ — МОЖНА НЕ БРАТИ.
+       ЖИТТЯ — ПОТРІБНО ОБРАТИ РІШЕННЯ.
     ===================================================== */
 
     const declineHTML =
@@ -25877,6 +25856,7 @@ queueMicrotask(() => {
                         secondary-game-btn
                         finish-turn-btn
                     "
+                    type="button"
                 >
                     НЕ БРАТИ КАРТКУ
                 </button>
@@ -25887,40 +25867,34 @@ queueMicrotask(() => {
 
 
     /* =====================================================
-       МАЛЮЄМО КАРТКУ СПРАВА
+       ПОКАЗУЄМО У ТІЙ САМІЙ
+       УНІВЕРСАЛЬНІЙ МОДАЛЦІ, ЩО Й БАНК
     ===================================================== */
 
-    panel.innerHTML = `
+    openGameInfoModal(`
 
-        <div class="revealed-current-card">
+        <div class="decision-card-modal">
 
             <div class="decision-card-number">
-
                 Картка №${card.number}
-
             </div>
 
 
-            <div class="revealed-card-type">
+            <div class="decision-card-type">
 
                 ${type.icon || "🎴"}
-
                 ${type.name || ""}
 
             </div>
 
 
-            <h3>
-
+            <h2>
                 ${card.title}
+            </h2>
 
-            </h3>
 
-
-            <p class="decision-card-text">
-
+            <p class="decision-card-story">
                 ${card.story || ""}
-
             </p>
 
 
@@ -25972,9 +25946,7 @@ queueMicrotask(() => {
                     ? `
 
                         <div class="decision-card-task">
-
                             ${card.taskText}
-
                         </div>
 
                       `
@@ -25989,9 +25961,7 @@ queueMicrotask(() => {
                     ? `
 
                         <div class="decision-card-task">
-
                             ${card.cooperationText}
-
                         </div>
 
                       `
@@ -26006,10 +25976,8 @@ queueMicrotask(() => {
                     ? `
 
                         <div class="decision-card-task">
-
                             ❤️ Це картка Життя.
                             Обери одне з доступних рішень.
-
                         </div>
 
                       `
@@ -26029,16 +25997,40 @@ queueMicrotask(() => {
 
         </div>
 
-    `;
+    `);
+
+
+    /* =====================================================
+       КНОПКА ЗВЕРНЕННЯ ДО БАНКУ
+    ===================================================== */
+
+    const modalContent =
+        document.getElementById(
+            "gameInfoContent"
+        );
+
+
+    if (modalContent) {
+
+        addCardBankButton(
+            modalContent,
+            card,
+            () => showDecisionCard(
+                deckName,
+                card
+            )
+        );
+
+    }
 
 
     /* =====================================================
        КЛІК ПО ВАРІАНТУ
     ===================================================== */
 
-    panel
+    document
         .querySelectorAll(
-            ".card-decision-button"
+            "#gameInfoContent .card-decision-button"
         )
         .forEach(
             button => {
@@ -26061,9 +26053,7 @@ queueMicrotask(() => {
 
 
                         if (!choice) {
-
                             return;
-
                         }
 
 
@@ -26086,9 +26076,9 @@ queueMicrotask(() => {
 
     if (isEvent) {
 
-        panel
-            .querySelector(
-                "#declineEventCardButton"
+        document
+            .getElementById(
+                "declineEventCardButton"
             )
             ?.addEventListener(
                 "click",
