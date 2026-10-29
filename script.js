@@ -10119,7 +10119,8 @@ INNER_CARD_DECKS.event = [
 
 {
     id: "inner-event-payment-inconvenience",
-
+   number: 25,
+   
     title:
         "Проблема з онлайн-оплатою",
 
@@ -10161,7 +10162,8 @@ INNER_CARD_DECKS.event = [
 
 {
     id: "inner-event-online-sale",
-
+number: 26,
+   
     title:
         "Замовлення в онлайн-магазині",
 
