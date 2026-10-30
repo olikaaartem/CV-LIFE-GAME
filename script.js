@@ -1580,6 +1580,16 @@ const gameState = {
 
     history: [],
 
+/* =====================================================
+   ІСТОРІЯ ЗМІН РЕСУРСІВ
+===================================================== */
+
+resourceHistory: {
+    money: [],
+    reputation: [],
+    knowledge: [],
+    energy: []
+},
 
     /* =====================================================
        ГРАВЕЦЬ
@@ -1793,7 +1803,77 @@ function delay(ms) {
     );
 
 }
+/* =========================================================
+   ІСТОРІЯ ЗМІН РЕСУРСІВ
+========================================================= */
 
+function addResourceHistory(
+    resource,
+    change,
+    reason = ""
+) {
+
+    if (
+        !resource ||
+        !gameState.resourceHistory ||
+        !Array.isArray(
+            gameState.resourceHistory[resource]
+        )
+    ) {
+        return;
+    }
+
+
+    const numericChange =
+        Number(change) || 0;
+
+
+    if (numericChange === 0) {
+        return;
+    }
+
+
+    const player =
+        gameState.player;
+
+
+    const currentValue =
+        Number(
+            player?.[resource]
+        ) || 0;
+
+
+    gameState
+        .resourceHistory[resource]
+        .push({
+
+            change:
+                numericChange,
+
+            reason:
+                reason || "Зміна ресурсу",
+
+            turn:
+                Number(
+                    gameState.playerTurns
+                ) || 0,
+
+            value:
+                currentValue,
+
+            time:
+                new Date()
+                    .toLocaleTimeString(
+                        "uk-UA",
+                        {
+                            hour: "2-digit",
+                            minute: "2-digit"
+                        }
+                    )
+
+        });
+
+}
 /* =========================================================
    ЖУРНАЛ ХОДІВ
 ========================================================= */
@@ -4726,96 +4806,106 @@ function showGameBoard() {
 
                     <!-- ПОКАЗНИКИ -->
 
-                    <div class="hud-player-stats">
+<div class="hud-player-stats">
 
 
-                        <div class="hud-stat-item">
+    <div
+        class="hud-stat-item hud-stat-clickable"
+        data-resource="money"
+    >
 
-                            <span class="hud-stat-icon">
-                                💰
-                            </span>
+        <span class="hud-stat-icon">
+            💰
+        </span>
 
-                            <div>
+        <div>
 
-                                <small>
-                                    ГРОШІ
-                                </small>
+            <small>
+                ГРОШІ
+            </small>
 
-                                <strong id="moneyValue">
-                                    ${formatMoney(player.money)}
-                                </strong>
+            <strong id="moneyValue">
+                ${formatMoney(player.money)}
+            </strong>
 
-                            </div>
+        </div>
 
-                        </div>
-
-
-                        <div class="hud-stat-item">
-
-                            <span class="hud-stat-icon">
-                                ⭐
-                            </span>
-
-                            <div>
-
-                                <small>
-                                    РЕПУТАЦІЯ
-                                </small>
-
-                                <strong id="reputationValue">
-                                    ${player.reputation}
-                                </strong>
-
-                            </div>
-
-                        </div>
+    </div>
 
 
-                        <div class="hud-stat-item">
+    <div
+        class="hud-stat-item hud-stat-clickable"
+        data-resource="reputation"
+    >
 
-                            <span class="hud-stat-icon">
-                                🧠
-                            </span>
+        <span class="hud-stat-icon">
+            ⭐
+        </span>
 
-                            <div>
+        <div>
 
-                                <small>
-                                    ЗНАННЯ
-                                </small>
+            <small>
+                РЕПУТАЦІЯ
+            </small>
 
-                                <strong id="knowledgeValue">
-                                    ${player.knowledge}
-                                </strong>
+            <strong id="reputationValue">
+                ${player.reputation}
+            </strong>
 
-                            </div>
+        </div>
 
-                        </div>
-
-
-                        <div class="hud-stat-item">
-
-                            <span class="hud-stat-icon">
-                                ⚡
-                            </span>
-
-                            <div>
-
-                                <small>
-                                    ЕНЕРГІЯ
-                                </small>
-
-                                <strong id="energyValue">
-                                    ${player.energy}
-                                </strong>
-
-                            </div>
-
-                        </div>
+    </div>
 
 
-                    </div>
+    <div
+        class="hud-stat-item hud-stat-clickable"
+        data-resource="knowledge"
+    >
+
+        <span class="hud-stat-icon">
+            🧠
+        </span>
+
+        <div>
+
+            <small>
+                ЗНАННЯ
+            </small>
+
+            <strong id="knowledgeValue">
+                ${player.knowledge}
+            </strong>
+
+        </div>
+
+    </div>
 
 
+    <div
+        class="hud-stat-item hud-stat-clickable"
+        data-resource="energy"
+    >
+
+        <span class="hud-stat-icon">
+            ⚡
+        </span>
+
+        <div>
+
+            <small>
+                ЕНЕРГІЯ
+            </small>
+
+            <strong id="energyValue">
+                ${player.energy}
+            </strong>
+
+        </div>
+
+    </div>
+
+
+</div>
                     <!-- МРІЯ -->
 
                                   <button
@@ -5091,7 +5181,26 @@ initializeGameCycle();
             rollDice
         );
 
+/* =====================================================
+   ІСТОРІЯ РЕСУРСІВ
+===================================================== */
 
+document
+    .querySelectorAll(".hud-stat-clickable")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                showResourceHistoryModal(
+                    button.dataset.resource
+                );
+
+            }
+        );
+
+    });
     /* =====================================================
        ПРОФЕСІЯ
     ===================================================== */
@@ -27152,7 +27261,204 @@ function showCareerProgressModal() {
     `);
 
 }
- 
+ /* =========================================================
+   ІСТОРІЯ РЕСУРСУ
+========================================================= */
+
+function showResourceHistoryModal(resource) {
+
+    const config = {
+
+        money: {
+            icon: "💰",
+            title: "Гроші",
+            unit: "грн"
+        },
+
+        reputation: {
+            icon: "⭐",
+            title: "Репутація",
+            unit: ""
+        },
+
+        knowledge: {
+            icon: "🧠",
+            title: "Знання",
+            unit: ""
+        },
+
+        energy: {
+            icon: "⚡",
+            title: "Енергія",
+            unit: ""
+        }
+
+    };
+
+
+    const resourceConfig =
+        config[resource];
+
+
+    if (!resourceConfig) {
+        return;
+    }
+
+
+    const history =
+        gameState.resourceHistory?.[resource] || [];
+
+
+    const currentValue =
+        Number(
+            gameState.player?.[resource]
+        ) || 0;
+
+
+    const historyHTML =
+        history.length
+
+            ? [...history]
+                .reverse()
+                .map(item => {
+
+                    const isPositive =
+                        Number(item.change) > 0;
+
+                    const sign =
+                        isPositive ? "+" : "";
+
+                    const changeText =
+                        resource === "money"
+
+                            ? `${sign}${formatMoney(item.change)} грн`
+
+                            : `${sign}${item.change}`;
+
+
+                    const balanceText =
+                        resource === "money"
+
+                            ? `${formatMoney(item.value)} грн`
+
+                            : item.value;
+
+
+                    return `
+
+                        <div class="resource-history-item">
+
+                            <div class="resource-history-change">
+
+                                <strong>
+                                    ${changeText}
+                                </strong>
+
+                                <span>
+                                    ${item.reason}
+                                </span>
+
+                            </div>
+
+
+                            <div class="resource-history-meta">
+
+                                <span>
+                                    Хід ${item.turn}
+                                </span>
+
+                                <span>
+                                    Баланс: ${balanceText}
+                                </span>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+                })
+                .join("")
+
+            : `
+
+                <div class="resource-history-empty">
+
+                    <div class="resource-history-empty-icon">
+                        📭
+                    </div>
+
+                    <strong>
+                        Історія поки порожня
+                    </strong>
+
+                    <p>
+                        Тут з’являться всі зміни цього ресурсу
+                        під час гри.
+                    </p>
+
+                </div>
+
+            `;
+
+
+    const currentValueText =
+        resource === "money"
+
+            ? `${formatMoney(currentValue)} грн`
+
+            : currentValue;
+
+
+    openGameInfoModal(`
+
+        <div class="resource-history-modal">
+
+            <div class="resource-history-header">
+
+                <div class="resource-history-icon">
+                    ${resourceConfig.icon}
+                </div>
+
+                <div>
+
+                    <small>
+                        ІСТОРІЯ РЕСУРСУ
+                    </small>
+
+                    <h2>
+                        ${resourceConfig.title}
+                    </h2>
+
+                </div>
+
+            </div>
+
+
+            <div class="resource-history-current">
+
+                <span>
+                    Зараз у тебе
+                </span>
+
+                <strong>
+                    ${currentValueText}
+                </strong>
+
+            </div>
+
+
+            <div class="resource-history-list">
+
+                ${historyHTML}
+
+            </div>
+
+        </div>
+
+    `);
+
+}
 /* =========================================================
  ВІДКРИТТЯ УНІВЕРСАЛЬНОЇ МОДАЛКИ
 
