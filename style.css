@@ -2130,6 +2130,43 @@ button {
     flex-direction: column;
     gap: 10px;
 }
+/* =====================================================
+   КОМПАКТНІ ЗМІНИ РЕСУРСІВ
+===================================================== */
+
+.resource-history-source {
+    margin-bottom: 10px;
+
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+}
+
+
+.resource-history-deltas {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-bottom: 10px;
+}
+
+
+.resource-history-delta {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 6px 10px;
+
+    border-radius: 10px;
+
+    background: rgba(0, 0, 0, 0.045);
+
+    font-size: 14px;
+    font-weight: 800;
+    white-space: nowrap;
+}
 
 .resource-history-item {
     padding: 15px 17px;
