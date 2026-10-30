@@ -193,6 +193,78 @@ const TOKENS = [
         id: "vault",
         name: "Сейф",
         image: "assets/token-vault.png"
+    },
+
+       {
+        id: "fox-1",
+        name: "Лисиця",
+        image: "assets/fox-1.png"
+    },
+
+    {
+        id: "cat-1",
+        name: "Кіт",
+        image: "assets/cat-1.png"
+    },
+
+    {
+        id: "panda",
+        name: "Панда",
+        image: "assets/panda.png"
+    },
+
+    {
+        id: "bear",
+        name: "Ведмідь",
+        image: "assets/bear.png"
+    },
+
+    {
+        id: "lynx",
+        name: "Рись",
+        image: "assets/lynx.png"
+    },
+
+    {
+        id: "wolf-1",
+        name: "Вовк",
+        image: "assets/wolf-1.png"
+    },
+
+    {
+        id: "rabbit",
+        name: "Кролик",
+        image: "assets/rabbit.png"
+    },
+
+    {
+        id: "owl-2",
+        name: "Сова",
+        image: "assets/owl-2.png"
+    },
+
+    {
+        id: "black-cat",
+        name: "Кіт",
+        image: "assets/black-cat.png"
+    },
+
+    {
+        id: "wolf-2",
+        name: "Вовк",
+        image: "assets/wolf-2.png"
+    },
+
+    {
+        id: "fox-2",
+        name: "Лисиця",
+        image: "assets/fox-2.png"
+    },
+
+    {
+        id: "red-panda",
+        name: "Червона панда",
+        image: "assets/red-panda.png"
     }
 
 ];
