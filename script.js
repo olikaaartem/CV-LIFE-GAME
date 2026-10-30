@@ -1803,10 +1803,65 @@ function delay(ms) {
     );
 
 }
+
+
 /* =========================================================
    ІСТОРІЯ ЗМІН РЕСУРСІВ
 ========================================================= */
+/* =========================================================
+   ПРИЧИНА ЗМІНИ РЕСУРСУ
+========================================================= */
 
+function getResourceChangeReason(resource) {
+
+    const player =
+        gameState.player;
+
+
+    /* ФІНАНСОВИЙ ПЕРІОД */
+
+    if (
+        resource === "money"
+        &&
+        player?.turnsCompleted > 0
+        &&
+        player.turnsCompleted %
+            GAME_CONFIG.financialPeriodTurns === 0
+    ) {
+
+        return `Фінансовий період №${
+            player.financialPeriods || 1
+        }`;
+
+    }
+
+
+    /* БАЗОВІ ПІДПИСИ */
+
+    const labels = {
+
+        money:
+            "Ігрова подія",
+
+        reputation:
+            "Зміна репутації",
+
+        knowledge:
+            "Отримані знання",
+
+        energy:
+            "Зміна енергії"
+
+    };
+
+
+    return (
+        labels[resource]
+        ||
+        "Зміна ресурсу"
+    );
+
+}
 function addResourceHistory(
     resource,
     change,
@@ -24505,7 +24560,75 @@ function updatePlayerStatsUI() {
     }
 
     clampPlayerResources(player);
+/* =====================================================
+   АВТОМАТИЧНА ІСТОРІЯ РЕСУРСІВ
+===================================================== */
 
+if (!gameState.resourceSnapshot) {
+
+    gameState.resourceSnapshot = {
+
+        money:
+            Number(player.money) || 0,
+
+        reputation:
+            Number(player.reputation) || 0,
+
+        knowledge:
+            Number(player.knowledge) || 0,
+
+        energy:
+            Number(player.energy) || 0
+
+    };
+
+}
+else {
+
+    const resources = [
+        "money",
+        "reputation",
+        "knowledge",
+        "energy"
+    ];
+
+
+    resources.forEach(resource => {
+
+        const previousValue =
+            Number(
+                gameState.resourceSnapshot[resource]
+            ) || 0;
+
+
+        const currentValue =
+            Number(
+                player[resource]
+            ) || 0;
+
+
+        const change =
+            currentValue -
+            previousValue;
+
+
+        if (change !== 0) {
+
+            addResourceHistory(
+                resource,
+                change,
+                getResourceChangeReason(resource)
+            );
+
+        }
+
+
+        gameState.resourceSnapshot[resource] =
+            currentValue;
+
+    });
+
+}
     const fields = {
 
         moneyValue:
