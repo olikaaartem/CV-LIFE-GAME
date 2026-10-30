@@ -1817,8 +1817,51 @@ function getResourceChangeReason(resource) {
     const player =
         gameState.player;
 
+    const context =
+        gameState.resourceChangeContext;
 
-    /* ФІНАНСОВИЙ ПЕРІОД */
+
+    /* =====================================================
+       КАРТКА
+    ===================================================== */
+
+    if (
+        context?.type === "card"
+        &&
+        context.title
+    ) {
+
+        const deckLabels = {
+
+            event:
+                "🎲 ПОДІЯ",
+
+            life:
+                "❤️ ЖИТТЯ",
+
+            fate:
+                "🔮 ДОЛЯ",
+
+            bank:
+                "🏦 БАНК"
+
+        };
+
+
+        const label =
+            deckLabels[context.deckName]
+            ||
+            "🃏 КАРТКА";
+
+
+        return `${label} · ${context.title}`;
+
+    }
+
+
+    /* =====================================================
+       ФІНАНСОВИЙ ПЕРІОД
+    ===================================================== */
 
     if (
         resource === "money"
@@ -1829,28 +1872,30 @@ function getResourceChangeReason(resource) {
             GAME_CONFIG.financialPeriodTurns === 0
     ) {
 
-        return `Фінансовий період №${
+        return `💼 ЗАРПЛАТА · Період ${
             player.financialPeriods || 1
         }`;
 
     }
 
 
-    /* БАЗОВІ ПІДПИСИ */
+    /* =====================================================
+       ІНШІ ЗМІНИ
+    ===================================================== */
 
     const labels = {
 
         money:
-            "Ігрова подія",
+            "📍 ПОЛЕ",
 
         reputation:
-            "Зміна репутації",
+            "📍 ПОЛЕ",
 
         knowledge:
-            "Отримані знання",
+            "📍 ПОЛЕ",
 
         energy:
-            "Зміна енергії"
+            "📍 ПОЛЕ"
 
     };
 
@@ -1862,6 +1907,9 @@ function getResourceChangeReason(resource) {
     );
 
 }
+
+
+
 function addResourceHistory(
     resource,
     change,
@@ -11992,8 +12040,14 @@ function showCardFinalResult(
 
 function finishPlayerCardTurn() {
 
-    closeGameInfoModal();
+    /* =====================================================
+       ЗАВЕРШУЄМО КОНТЕКСТ КАРТКИ
+    ===================================================== */
 
+    gameState.resourceChangeContext = null;
+
+
+    closeGameInfoModal();
 
     startAITurns();
 
@@ -22339,6 +22393,21 @@ async function resolveCardChoice(
 ) {
     const player =
         gameState.player;
+   /* =====================================================
+   КОНТЕКСТ ДЛЯ ІСТОРІЇ РЕСУРСІВ
+===================================================== */
+gameState.resourceChangeContext = {
+
+    type:
+        "card",
+
+    deckName:
+        deckName,
+
+    title:
+        card?.title || "Картка"
+
+};
 
     /* =====================================================
        ОДНОРАЗОВІ ЗАХИСТИ ЕНЕРГІЇ
