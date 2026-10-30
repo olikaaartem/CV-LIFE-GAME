@@ -20855,8 +20855,14 @@ function showFinalGameResults() {
    → запускаються AI;
    → повертається керування гравцю.
 ========================================================= */
-
 function finishPlayerCardTurn() {
+
+    /* =====================================================
+       ЗАВЕРШУЄМО КОНТЕКСТ КАРТКИ
+    ===================================================== */
+
+    gameState.resourceChangeContext = null;
+
 
     closeGameInfoModal();
 
@@ -27507,6 +27513,115 @@ function showResourceHistoryModal(resource) {
         ) || 0;
 
 
+    /* =====================================================
+       ФОРМАТУВАННЯ ЗМІНИ
+    ===================================================== */
+
+    function formatResourceChange(
+        resourceName,
+        change
+    ) {
+
+        const numericChange =
+            Number(change) || 0;
+
+        const sign =
+            numericChange > 0
+                ? "+"
+                : "";
+
+        const icons = {
+            money: "💰",
+            reputation: "⭐",
+            knowledge: "🧠",
+            energy: "⚡"
+        };
+
+
+        if (resourceName === "money") {
+
+            return `
+                ${icons[resourceName]}
+                ${sign}${formatMoney(numericChange)} грн
+            `;
+
+        }
+
+
+        return `
+            ${icons[resourceName]}
+            ${sign}${numericChange}
+        `;
+
+    }
+
+
+    /* =====================================================
+       ШУКАЄМО ВСІ ЗМІНИ ТІЄЇ САМОЇ ПОДІЇ
+    ===================================================== */
+
+    function getRelatedChanges(item) {
+
+        const relatedChanges = [];
+
+
+        Object.keys(config)
+            .forEach(resourceName => {
+
+                const resourceItems =
+                    gameState.resourceHistory?.[
+                        resourceName
+                    ] || [];
+
+
+                const relatedItem =
+                    [...resourceItems]
+                        .reverse()
+                        .find(candidate => {
+
+                            return (
+                                candidate.reason ===
+                                    item.reason
+                                &&
+                                candidate.turn ===
+                                    item.turn
+                                &&
+                                candidate.time ===
+                                    item.time
+                            );
+
+                        });
+
+
+                if (relatedItem) {
+
+                    relatedChanges.push({
+
+                        resource:
+                            resourceName,
+
+                        change:
+                            relatedItem.change,
+
+                        value:
+                            relatedItem.value
+
+                    });
+
+                }
+
+            });
+
+
+        return relatedChanges;
+
+    }
+
+
+    /* =====================================================
+       ІСТОРІЯ
+    ===================================================== */
+
     const historyHTML =
         history.length
 
@@ -27514,53 +27629,75 @@ function showResourceHistoryModal(resource) {
                 .reverse()
                 .map(item => {
 
-                    const isPositive =
-                        Number(item.change) > 0;
+                    const relatedChanges =
+                        getRelatedChanges(item);
 
-                    const sign =
-                        isPositive ? "+" : "";
 
-                    const changeText =
-                        resource === "money"
+                    const changesHTML =
+                        relatedChanges
+                            .map(changeItem => `
 
-                            ? `${sign}${formatMoney(item.change)} грн`
+                                <span class="
+                                    resource-history-delta
+                                ">
 
-                            : `${sign}${item.change}`;
+                                    ${formatResourceChange(
+                                        changeItem.resource,
+                                        changeItem.change
+                                    )}
+
+                                </span>
+
+                            `)
+                            .join("");
 
 
                     const balanceText =
                         resource === "money"
 
-                            ? `${formatMoney(item.value)} грн`
+                            ? `${formatMoney(
+                                item.value
+                            )} грн`
 
                             : item.value;
 
 
                     return `
 
-                        <div class="resource-history-item">
+                        <div class="
+                            resource-history-item
+                        ">
 
-                            <div class="resource-history-change">
+                            <div class="
+                                resource-history-source
+                            ">
 
-                                <strong>
-                                    ${changeText}
-                                </strong>
-
-                                <span>
-                                    ${item.reason}
-                                </span>
+                                ${item.reason}
 
                             </div>
 
 
-                            <div class="resource-history-meta">
+                            <div class="
+                                resource-history-deltas
+                            ">
+
+                                ${changesHTML}
+
+                            </div>
+
+
+                            <div class="
+                                resource-history-meta
+                            ">
 
                                 <span>
                                     Хід ${item.turn}
                                 </span>
 
                                 <span>
-                                    Баланс: ${balanceText}
+                                    Баланс:
+                                    ${resourceConfig.icon}
+                                    ${balanceText}
                                 </span>
 
                             </div>
@@ -27574,9 +27711,13 @@ function showResourceHistoryModal(resource) {
 
             : `
 
-                <div class="resource-history-empty">
+                <div class="
+                    resource-history-empty
+                ">
 
-                    <div class="resource-history-empty-icon">
+                    <div class="
+                        resource-history-empty-icon
+                    ">
                         📭
                     </div>
 
@@ -27585,8 +27726,8 @@ function showResourceHistoryModal(resource) {
                     </strong>
 
                     <p>
-                        Тут з’являться всі зміни цього ресурсу
-                        під час гри.
+                        Тут з’являться всі зміни
+                        цього ресурсу під час гри.
                     </p>
 
                 </div>
@@ -27597,18 +27738,28 @@ function showResourceHistoryModal(resource) {
     const currentValueText =
         resource === "money"
 
-            ? `${formatMoney(currentValue)} грн`
+            ? `${formatMoney(
+                currentValue
+            )} грн`
 
             : currentValue;
 
+
+    /* =====================================================
+       МОДАЛКА
+    ===================================================== */
 
     openGameInfoModal(`
 
         <div class="resource-history-modal">
 
-            <div class="resource-history-header">
+            <div class="
+                resource-history-header
+            ">
 
-                <div class="resource-history-icon">
+                <div class="
+                    resource-history-icon
+                ">
                     ${resourceConfig.icon}
                 </div>
 
@@ -27627,7 +27778,9 @@ function showResourceHistoryModal(resource) {
             </div>
 
 
-            <div class="resource-history-current">
+            <div class="
+                resource-history-current
+            ">
 
                 <span>
                     Зараз у тебе
@@ -27640,7 +27793,9 @@ function showResourceHistoryModal(resource) {
             </div>
 
 
-            <div class="resource-history-list">
+            <div class="
+                resource-history-list
+            ">
 
                 ${historyHTML}
 
@@ -27651,6 +27806,8 @@ function showResourceHistoryModal(resource) {
     `);
 
 }
+
+
 /* =========================================================
  ВІДКРИТТЯ УНІВЕРСАЛЬНОЇ МОДАЛКИ
 
