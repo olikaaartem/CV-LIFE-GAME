@@ -1862,22 +1862,19 @@ function getResourceChangeReason(resource) {
     /* =====================================================
        ФІНАНСОВИЙ ПЕРІОД
     ===================================================== */
+if (
+    context?.type === "salary"
+) {
 
-    if (
-        resource === "money"
-        &&
-        player?.turnsCompleted > 0
-        &&
-        player.turnsCompleted %
-            GAME_CONFIG.financialPeriodTurns === 0
-    ) {
+    return `💼 ЗАРПЛАТА · Період ${
+        context.period
+        ||
+        player?.financialPeriods
+        ||
+        1
+    }`;
 
-        return `💼 ЗАРПЛАТА · Період ${
-            player.financialPeriods || 1
-        }`;
-
-    }
-
+}
 
     /* =====================================================
        ІНШІ ЗМІНИ
@@ -18439,6 +18436,7 @@ function processPlayerFinancialPeriod() {
         salary +
         passiveIncome;
 
+   
 
     player.money +=
         total;
@@ -23893,7 +23891,20 @@ function processPlayerFinancialPeriod() {
         passiveIncome +
         modifiers;
 
+/* =====================================================
+   КОНТЕКСТ ФІНАНСОВОГО ПЕРІОДУ
+===================================================== */
 
+gameState.resourceChangeContext = {
+
+    type:
+        "salary",
+
+    period:
+        player.financialPeriods
+
+};
+   
     player.money +=
         total;
 
@@ -23948,7 +23959,12 @@ function processPlayerFinancialPeriod() {
 
 
     updatePlayerStatsUI();
+/* =====================================================
+   ЗАВЕРШУЄМО КОНТЕКСТ ФІНАНСОВОГО ПЕРІОДУ
+===================================================== */
 
+gameState.resourceChangeContext = null;
+   
 }
 
 
