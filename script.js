@@ -2046,6 +2046,11 @@ function setScreen(html) {
     app.innerHTML =
         html;
 
+   /* =====================================================
+   АВТОМАТИЧНІ ПІДКАЗКИ СЛОВНИЧКА
+===================================================== */
+
+applyGlossaryTooltips(app);
 
     window.scrollTo({
 
@@ -25122,6 +25127,301 @@ function updateGameUI() {
     updatePlayerStatsUI();
 
 }
+
+/* =========================================================
+   АВТОМАТИЧНІ ПІДКАЗКИ СЛОВНИЧКА
+========================================================= */
+
+function applyGlossaryTooltips(root = document) {
+
+    const terms =
+        showGameGlossary(true);
+
+
+    if (
+        !Array.isArray(terms)
+        ||
+        !terms.length
+    ) {
+        return;
+    }
+
+
+    /* =====================================================
+       СОРТУЄМО ВІД ДОВШИХ ТЕРМІНІВ ДО КОРОТШИХ
+
+       Наприклад:
+       "кредитна картка"
+       має знайтися раніше,
+       ніж просто "кредит".
+    ===================================================== */
+
+    const sortedTerms =
+        [...terms]
+            .sort(
+                (a, b) =>
+                    b[0].length -
+                    a[0].length
+            );
+
+
+    /* =====================================================
+       ЕКРАНУЄМО СИМВОЛИ ДЛЯ REGEXP
+    ===================================================== */
+
+    function escapeRegExp(text) {
+
+        return text.replace(
+            /[.*+?^${}()|[\]\\]/g,
+            "\\$&"
+        );
+
+    }
+
+
+    /* =====================================================
+       СТВОРЮЄМО ОДИН ЗАГАЛЬНИЙ ПОШУК
+    ===================================================== */
+
+    const pattern =
+        sortedTerms
+            .map(
+                ([term]) =>
+                    escapeRegExp(term)
+            )
+            .join("|");
+
+
+    if (!pattern) {
+        return;
+    }
+
+
+    const regex =
+        new RegExp(
+            `(${pattern})`,
+            "giu"
+        );
+
+
+    /* =====================================================
+       ДЕ НЕ МОЖНА РОБИТИ ПІДКАЗКИ
+    ===================================================== */
+
+    const blockedTags =
+        new Set([
+            "SCRIPT",
+            "STYLE",
+            "INPUT",
+            "TEXTAREA",
+            "OPTION"
+        ]);
+
+
+    const walker =
+        document.createTreeWalker(
+            root,
+            NodeFilter.SHOW_TEXT
+        );
+
+
+    const textNodes = [];
+
+
+    while (walker.nextNode()) {
+
+        const node =
+            walker.currentNode;
+
+
+        const parent =
+            node.parentElement;
+
+
+        if (!parent) {
+            continue;
+        }
+
+
+        if (
+            blockedTags.has(
+                parent.tagName
+            )
+        ) {
+            continue;
+        }
+
+
+        if (
+            parent.closest(
+                ".glossary-term"
+            )
+        ) {
+            continue;
+        }
+
+
+        if (
+            parent.closest(
+                ".glossary-modal"
+            )
+        ) {
+            continue;
+        }
+
+
+        if (
+            !node.nodeValue
+                ?.trim()
+        ) {
+            continue;
+        }
+
+
+        regex.lastIndex = 0;
+
+
+        if (
+            regex.test(
+                node.nodeValue
+            )
+        ) {
+
+            textNodes.push(node);
+
+        }
+
+    }
+
+
+    /* =====================================================
+       ЗАМІНЮЄМО ЗНАЙДЕНІ СЛОВА
+    ===================================================== */
+
+    textNodes.forEach(node => {
+
+        const text =
+            node.nodeValue;
+
+
+        regex.lastIndex = 0;
+
+
+        const fragment =
+            document.createDocumentFragment();
+
+
+        let lastIndex = 0;
+
+        let match;
+
+
+        while (
+            (
+                match =
+                    regex.exec(text)
+            ) !== null
+        ) {
+
+            /* ТЕКСТ ДО ТЕРМІНА */
+
+            fragment.append(
+                document.createTextNode(
+                    text.slice(
+                        lastIndex,
+                        match.index
+                    )
+                )
+            );
+
+
+            const matchedText =
+                match[0];
+
+
+            const glossaryItem =
+                sortedTerms.find(
+                    ([term]) =>
+                        term.toLocaleLowerCase("uk") ===
+                        matchedText.toLocaleLowerCase("uk")
+                );
+
+
+            if (!glossaryItem) {
+
+                fragment.append(
+                    document.createTextNode(
+                        matchedText
+                    )
+                );
+
+            }
+            else {
+
+                const [
+                    term,
+                    explanation
+                ] = glossaryItem;
+
+
+                const span =
+                    document.createElement(
+                        "span"
+                    );
+
+
+                span.className =
+                    "glossary-term";
+
+
+                span.textContent =
+                    matchedText;
+
+
+                span.tabIndex =
+                    0;
+
+
+                span.setAttribute(
+                    "data-glossary-term",
+                    term
+                );
+
+
+                span.setAttribute(
+                    "data-glossary-explanation",
+                    explanation
+                );
+
+
+                fragment.append(span);
+
+            }
+
+
+            lastIndex =
+                regex.lastIndex;
+
+        }
+
+
+        /* ТЕКСТ ПІСЛЯ ОСТАННЬОГО ТЕРМІНА */
+
+        fragment.append(
+            document.createTextNode(
+                text.slice(lastIndex)
+            )
+        );
+
+
+        node.replaceWith(
+            fragment
+        );
+
+    });
+
+}
+
 /* =========================================================
    131.1. СЛОВНИЧОК ГРИ
 
