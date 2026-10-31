@@ -2987,6 +2987,38 @@ function showCareerRandomScreen() {
         "career-choice";
 
 
+    /* =====================================================
+       СПИСОК МОЖЛИВИХ ПРОФЕСІЙ
+    ===================================================== */
+
+    const careersHTML =
+        CAREER_SECTORS
+
+            .map(
+                sector => `
+
+                    <div class="career-random-option">
+
+                        <span class="career-random-icon">
+                            ${sector.icon}
+                        </span>
+
+                        <strong>
+                            ${
+                                getProfessionName(
+                                    sector.levels[0]
+                                )
+                            }
+                        </strong>
+
+                    </div>
+
+                `
+            )
+
+            .join("");
+
+
     setScreen(`
 
         <section class="game-screen">
@@ -2999,7 +3031,7 @@ function showCareerRandomScreen() {
             </button>
 
 
-           <div class="career-random-card career-selection-card">
+            <div class="career-random-card">
 
                 <h2>
                     ТВОЯ ПРОФЕСІЙНА ІСТОРІЯ
@@ -3038,13 +3070,20 @@ function showCareerRandomScreen() {
                     </div>
 
                     <strong>
-                        Твій шлях — твій вибір
+                        Обери свій шлях
                     </strong>
 
                     <span>
-                        Обери професію самостійно
-                        або довірся випадку.
+                        Можеш самостійно обрати професію
+                        або довірити вибір випадку.
                     </span>
+
+                </div>
+
+
+                <div class="career-random-grid">
+
+                    ${careersHTML}
 
                 </div>
 
@@ -3096,77 +3135,36 @@ function showCareerSelection() {
         "career-selection";
 
 
+    gameState.selectedCareerId =
+        null;
+
+
     const careersHTML =
         CAREER_SECTORS
 
             .map(
-                sector => {
+                sector => `
 
-                    const profession =
-                        getProfessionName(
-                            sector.levels[0]
-                        );
+                    <button
+                        class="career-random-option career-select-option"
+                        data-sector="${sector.id}"
+                    >
 
+                        <span class="career-random-icon">
+                            ${sector.icon}
+                        </span>
 
-                    const stats =
-                        getCareerStats(
-                            sector.id,
-                            1
-                        );
-
-
-                    return `
-
-                        <button
-                            class="career-random-option career-select-option"
-                            data-sector="${sector.id}"
-                        >
-
-                            <span class="career-random-icon">
-                                ${sector.icon}
-                            </span>
-
-
-                            <strong>
-                                ${profession}
-                            </strong>
-
-
+                        <strong>
                             ${
-                                stats
-
-                                ? `
-
-                                    <div class="career-select-stats">
-
-                                        <span>
-                                            💰 ${formatMoney(stats.salary)}
-                                        </span>
-
-                                        <span>
-                                            ⭐ ${stats.reputation}
-                                        </span>
-
-                                        <span>
-                                            🧠 ${stats.knowledge}
-                                        </span>
-
-                                        <span>
-                                            ⚡ ${stats.energy}
-                                        </span>
-
-                                    </div>
-
-                                  `
-
-                                : ""
+                                getProfessionName(
+                                    sector.levels[0]
+                                )
                             }
+                        </strong>
 
-                        </button>
+                    </button>
 
-                    `;
-
-                }
+                `
             )
 
             .join("");
@@ -3184,7 +3182,7 @@ function showCareerSelection() {
             </button>
 
 
-            <div class="career-random-card">
+            <div class="career-random-card career-selection-card">
 
                 <h2>
                     ОБЕРИ ПРОФЕСІЮ
@@ -3192,8 +3190,8 @@ function showCareerSelection() {
 
 
                 <p>
-                    Обери, з якої професії
-                    почнеться твій шлях.
+                    Натисни на професію,
+                    щоб дізнатися більше.
                 </p>
 
 
@@ -3202,6 +3200,12 @@ function showCareerSelection() {
                     ${careersHTML}
 
                 </div>
+
+
+                <div
+                    id="careerSelectionDetails"
+                    class="career-selection-details"
+                ></div>
 
             </div>
 
@@ -3221,7 +3225,7 @@ function showCareerSelection() {
                     "click",
                     () => {
 
-                        selectCareer(
+                        previewCareer(
                             button.dataset.sector
                         );
 
@@ -3242,7 +3246,161 @@ function showCareerSelection() {
         );
 
 }
+/* =========================================================
+   ПЕРЕГЛЯД ПРОФЕСІЇ ПЕРЕД ВИБОРОМ
+========================================================= */
 
+function previewCareer(sectorId) {
+
+    const sector =
+        CAREER_SECTORS.find(
+            item =>
+                item.id === sectorId
+        );
+
+
+    if (!sector) {
+        return;
+    }
+
+
+    const stats =
+        getCareerStats(
+            sector.id,
+            1
+        );
+
+
+    if (!stats) {
+        return;
+    }
+
+
+    const profession =
+        getProfessionName(
+            sector.levels[0]
+        );
+
+
+    gameState.selectedCareerId =
+        sector.id;
+
+
+    /* =====================================================
+       ПОЗНАЧАЄМО ОБРАНУ КАРТКУ
+    ===================================================== */
+
+    document
+        .querySelectorAll(
+            ".career-select-option"
+        )
+        .forEach(
+            button => {
+
+                button.classList.toggle(
+                    "selected",
+                    button.dataset.sector ===
+                        sector.id
+                );
+
+            }
+        );
+
+
+    /* =====================================================
+       ПОКАЗУЄМО ДЕТАЛІ
+    ===================================================== */
+
+    const details =
+        document.getElementById(
+            "careerSelectionDetails"
+        );
+
+
+    if (!details) {
+        return;
+    }
+
+
+    details.innerHTML = `
+
+        <div class="career-preview">
+
+            <div class="career-preview-main">
+
+                <span class="career-preview-icon">
+                    ${sector.icon}
+                </span>
+
+
+                <div>
+
+                    <small>
+                        ТИ ОБИРАЄШ
+                    </small>
+
+                    <strong>
+                        ${profession}
+                    </strong>
+
+                    <span>
+                        ${sector.name}
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="career-preview-stats">
+
+                <span>
+                    💰 ${formatMoney(stats.salary)}
+                </span>
+
+                <span>
+                    ⭐ ${stats.reputation}
+                </span>
+
+                <span>
+                    🧠 ${stats.knowledge}
+                </span>
+
+                <span>
+                    ⚡ ${stats.energy}
+                </span>
+
+            </div>
+
+
+            <button
+                id="confirmCareerButton"
+                class="main-game-btn"
+            >
+                ОБРАТИ ЦЮ ПРОФЕСІЮ
+            </button>
+
+        </div>
+
+    `;
+
+
+    document
+        .getElementById(
+            "confirmCareerButton"
+        )
+        .addEventListener(
+            "click",
+            () => {
+
+                selectCareer(
+                    sector.id
+                );
+
+            }
+        );
+
+}
 /* =========================================================
    ВИБІР ПРОФЕСІЇ ГРАВЦЕМ
 ========================================================= */
