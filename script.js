@@ -3596,8 +3596,13 @@ function showCareerResult() {
     setScreen(`
 
         <section class="game-screen">
-
-            <div class="career-random-card">
+<button
+    id="careerResultBackButton"
+    class="screen-back-button"
+>
+    ← Назад
+</button>
+          <div class="career-random-card career-result-card">
 
                 <div class="career-result-reveal">
 
@@ -3666,6 +3671,15 @@ function showCareerResult() {
             "click",
             showCareerReveal
         );
+
+   document
+    .getElementById(
+        "careerResultBackButton"
+    )
+    .addEventListener(
+        "click",
+        showCareerRandomScreen
+    );
 
 }
 /* =========================================================
