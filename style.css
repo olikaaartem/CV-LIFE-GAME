@@ -5443,3 +5443,94 @@ button {
     line-height: 1.35;
 }
 
+/* =====================================================
+   PREVIEW ОБРАНОЇ ПРОФЕСІЇ
+===================================================== */
+
+.career-selection-details {
+    margin-top: 18px;
+}
+
+
+.career-preview {
+    max-width: 900px;
+    margin: 0 auto;
+
+    padding: 14px 18px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 18px;
+
+    background: rgba(255, 255, 255, 0.72);
+}
+
+
+.career-preview-main {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    flex-shrink: 0;
+}
+
+
+.career-preview-icon {
+    font-size: 26px;
+}
+
+
+.career-preview-main > div {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.career-preview-main small {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    opacity: 0.5;
+}
+
+
+.career-preview-main strong {
+    font-size: 16px;
+    line-height: 1.15;
+}
+
+
+.career-preview-main span {
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+
+.career-preview-stats {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    flex-wrap: nowrap;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 700;
+}
+
+
+.career-preview .main-game-btn {
+    width: auto;
+    min-width: 220px;
+
+    margin: 0;
+    padding: 13px 20px;
+
+    flex-shrink: 0;
+
+    font-size: 14px;
+}
