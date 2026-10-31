@@ -2981,47 +2981,15 @@ function selectToken(tokenId) {
 /* =========================================================
    20. ПРОФЕСІЙНА ІСТОРІЯ
 ========================================================= */
-
 function showCareerRandomScreen() {
 
     gameState.phase =
-        "career-random";
-
-
-    const careersHTML =
-        CAREER_SECTORS
-
-            .map(
-                sector => `
-
-                    <div class="career-random-option">
-
-                        <span class="career-random-icon">
-                            ${sector.icon}
-                        </span>
-
-                        <strong>
-
-                            ${
-                                getProfessionName(
-                                    sector.levels[0]
-                                )
-                            }
-
-                        </strong>
-
-                    </div>
-
-                `
-            )
-
-            .join("");
+        "career-choice";
 
 
     setScreen(`
 
         <section class="game-screen">
-
 
             <button
                 id="careerRandomBackButton"
@@ -3033,61 +3001,52 @@ function showCareerRandomScreen() {
 
             <div class="career-random-card">
 
-
                 <h2>
                     ТВОЯ ПРОФЕСІЙНА ІСТОРІЯ
                 </h2>
 
 
                 <p>
-
-                    Життя саме визначить,
-                    з якої професії почнеться твій шлях.
-
+                    Як почнеться твій професійний шлях?
                 </p>
 
 
-                <div
-                    id="careerRandomBox"
-                    class="career-random-box"
-                >
+                <div class="career-choice-actions">
 
+                    <button
+                        id="chooseCareerButton"
+                        class="main-game-btn"
+                    >
+                        👤 ОБРАТИ САМОСТІЙНО
+                    </button>
+
+
+                    <button
+                        id="randomCareerButton"
+                        class="main-game-btn"
+                    >
+                        🎲 ВИПАДКОВО
+                    </button>
+
+                </div>
+
+
+                <div class="career-random-box">
 
                     <div class="career-random-dice">
-                        🎲
+                        💼
                     </div>
 
-
                     <strong>
-                        ${getReadyText()}
+                        Твій шлях — твій вибір
                     </strong>
 
-
                     <span>
-
-                        Натисни кнопку,
-                        щоб випадково отримати професію.
-
+                        Обери професію самостійно
+                        або довірся випадку.
                     </span>
 
-
                 </div>
-
-
-                <button
-                    id="getCareerButton"
-                    class="main-game-btn"
-                >
-                    🎲 ОТРИМАТИ ПРОФЕСІЮ
-                </button>
-
-
-                <div class="career-random-grid">
-
-                    ${careersHTML}
-
-                </div>
-
 
             </div>
 
@@ -3098,11 +3057,21 @@ function showCareerRandomScreen() {
 
     document
         .getElementById(
-            "getCareerButton"
+            "randomCareerButton"
         )
         .addEventListener(
             "click",
             assignRandomCareer
+        );
+
+
+    document
+        .getElementById(
+            "chooseCareerButton"
+        )
+        .addEventListener(
+            "click",
+            showCareerSelection
         );
 
 
@@ -3117,6 +3086,241 @@ function showCareerRandomScreen() {
 
 }
 
+/* =========================================================
+   РУЧНИЙ ВИБІР ПРОФЕСІЇ
+========================================================= */
+
+function showCareerSelection() {
+
+    gameState.phase =
+        "career-selection";
+
+
+    const careersHTML =
+        CAREER_SECTORS
+
+            .map(
+                sector => {
+
+                    const profession =
+                        getProfessionName(
+                            sector.levels[0]
+                        );
+
+
+                    const stats =
+                        getCareerStats(
+                            sector.id,
+                            1
+                        );
+
+
+                    return `
+
+                        <button
+                            class="career-random-option career-select-option"
+                            data-sector="${sector.id}"
+                        >
+
+                            <span class="career-random-icon">
+                                ${sector.icon}
+                            </span>
+
+
+                            <strong>
+                                ${profession}
+                            </strong>
+
+
+                            ${
+                                stats
+
+                                ? `
+
+                                    <div class="career-select-stats">
+
+                                        <span>
+                                            💰 ${formatMoney(stats.salary)}
+                                        </span>
+
+                                        <span>
+                                            ⭐ ${stats.reputation}
+                                        </span>
+
+                                        <span>
+                                            🧠 ${stats.knowledge}
+                                        </span>
+
+                                        <span>
+                                            ⚡ ${stats.energy}
+                                        </span>
+
+                                    </div>
+
+                                  `
+
+                                : ""
+                            }
+
+                        </button>
+
+                    `;
+
+                }
+            )
+
+            .join("");
+
+
+    setScreen(`
+
+        <section class="game-screen">
+
+            <button
+                id="careerSelectionBackButton"
+                class="screen-back-button"
+            >
+                ← Назад
+            </button>
+
+
+            <div class="career-random-card">
+
+                <h2>
+                    ОБЕРИ ПРОФЕСІЮ
+                </h2>
+
+
+                <p>
+                    Обери, з якої професії
+                    почнеться твій шлях.
+                </p>
+
+
+                <div class="career-random-grid">
+
+                    ${careersHTML}
+
+                </div>
+
+            </div>
+
+        </section>
+
+    `);
+
+
+    document
+        .querySelectorAll(
+            ".career-select-option"
+        )
+        .forEach(
+            button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        selectCareer(
+                            button.dataset.sector
+                        );
+
+                    }
+                );
+
+            }
+        );
+
+
+    document
+        .getElementById(
+            "careerSelectionBackButton"
+        )
+        .addEventListener(
+            "click",
+            showCareerRandomScreen
+        );
+
+}
+
+/* =========================================================
+   ВИБІР ПРОФЕСІЇ ГРАВЦЕМ
+========================================================= */
+
+function selectCareer(sectorId) {
+
+    const sector =
+        CAREER_SECTORS.find(
+            item =>
+                item.id === sectorId
+        );
+
+
+    if (!sector) {
+        return;
+    }
+
+
+    const stats =
+        getCareerStats(
+            sector.id,
+            1
+        );
+
+
+    if (!stats) {
+        return;
+    }
+
+
+    /* =====================================================
+       ПРОФЕСІЯ
+    ===================================================== */
+
+    gameState.player.sector =
+        sector;
+
+
+    gameState.player.careerLevel =
+        0;
+
+
+    gameState.player.salary =
+        stats.salary;
+
+
+    /* =====================================================
+       СТАРТОВІ РЕСУРСИ
+    ===================================================== */
+
+    gameState.player.money =
+        stats.salary;
+
+
+    gameState.player.reputation =
+        stats.reputation;
+
+
+    gameState.player.knowledge =
+        stats.knowledge;
+
+
+    gameState.player.energy =
+        stats.energy;
+
+
+    clampPlayerResources(
+        gameState.player
+    );
+
+
+    /* =====================================================
+       ПОКАЗУЄМО РЕЗУЛЬТАТ
+    ===================================================== */
+
+    showCareerResult();
+
+}
 
 /* =========================================================
    21. ВИПАДКОВА ПРОФЕСІЯ
@@ -3206,7 +3410,6 @@ function assignRandomCareer() {
 /* =========================================================
    22. ПОКАЗ ОТРИМАНОЇ ПРОФЕСІЇ
 ========================================================= */
-
 function showCareerResult() {
 
     const player =
@@ -3218,9 +3421,7 @@ function showCareerResult() {
 
 
     if (!sector) {
-
         return;
-
     }
 
 
@@ -3230,97 +3431,85 @@ function showCareerResult() {
         );
 
 
-    const box =
-        document.getElementById(
-            "careerRandomBox"
+    /* =====================================================
+       ОКРЕМИЙ ЕКРАН РЕЗУЛЬТАТУ
+    ===================================================== */
+
+    setScreen(`
+
+        <section class="game-screen">
+
+            <div class="career-random-card">
+
+                <div class="career-result-reveal">
+
+
+                    <div class="career-result-label">
+                        🎉 ТВОЯ ПРОФЕСІЯ
+                    </div>
+
+
+                    <div class="career-result-icon">
+                        ${sector.icon}
+                    </div>
+
+
+                    <div class="career-result-profession">
+                        ${profession}
+                    </div>
+
+
+                    <div class="career-result-sector">
+                        ${sector.name}
+                    </div>
+
+
+                    <div class="career-result-text">
+
+                        Це перша сходинка
+                        твого професійного шляху.
+
+                    </div>
+
+
+                    <div class="career-result-start-money">
+
+                        💰 Стартовий баланс:
+
+                        <strong>
+                            ${formatMoney(player.money)} грн
+                        </strong>
+
+                    </div>
+
+
+                    <button
+                        id="careerResultContinueButton"
+                        class="main-game-btn"
+                    >
+                        ПРОДОВЖИТИ →
+                    </button>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+    `);
+
+
+    document
+        .getElementById(
+            "careerResultContinueButton"
+        )
+        .addEventListener(
+            "click",
+            showCareerReveal
         );
-
-
-    const oldButton =
-        document.getElementById(
-            "getCareerButton"
-        );
-
-
-    if (
-        !box ||
-        !oldButton
-    ) {
-
-        return;
-
-    }
-
-
-    box.innerHTML = `
-
-        <div class="career-result-reveal">
-
-
-            <div class="career-result-label">
-                🎉 ТВОЯ ПРОФЕСІЯ
-            </div>
-
-
-            <div class="career-result-icon">
-                ${sector.icon}
-            </div>
-
-
-            <div class="career-result-profession">
-                ${profession}
-            </div>
-
-
-            <div class="career-result-sector">
-                ${sector.name}
-            </div>
-
-
-            <div class="career-result-text">
-
-                Це перша сходинка
-                твого професійного шляху.
-
-            </div>
-
-
-            <div class="career-result-start-money">
-
-                💰 Стартовий баланс:
-                <strong>
-                    ${formatMoney(player.money)} грн
-                </strong>
-
-            </div>
-
-
-        </div>
-
-    `;
-
-
-    const newButton =
-        oldButton.cloneNode(true);
-
-
-    oldButton.replaceWith(
-        newButton
-    );
-
-
-    newButton.textContent =
-        "ПРОДОВЖИТИ →";
-
-
-    newButton.addEventListener(
-        "click",
-        showCareerReveal
-    );
 
 }
-
-
 /* =========================================================
    23. ЖИТТЄВИЙ ШЛЯХ / КАР'ЄРНІ РІВНІ
 ========================================================= */
