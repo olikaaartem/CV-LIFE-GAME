@@ -5553,3 +5553,21 @@ button {
     width: 100%;
     margin: 0 auto;
 }
+
+/* =====================================================
+   ФІНАЛ ПРОФЕСІЇ — КОМПАКТНА МОДАЛКА
+===================================================== */
+
+.game-screen .career-random-card.career-result-card {
+    width: 620px !important;
+    max-width: calc(100vw - 80px) !important;
+
+    min-height: 0 !important;
+
+    padding: 36px 45px !important;
+    margin: 0 auto !important;
+
+    box-sizing: border-box;
+}
+
+
