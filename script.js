@@ -2999,7 +2999,7 @@ function showCareerRandomScreen() {
             </button>
 
 
-            <div class="career-random-card">
+           <div class="career-random-card career-selection-card">
 
                 <h2>
                     ТВОЯ ПРОФЕСІЙНА ІСТОРІЯ
