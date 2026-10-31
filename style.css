@@ -5534,3 +5534,22 @@ button {
 
     font-size: 14px;
 }
+/* =====================================================
+   ФІНАЛЬНИЙ ЕКРАН ВИБОРУ ПРОФЕСІЇ
+===================================================== */
+
+.career-result-card {
+    width: min(680px, calc(100vw - 80px));
+    max-width: 680px;
+
+    margin: 0 auto;
+    padding: 38px 50px;
+
+    border-radius: 30px;
+}
+
+
+.career-result-card .career-result-reveal {
+    width: 100%;
+    margin: 0 auto;
+}
