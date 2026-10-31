@@ -5570,4 +5570,103 @@ button {
     box-sizing: border-box;
 }
 
+/* =====================================================
+   АВТОМАТИЧНІ ПІДКАЗКИ СЛОВНИЧКА
+===================================================== */
 
+.glossary-term {
+    position: relative;
+
+    display: inline;
+
+    font-weight: 700;
+
+    border-bottom:
+        2px dotted
+        rgba(120, 92, 0, 0.65);
+
+    cursor: help;
+
+    transition:
+        background 0.18s ease,
+        border-color 0.18s ease;
+}
+
+
+.glossary-term:hover,
+.glossary-term:focus {
+    background:
+        rgba(255, 216, 0, 0.18);
+
+    border-bottom-color:
+        rgba(120, 92, 0, 1);
+
+    outline: none;
+}
+
+
+/* =====================================================
+   ПЛАШКА З ПОЯСНЕННЯМ
+===================================================== */
+
+.glossary-term::after {
+
+    content:
+        attr(data-glossary-explanation);
+
+    position: absolute;
+
+    left: 50%;
+    bottom: calc(100% + 10px);
+
+    z-index: 9999;
+
+    width: max-content;
+    max-width: 320px;
+
+    padding: 10px 12px;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    box-shadow:
+        0 8px 28px
+        rgba(0, 0, 0, 0.18);
+
+    color: #222222;
+
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.4;
+
+    text-align: left;
+
+    white-space: normal;
+
+    pointer-events: none;
+
+    opacity: 0;
+
+    visibility: hidden;
+
+    transform:
+        translate(-50%, 5px);
+
+    transition:
+        opacity 0.16s ease,
+        transform 0.16s ease,
+        visibility 0.16s ease;
+}
+
+
+.glossary-term:hover::after,
+.glossary-term:focus::after {
+
+    opacity: 1;
+
+    visibility: visible;
+
+    transform:
+        translate(-50%, 0);
+}
