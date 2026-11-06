@@ -10486,10 +10486,10 @@ INNER_CARD_DECKS.event = [
                         max: 6,
 
                         text:
-                            "1-ше місце: 🧠 +16 | ⭐ +15 | 💰 +10 000 грн",
+                            "1-ше місце: 🧠 +15 | ⭐ +15 | 💰 +10 000 грн",
 
                         effects: {
-                            knowledge: 16,
+                            knowledge: 15,
                             reputation: 15,
                             money: 10000
                         }
@@ -14043,10 +14043,10 @@ OUTER_CARD_DECKS.event = [
                     "Без змін",
 
                 resultText:
-                    "⭐ +2 репутації",
+                    "⭐ +5 репутації",
 
                 effects: {
-                    reputation: 2
+                    reputation: 5
                 }
             }
 
@@ -16964,11 +16964,11 @@ OUTER_CARD_DECKS.fate = [
             money: -15000,
             knowledge: -10,
             energy: -10,
-            reputation: -7
+            reputation: -5
         },
 
         resultText:
-            "💰 -15 000 грн | 🧠 -10 знань | ⚡ -10 енергії | ⭐ -7 репутації"
+            "💰 -15 000 грн | 🧠 -10 знань | ⚡ -10 енергії | ⭐ -5 репутації"
     },
 
 
@@ -17022,11 +17022,11 @@ OUTER_CARD_DECKS.fate = [
             money: 25000,
             knowledge: 10,
             energy: 10,
-            reputation: 7
+            reputation: 5
         },
 
         resultText:
-            "💰 +25 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +7 репутації"
+            "💰 +25 000 грн | 🧠 +10 знань | ⚡ +10 енергії | ⭐ +5 репутації"
     },
 
 
@@ -31628,7 +31628,7 @@ function processFixedLoan(
    КРЕДИТИ ГОТІВКОЮ
 
    Звичайний кредит:
-   -2 репутації за несплату.
+   -5 репутації за несплату.
 
    Premium кредит:
    без штрафу репутації,
@@ -31644,13 +31644,13 @@ else {
         applyEffects(
             player,
             {
-                reputation: -2
+                reputation: -5
             }
         );
 
 
         addLog(
-            `⚠️ ${title}: платіж перенесено; −2 репутації.`
+            `⚠️ ${title}: платіж перенесено; −5 репутації.`
         );
 
     } else {
