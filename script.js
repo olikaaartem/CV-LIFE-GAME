@@ -30444,18 +30444,20 @@ function activateBankProduct(card, context = {}) {
        Повторна перевірка перед списанням.
        Сума має бути цілою, не меншою за мінімальний вклад.
     */
-    if (
-        isInvestment &&
-        (
-            !Number.isSafeInteger(investedAmount) ||
-            baseAmount <= 0 ||
-            investedAmount < baseAmount ||
-            investedAmount > player.money
-        )
-    ) {
-        showClassicDepositTermChoice(card, ctx);
-        return;
-    }
+   
+   if (
+    isInvestment &&
+    (
+        !Number.isSafeInteger(investedAmount) ||
+        baseAmount <= 0 ||
+        investedAmount < baseAmount ||
+        investedAmount > player.money ||
+        (isClassic && investedAmount % 50 !== 0)
+    )
+) {
+    showClassicDepositTermChoice(card, ctx);
+    return;
+}
 
     if (bankActivationProblem(player, card, ctx)) {
         showBankCard(card, ctx);
@@ -30512,15 +30514,15 @@ function activateBankProduct(card, context = {}) {
             investedAmount / baseAmount;
     }
 
-    if (isClassic) {
-        Object.assign(product, {
-            termMonths: term.months,
-            termTurns: term.turns,
-            profit: Math.round(
-                term.profit * investedAmount / baseAmount
-            )
-        });
-    }
+   if (isClassic) {
+    Object.assign(product, {
+        termMonths: term.months,
+        termTurns: term.turns,
+        profit: Math.round(
+            (term.profit * investedAmount / baseAmount) / 50
+        ) * 50
+    });
+}
 
     if (overdraftLimit) {
         product.principalDue = overdraftLimit;
@@ -30687,7 +30689,7 @@ function showClassicDepositTermChoice(card, context = {}) {
                 type="number"
                 min="${minimumAmount}"
                 max="${Math.floor(player.money)}"
-                step="1"
+                step="${isClassic ? 50 : 1}"
                 value="${initialAmount}"
                 style="
                     display:block;
@@ -30784,11 +30786,12 @@ function showClassicDepositTermChoice(card, context = {}) {
             )
             : null;
 
-        const valid =
-            Number.isSafeInteger(amount) &&
-            amount >= minimumAmount &&
-            amount <= player.money &&
-            (!isClassic || Boolean(term));
+       const valid =
+    Number.isSafeInteger(amount) &&
+    amount >= minimumAmount &&
+    amount <= player.money &&
+    (!isClassic || amount % 50 === 0) &&
+    (!isClassic || Boolean(term));
 
         return { amount, term, valid };
     };
@@ -30807,10 +30810,10 @@ function showClassicDepositTermChoice(card, context = {}) {
         }
 
         if (isClassic) {
-            const profit = Math.round(
-                term.profit * amount / minimumAmount
-            );
-
+    const profit = Math.round(
+        (term.profit * amount / minimumAmount) / 50
+    ) * 50;
+           
             preview.innerHTML = `
                 Зараз буде списано:
                 ${formatMoney(amount)} грн.<br>
@@ -32137,8 +32140,7 @@ function applyBankBusinessProtection(
 const BANK_UPDATED_RULES = {
 
       deposit_classic:
-        "Мінімальний вклад - 4 000 грн. Перед підключенням введи суму в межах доступних коштів та обери термін: 3, 6 або 12 місяців - 9, 18 або 36 особистих ходів. Дохід за весь термін становить відповідно 25%, 37,5% або 50% суми вкладу, з округленням до цілої гривні. Наприкінці вклад і дохід повертаються один раз. До підтвердження ти побачиш суму списання та суму повернення. 1 місяць = 3 особисті ходи.",
-
+        "Мінімальний вклад — 4 000 грн. Суму можна обирати з кроком 50 грн у межах доступних коштів. Обери строк: 3 місяці (9 особистих ходів) — прибуток 25%; 6 місяців (18 ходів) — 37,5%; 12 місяців (36 ходів) — 50%. Відсотки нараховуються за весь строк, а не щомісяця. Прибуток округлюється до найближчих 50 грн. Наприкінці строку повертаються початковий вклад і прибуток. Дострокове зняття та автоматичне продовження недоступні.",
     credit_card_100:
         "Отримай +3 000 грн. Три платежі по 1 000 грн кожного 2-го ходу. За прострочення — один окремий четвертий платіж 1 000 грн. Несплачений платіж повторно перевіряється наступного ходу.",
 
