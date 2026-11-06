@@ -320,21 +320,22 @@ const CAREER_SECTORS = [
                 energy: 85
             },
 
-            {
-                level: 3,
-                salary: 70000,
-                reputation: 55,
-                knowledge: 68,
-                energy: 75
-            },
+            
+{
+    level: 3,
+    salary: 70000,
+    reputation: 55,
+    knowledge: 65,
+    energy: 75
+},
 
-            {
-                level: 4,
-                salary: 130000,
-                reputation: 80,
-                knowledge: 88,
-                energy: 70
-            }
+{
+    level: 4,
+    salary: 130000,
+    reputation: 80,
+    knowledge: 85,
+    energy: 70
+}
 
         ]
     },
