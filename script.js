@@ -29166,11 +29166,7 @@ function getBankOverdraftLimit(player) {
 }
 
 
-function bankActivationProblem(
-    player,
-    card,
-    context
-) {
+function bankActivationProblem(player, card, context = {}) {
 
     if (
         !player ||
@@ -29182,62 +29178,72 @@ function bankActivationProblem(
         return "Картку продукту не знайдено.";
     }
 
-    const bank =
-        ensureBankState(player);
+    const bank = ensureBankState(player);
+    const productId = card.productId;
 
-    if (
-        hasBankProduct(
-            player,
-            card.productId
-        )
-    ) {
+    if (hasBankProduct(player, productId)) {
         return "Цей продукт уже підключений.";
     }
 
     if (
-        context.source === "hub" &&
+        context?.source === "hub" &&
         bank.extraVisits < 1
     ) {
         return "Додаткові звернення вичерпано. Можна підключити продукт, коли випадеш на клітинку Банку.";
     }
 
-    const cost =
-        Math.max(
-            0,
-            -(Number(card.initialEffects?.money) || 0)
+    const availableMoney = Number(player.money) || 0;
+
+    // Вимоги до власних коштів перевіряємо
+    // незалежно від раніше отриманого Premium-статусу.
+
+    const requiredMoney = (
+        productId === "premium_cash_credit" ||
+        productId === "premium_credit_card"
+    )
+        ? 200000
+        : productId === "business_elite"
+            ? 25000
+            : Math.max(0, Number(card.moneyRequired) || 0);
+
+    if (availableMoney < requiredMoney) {
+        return (
+            `Для цього продукту потрібно мати щонайменше ` +
+            `${formatMoney(requiredMoney)} грн власних коштів.`
         );
-
-    if (
-        player.money < cost
-    ) {
-        return `Для підключення потрібно ${formatMoney(cost)} грн.`;
     }
 
-    if (
-        card.moneyRequired &&
-        player.money < card.moneyRequired
-    ) {
-        return `Потрібно мати щонайменше ${formatMoney(card.moneyRequired)} грн.`;
+    // Перевірка вартості підключення.
+    // Для кредитів позитивне надходження
+    // не вважається платою за оформлення.
+
+    const cost = Math.max(
+        0,
+        -(Number(card.initialEffects?.money) || 0)
+    );
+
+    if (availableMoney < cost) {
+        return (
+            `Для підключення потрібно ` +
+            `${formatMoney(cost)} грн.`
+        );
     }
 
-    if (
-        card.premiumRequired &&
-        !bank.premium &&
-        player.money < 20000
-    ) {
-        return "Для отримання Premium-статусу потрібно мати щонайменше 20 000 грн.";
-    }
+    // Умови доступу до овердрафту.
 
     if (
-        card.productId === "overdraft" &&
-        !getBankOverdraftLimit(player)
+        productId === "overdraft" &&
+        getBankOverdraftLimit(player) <= 0
     ) {
-        return "Для овердрафту потрібно щонайменше 10 знань та 20 репутації.";
+        return (
+            "Для овердрафту потрібно щонайменше " +
+            "10 знань та 20 репутації."
+        );
     }
 
     return "";
-
 }
+
 
 
 function bindBankClick(
@@ -30494,6 +30500,7 @@ function activateBankProduct(card, context = {}) {
    Спільне вікно суми для депозитів та інвестицій.
    Назву функції залишаємо, щоб зберегти наявні виклики.
 */
+
 function showClassicDepositTermChoice(card, context = {}) {
     const player = gameState.player;
     if (!player || !card) return;
@@ -30503,22 +30510,33 @@ function showClassicDepositTermChoice(card, context = {}) {
     if (!originalCard) return;
 
     const isClassic = card.productId === "deposit_classic";
+    const isOvdp = card.productId === "ovdp";
 
-    const minimumAmount = Math.max(
-        0,
-        -Number(originalCard.initialEffects?.money || 0)
-    );
+    const minimumAmount = isOvdp
+        ? 5000
+        : Math.max(
+            0,
+            -Number(originalCard.initialEffects?.money || 0)
+        );
 
-    if (!Number.isSafeInteger(minimumAmount) || minimumAmount <= 0) {
+    if (
+        !Number.isSafeInteger(minimumAmount) ||
+        minimumAmount <= 0
+    ) {
         return;
     }
 
-    const previousAmount = -Number(card.initialEffects?.money);
+    const availableMoney = Number(player.money) || 0;
+    const step = isOvdp ? 5000 : 50;
+
+    const previousAmount =
+        -Number(card.initialEffects?.money);
 
     const initialAmount =
         Number.isSafeInteger(previousAmount) &&
         previousAmount >= minimumAmount &&
-        previousAmount <= player.money
+        previousAmount <= availableMoney &&
+        previousAmount % step === 0
             ? previousAmount
             : minimumAmount;
 
@@ -30532,23 +30550,32 @@ function showClassicDepositTermChoice(card, context = {}) {
                 Мінімальний вклад:
                 ${formatMoney(minimumAmount)} грн.
                 <br>
-                Можна вкласти більше в межах своїх коштів.
+                ${
+                    isOvdp
+                        ? "Одна облігація коштує 5 000 грн. Можна купити лише цілу кількість облігацій."
+                        : "Можна обрати більшу суму, кратну 50 грн, у межах доступних коштів."
+                }
             </p>
 
             <p>
-                Доступно: ${formatMoney(player.money)} грн.
+                Доступно:
+                ${formatMoney(availableMoney)} грн.
             </p>
 
             <label for="bankInvestmentAmount">
-                Сума вкладу, грн
+                ${
+                    isOvdp
+                        ? "Загальна вартість ОВДП, грн"
+                        : "Сума вкладу, грн"
+                }
             </label>
 
             <input
                 id="bankInvestmentAmount"
                 type="number"
                 min="${minimumAmount}"
-                max="${Math.floor(player.money)}"
-                step="${isClassic ? 50 : 1}"
+                max="${Math.floor(availableMoney)}"
+                step="${step}"
                 value="${initialAmount}"
                 style="
                     display:block;
@@ -30571,6 +30598,7 @@ function showClassicDepositTermChoice(card, context = {}) {
                             style="
                                 display:block;
                                 width:100%;
+                                box-sizing:border-box;
                                 padding:12px;
                                 margin:8px 0 16px;
                             "
@@ -30592,16 +30620,13 @@ function showClassicDepositTermChoice(card, context = {}) {
                             `).join("")}
                         </select>
                     `
-                    : `
-                        <p>
-                            Періодичність виплат і строк залишаються
-                            такими, як у картці цього продукту.
-                            Грошові виплати залежать від суми вкладу.
-                        </p>
-                    `
+                    : ""
             }
 
-            <p id="bankInvestmentPreview" aria-live="polite"></p>
+            <p
+                id="bankInvestmentPreview"
+                aria-live="polite"
+            ></p>
 
             <button
                 id="bankInvestmentConfirmButton"
@@ -30637,20 +30662,23 @@ function showClassicDepositTermChoice(card, context = {}) {
     let submitted = false;
 
     const getSelection = () => {
-        const amount = Number(amountInput.value);
+        const rawValue = amountInput.value.trim();
+        const amount = Number(rawValue);
 
         const term = isClassic
             ? BANK_CLASSIC_TERMS.find(
-                item => item.months === Number(termSelect?.value)
+                item =>
+                    item.months === Number(termSelect?.value)
             )
             : null;
 
-       const valid =
-    Number.isSafeInteger(amount) &&
-    amount >= minimumAmount &&
-    amount <= player.money &&
-    (!isClassic || amount % 50 === 0) &&
-    (!isClassic || Boolean(term));
+        const valid =
+            rawValue !== "" &&
+            Number.isSafeInteger(amount) &&
+            amount >= minimumAmount &&
+            amount <= (Number(player.money) || 0) &&
+            amount % step === 0 &&
+            (!isClassic || Boolean(term));
 
         return { amount, term, valid };
     };
@@ -30662,17 +30690,17 @@ function showClassicDepositTermChoice(card, context = {}) {
 
         if (!valid) {
             preview.textContent =
-                `Введи цілу суму від ` +
-                `${formatMoney(minimumAmount)} грн, ` +
-                `не більшу за доступні кошти.`;
+                `Введи суму від ${formatMoney(minimumAmount)} грн ` +
+                `до ${formatMoney(Number(player.money) || 0)} грн, ` +
+                `кратну ${formatMoney(step)} грн.`;
             return;
         }
 
         if (isClassic) {
-    const profit = Math.round(
-        (term.profit * amount / minimumAmount) / 50
-    ) * 50;
-           
+            const profit = Math.round(
+                (term.profit * amount / minimumAmount) / 50
+            ) * 50;
+
             preview.innerHTML = `
                 Зараз буде списано:
                 ${formatMoney(amount)} грн.<br>
@@ -30686,9 +30714,27 @@ function showClassicDepositTermChoice(card, context = {}) {
                 Разом повернеться:
                 ${formatMoney(amount + profit)} грн.
             `;
+        } else if (isOvdp) {
+            preview.innerHTML = `
+                Кількість облігацій:
+                ${amount / 5000} шт.<br>
+
+                Зараз буде списано:
+                ${formatMoney(amount)} грн.<br>
+
+                Термін: 18 особистих ходів.<br>
+
+                Дохід кожні 3 ходи:
+                +${formatMoney(amount * 0.20)} грн.<br>
+
+                Наприкінці повертається
+                основна сума:
+                ${formatMoney(amount)} грн.
+            `;
         } else {
             preview.textContent =
-                `Зараз буде списано ${formatMoney(amount)} грн.`;
+                `Зараз буде списано ${formatMoney(amount)} грн. ` +
+                `Подальші виплати — за умовами картки продукту.`;
         }
     };
 
