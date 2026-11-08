@@ -30245,12 +30245,18 @@ function showBankCard(
 
    Захист від повторної обробки того самого ходу.
 ========================================================= */
+
 function activateBankProduct(card, context = {}) {
     const player = gameState.player;
     if (!player || !card) return;
 
     const ctx = bankContext(context);
     const bank = ensureBankState(player);
+    const originalCard = bankCatalogCard(card.productId);
+
+    if (!originalCard) return;
+
+    const productId = originalCard.productId;
 
     const investmentIds = [
         "deposit_classic",
@@ -30264,13 +30270,34 @@ function activateBankProduct(card, context = {}) {
         "dividend_stock"
     ];
 
-    const isInvestment = investmentIds.includes(card.productId);
-    const isClassic = card.productId === "deposit_classic";
-    const originalCard = bankCatalogCard(card.productId);
+    const creditIds = [
+        "cash_credit",
+        "credit_card_100",
+        "premium_cash_credit",
+        "premium_credit_card",
+        "overdraft"
+    ];
+
+    const isInvestment = investmentIds.includes(productId);
+    const isCredit = creditIds.includes(productId);
+    const isClassic = productId === "deposit_classic";
+    const isOvdp = productId === "ovdp";
+    const isOverdraft = productId === "overdraft";
+
+    const problem = bankActivationProblem(
+        player,
+        originalCard,
+        ctx
+    );
+
+    if (problem) {
+        showBankCard(originalCard, ctx);
+        return;
+    }
 
     const baseAmount = Math.max(
         0,
-        -Number(originalCard?.initialEffects?.money || 0)
+        -Number(originalCard.initialEffects?.money || 0)
     );
 
     const term = isClassic
@@ -30282,8 +30309,8 @@ function activateBankProduct(card, context = {}) {
         : null;
 
     /*
-       До підтвердження відкриваємо вибір суми.
-       Для строкового депозиту також потрібен термін.
+       Вибір суми депозиту або інвестиції
+       відбувається у вже оновленій функції.
     */
     if (
         isInvestment &&
@@ -30296,117 +30323,429 @@ function activateBankProduct(card, context = {}) {
         return;
     }
 
+    /*
+       Вибір суми кредиту або овердрафту.
+       Вікно відкривається лише до підтвердження.
+    */
+    if (
+        isCredit &&
+        card.creditConfirmed !== true
+    ) {
+        const limit = isOverdraft
+            ? getBankOverdraftLimit(player)
+            : null;
+
+        const defaultAmount = isOverdraft
+            ? Math.min(limit, 10000)
+            : Math.max(
+                50,
+                Number(originalCard.initialEffects?.money) || 50
+            );
+
+        openGameInfoModal(`
+            <div class="bank-card-game-modal">
+                <div class="cycle-notice-icon">🏦</div>
+
+                <h2>${originalCard.title}</h2>
+
+                <p>
+                    Обери суму з кроком 50 грн.
+                </p>
+
+                ${
+                    isOverdraft
+                        ? `
+                            <p>
+                                Твій максимальний ліміт:
+                                ${formatMoney(limit)} грн.
+                            </p>
+                        `
+                        : ""
+                }
+
+                <label for="bankCreditAmount">
+                    ${
+                        isOverdraft
+                            ? "Сума овердрафту, грн"
+                            : "Сума кредиту / кредитний ліміт, грн"
+                    }
+                </label>
+
+                <input
+                    id="bankCreditAmount"
+                    type="number"
+                    min="50"
+                    ${isOverdraft ? `max="${limit}"` : ""}
+                    step="50"
+                    value="${defaultAmount}"
+                    style="
+                        display:block;
+                        width:100%;
+                        box-sizing:border-box;
+                        padding:12px;
+                        margin:8px 0 16px;
+                    "
+                >
+
+                <p
+                    id="bankCreditPreview"
+                    aria-live="polite"
+                ></p>
+
+                <button
+                    id="bankCreditConfirmButton"
+                    type="button"
+                    class="main-game-btn"
+                >
+                    ПІДТВЕРДИТИ
+                </button>
+
+                <button
+                    id="bankCreditCancelButton"
+                    type="button"
+                    class="secondary-game-btn"
+                >
+                    НАЗАД
+                </button>
+            </div>
+        `);
+
+        const amountInput =
+            document.getElementById("bankCreditAmount");
+
+        const preview =
+            document.getElementById("bankCreditPreview");
+
+        const confirmButton =
+            document.getElementById("bankCreditConfirmButton");
+
+        let submitted = false;
+
+        const getAmount = () => {
+            const raw = amountInput.value.trim();
+            const amount = Number(raw);
+
+            const valid =
+                raw !== "" &&
+                Number.isSafeInteger(amount) &&
+                amount >= 50 &&
+                amount % 50 === 0 &&
+                (
+                    !isOverdraft ||
+                    amount <= getBankOverdraftLimit(player)
+                );
+
+            return { amount, valid };
+        };
+
+        const updatePreview = () => {
+            const { amount, valid } = getAmount();
+
+            confirmButton.disabled = !valid || submitted;
+
+            if (!valid) {
+                preview.textContent =
+                    isOverdraft
+                        ? `Обери суму від 50 до ${formatMoney(limit)} грн, кратну 50.`
+                        : "Введи додатну суму, кратну 50 грн.";
+                return;
+            }
+
+            if (isOverdraft) {
+                preview.innerHTML = `
+                    Отримаєш:
+                    ${formatMoney(amount)} грн.<br>
+
+                    Відсотки кожні 3 особистих ходи:
+                    20% від непогашеного боргу.<br>
+
+                    Максимальний строк:
+                    18 особистих ходів.
+                `;
+                return;
+            }
+
+            if (
+                productId === "cash_credit" ||
+                productId === "premium_cash_credit"
+            ) {
+                const total = amount * 1.5;
+
+                preview.innerHTML = `
+                    Отримаєш:
+                    ${formatMoney(amount)} грн.<br>
+
+                    Загальна сума повернення:
+                    ${formatMoney(total)} грн.<br>
+
+                    6 платежів кожні 3 особистих ходи.
+                    Суми платежів мають бути кратними 50 грн.
+                `;
+                return;
+            }
+
+            preview.innerHTML = `
+                Обраний кредитний ліміт:
+                ${formatMoney(amount)} грн.<br>
+
+                Пільговий період:
+                9 особистих ходів.<br>
+
+                Якщо борг залишиться після пільгового
+                періоду, одноразова переплата —
+                50% від початково використаної суми.
+            `;
+        };
+
+        amountInput.addEventListener(
+            "input",
+            updatePreview
+        );
+
+        confirmButton.addEventListener("click", () => {
+            if (submitted) return;
+
+            const { amount, valid } = getAmount();
+
+            if (!valid) {
+                updatePreview();
+                return;
+            }
+
+            submitted = true;
+            confirmButton.disabled = true;
+
+            activateBankProduct(
+                {
+                    ...originalCard,
+                    creditConfirmed: true,
+                    selectedCreditAmount: amount
+                },
+                ctx
+            );
+        });
+
+        bindBankClick(
+            "bankCreditCancelButton",
+            () => showBankCard(originalCard, ctx)
+        );
+
+        updatePreview();
+        return;
+    }
+
     const effects = {
-        ...(card.initialEffects || {})
+        ...(originalCard.initialEffects || {})
     };
 
-    const investedAmount = Math.max(
-        0,
-        -Number(effects.money || 0)
-    );
+    let investedAmount = 0;
+    let creditAmount = 0;
 
     /*
-       Повторна перевірка перед списанням.
-       Сума має бути цілою, не меншою за мінімальний вклад.
+       Остаточна перевірка вкладеної суми.
     */
-   
-   if (
-    isInvestment &&
-    (
-        !Number.isSafeInteger(investedAmount) ||
-        baseAmount <= 0 ||
-        investedAmount < baseAmount ||
-        investedAmount > player.money ||
-        (isClassic && investedAmount % 50 !== 0)
-    )
-) {
-    showClassicDepositTermChoice(card, ctx);
-    return;
-}
+    if (isInvestment) {
+        investedAmount = -Number(
+            card.initialEffects?.money
+        );
 
-    if (bankActivationProblem(player, card, ctx)) {
-        showBankCard(card, ctx);
+        const step = isOvdp ? 5000 : 50;
+
+        const validInvestment =
+            Number.isSafeInteger(investedAmount) &&
+            baseAmount > 0 &&
+            investedAmount >= baseAmount &&
+            investedAmount <= (Number(player.money) || 0) &&
+            investedAmount % step === 0 &&
+            (!isClassic || Boolean(term));
+
+        if (!validInvestment) {
+            showClassicDepositTermChoice(
+                originalCard,
+                ctx
+            );
+            return;
+        }
+
+        effects.money = -investedAmount;
+    }
+
+    /*
+       Остаточна перевірка кредитної суми.
+    */
+    if (isCredit) {
+        creditAmount = Number(
+            card.selectedCreditAmount
+        );
+
+        const validCredit =
+            Number.isSafeInteger(creditAmount) &&
+            creditAmount >= 50 &&
+            creditAmount % 50 === 0 &&
+            (
+                !isOverdraft ||
+                creditAmount <= getBankOverdraftLimit(player)
+            );
+
+        if (!validCredit) {
+            activateBankProduct(
+                originalCard,
+                ctx
+            );
+            return;
+        }
+
+        effects.money = creditAmount;
+    }
+
+    /*
+       Повторна перевірка доступності
+       перед фактичним підключенням.
+    */
+    const finalProblem = bankActivationProblem(
+        player,
+        {
+            ...originalCard,
+            initialEffects: effects
+        },
+        ctx
+    );
+
+    if (finalProblem) {
+        showBankCard(originalCard, ctx);
         return;
     }
 
     /*
-       Ліміт визначаємо до бонусів самої картки.
+       Premium надається лише після
+       успішного проходження перевірок.
     */
-    const overdraftLimit =
-        card.productId === "overdraft"
-            ? getBankOverdraftLimit(player)
-            : 0;
-
-    if (overdraftLimit) {
-        effects.money = overdraftLimit;
-    }
-
-    if (card.premiumRequired && !bank.premium) {
+    if (
+        originalCard.premiumRequired &&
+        !bank.premium
+    ) {
         bank.premium = true;
 
         if (!bank.premiumExtraGranted) {
             const extra = Math.max(
                 0,
-                Number(GAME_CONFIG.premiumExtraBankTokens) || 0
+                Number(
+                    GAME_CONFIG.premiumExtraBankTokens
+                ) || 0
             );
 
             bank.extraVisits += extra;
             bank.premiumExtraGranted = true;
 
             addLog(
-                `⭐ Отримано Premium та +${extra} додаткових звернень до Банку.`
+                `⭐ Отримано Premium та +${extra} ` +
+                `додаткових звернень до Банку.`
             );
         }
     }
 
     applyEffects(player, effects);
 
+    const activatedTurn =
+        (Number(player.turnsCompleted) || 0) +
+        (ctx.source === "cell" ? 1 : 0);
+
     const product = {
-        id: card.productId,
-        cardId: card.id,
+        id: productId,
+        cardId: originalCard.id,
         active: true,
-
-        activatedTurn:
-            (Number(player.turnsCompleted) || 0) +
-            (ctx.source === "cell" ? 1 : 0),
-
+        activatedTurn,
         lastBankProcessedTurn: 0
     };
 
+    /*
+       Збереження депозитів та інвестицій.
+    */
     if (isInvestment) {
         product.depositAmount = investedAmount;
         product.investmentMultiplier =
             investedAmount / baseAmount;
     }
 
-   if (isClassic) {
-    Object.assign(product, {
-        termMonths: term.months,
-        termTurns: term.turns,
-        profit: Math.round(
-            (term.profit * investedAmount / baseAmount) / 50
-        ) * 50
-    });
-}
+    if (isClassic) {
+        Object.assign(product, {
+            termMonths: term.months,
+            termTurns: term.turns,
+            profit: Math.round(
+                (
+                    term.profit *
+                    investedAmount /
+                    baseAmount
+                ) / 50
+            ) * 50
+        });
+    }
 
-    if (overdraftLimit) {
-        product.principalDue = overdraftLimit;
+    /*
+       Збереження кредитних зобов'язань.
+       Поля використовуватимемо при
+       оновленні механіки погашення.
+    */
+    if (isCredit) {
+        product.creditAmount = creditAmount;
+        product.principalDue = creditAmount;
+        product.originalPrincipal = creditAmount;
+        product.totalRepaid = 0;
+        product.interestAccrued = 0;
+
+        if (
+            productId === "cash_credit" ||
+            productId === "premium_cash_credit"
+        ) {
+            product.totalDue = creditAmount * 1.5;
+            product.paymentsTotal = 6;
+            product.paymentsMade = 0;
+            product.paymentInterval = 3;
+        }
+
+        if (
+            productId === "credit_card_100" ||
+            productId === "premium_credit_card"
+        ) {
+            product.creditLimit = creditAmount;
+            product.gracePeriodTurns = 9;
+            product.graceStartTurn = activatedTurn;
+            product.gracePenaltyApplied = false;
+        }
+
+        if (isOverdraft) {
+            product.overdraftLimit =
+                getBankOverdraftLimit(player);
+
+            product.termTurns = 18;
+            product.interestInterval = 3;
+            product.interestRate = 0.20;
+        }
     }
 
     bank.products.push(product);
 
     /*
-       Звернення витрачається лише після підключення.
+       Звернення списується тільки
+       після успішного підключення.
     */
     if (ctx.source === "hub") {
-        bank.extraVisits -= 1;
+        bank.extraVisits = Math.max(
+            0,
+            bank.extraVisits - 1
+        );
     }
 
     addLog(
-        `🏦 Підключено: ${card.title}` +
+        `🏦 Підключено: ${originalCard.title}` +
         (
             isInvestment
                 ? `; вкладено ${formatMoney(investedAmount)} грн`
+                : ""
+        ) +
+        (
+            isCredit
+                ? `; отримано ${formatMoney(creditAmount)} грн`
                 : ""
         ) +
         (
@@ -30425,7 +30764,7 @@ function activateBankProduct(card, context = {}) {
 
             <h2>Продукт підключено</h2>
 
-            <p>${card.title}</p>
+            <p>${originalCard.title}</p>
 
             ${
                 isInvestment
@@ -30458,14 +30797,24 @@ function activateBankProduct(card, context = {}) {
             }
 
             ${
-                overdraftLimit
+                isCredit
                     ? `
                         <p>
-                            Борг:
-                            ${formatMoney(overdraftLimit)} грн.
+                            💳 Отримано:
+                            ${formatMoney(creditAmount)} грн.
+                        </p>
+                    `
+                    : ""
+            }
+
+            ${
+                isOverdraft
+                    ? `
+                        <p>
+                            Відсотки: 20% від залишку
+                            боргу кожні 3 особистих ходи.
                             <br>
-                            Відсотки: 20% залишку
-                            кожного 2-го особистого ходу.
+                            Строк: до 18 особистих ходів.
                         </p>
                     `
                     : ""
@@ -30481,20 +30830,22 @@ function activateBankProduct(card, context = {}) {
         </div>
     `);
 
-    bindBankClick("bankProductActivatedButton", () => {
-        if (cardBankReturnState) {
-            returnFromBankToCard();
-            return;
-        }
+    bindBankClick(
+        "bankProductActivatedButton",
+        () => {
+            if (cardBankReturnState) {
+                returnFromBankToCard();
+                return;
+            }
 
-        if (ctx.source === "hub") {
-            showBankHub(ctx.audience);
-        } else {
-            finishPlayerCardTurn();
+            if (ctx.source === "hub") {
+                showBankHub(ctx.audience);
+            } else {
+                finishPlayerCardTurn();
+            }
         }
-    });
+    );
 }
-
 
 /*
    Спільне вікно суми для депозитів та інвестицій.
@@ -30864,325 +31215,498 @@ function bankInvestmentValue(product, amount) {
     return Math.round(amount * multiplier);
 }
 
-
-
 function processActiveBankProducts(player) {
     if (!player?.bank) return;
 
     const bank = ensureBankState(player);
+    const currentTurn = Number(player.turnsCompleted) || 0;
 
-    /*
-       Суми нижче — для базового вкладу з картки.
-       bankInvestmentValue перераховує їх
-       відповідно до фактично вкладеної суми.
+    const round50 = value =>
+        Math.round((Number(value) || 0) / 50) * 50;
 
-       interval — кожні скільки особистих ходів;
-       end — останній хід для доходу;
-       close — хід завершення продукту;
-       refund — сума повернення для базового вкладу.
-    */
-    const investments = {
-        deposit_growing: {
-            income: 2000,
-            interval: 3
-        },
+    const getPrincipal = product => {
+        const saved = Number(product.depositAmount);
 
-        deposit_chest: {
-            income: 1000,
-            interval: 3
-        },
-
-        ovdp: {
-            income: 1000,
-            interval: 2,
-            end: 6,
-            close: 7,
-            refund: 5000
-        },
-
-        etf: {
-            income: 1000,
-            interval: 2,
-            end: 6,
-            close: 7,
-            refund: 4000
-        },
-
-        common_stock: {
-            income: 3000,
-            interval: 3,
-            end: 6,
-            close: 7,
-            refund: 5000
-        },
-
-        preferred_stock: {
-            income: 2000,
-            interval: 3,
-            end: 6,
-            close: 7,
-            refund: 5000
-        },
-
-        dividend_stock: {
-            income: 5000,
-            interval: 3,
-            end: 6,
-            close: 7,
-            refund: 5000
-        },
-
-        deposit_line: {
-            income: 2000,
-            interval: 2,
-            end: 6,
-            close: 6,
-            refund: 6000
+        if (Number.isFinite(saved) && saved > 0) {
+            return saved;
         }
+
+        const card = bankCatalogCard(product.id);
+        return Math.max(
+            0,
+            -Number(card?.initialEffects?.money || 0)
+        );
     };
 
+    const getDebt = product =>
+        Math.max(
+            0,
+            Number(product.principalDue) || 0
+        );
+
     bank.products.forEach(product => {
-        if (product.active === false) return;
+        if (!product || product.active === false) return;
 
         const elapsed =
-            (Number(player.turnsCompleted) || 0) -
+            currentTurn -
             (Number(product.activatedTurn) || 0);
 
-        /*
-           Один особистий хід обробляємо один раз.
-        */
         if (
             elapsed <= 0 ||
-            product.lastBankProcessedTurn === elapsed
+            Number(product.lastBankProcessedTurn) >= elapsed
         ) {
             return;
         }
 
         product.lastBankProcessedTurn = elapsed;
 
-        const income = (
-            amount,
-            interval,
-            end = Infinity
-        ) => {
-            if (
-                elapsed <= end &&
-                elapsed % interval === 0
-            ) {
+        const monthly = elapsed % BANK_TURNS_PER_MONTH === 0;
+
+        const pay = (amount, title) => {
+            const value = round50(amount);
+
+            if (value > 0) {
                 payBankIncome(
                     player,
                     product,
-                    amount,
-                    bankProductName(product)
+                    value,
+                    title
                 );
             }
         };
 
-        const close = (end, amount) => {
-            if (elapsed >= end) {
-                closeBankProductWithReturn(
-                    player,
-                    product,
-                    amount,
-                    bankProductName(product)
-                );
-            }
-        };
-
-        /*
-           Депозити та інвестиції зі змінною сумою.
-        */
-        const plan = investments[product.id];
-
-        if (plan) {
-            income(
-                bankInvestmentValue(product, plan.income),
-                plan.interval,
-                plan.end ?? Infinity
+        const charge = (amount, title) =>
+            chargeBankPayment(
+                player,
+                product,
+                round50(amount),
+                title
             );
 
-            if (plan.close !== undefined) {
-                close(
-                    plan.close,
-                    bankInvestmentValue(product, plan.refund)
-                );
-            }
+        const finish = (amount = 0) =>
+            closeBankProductWithReturn(
+                player,
+                product,
+                round50(amount),
+                bankProductName(product)
+            );
 
-            return;
-        }
+        const principal = getPrincipal(product);
 
         switch (product.id) {
-            /*
-               Строковий депозит:
-               сума і дохід вже записані при підключенні.
-            */
-            case "deposit_classic":
+
+            case "deposit_classic": {
                 processClassicDeposit(
                     player,
                     product,
                     elapsed
                 );
                 break;
+            }
 
-            case "my_fop":
-                income(2000, 2);
+            case "deposit_growing": {
+                if (!monthly) break;
 
-                if (elapsed % 6 === 0) {
-                    chargeBankPayment(
-                        player,
-                        product,
-                        1000,
-                        "Обслуговування «Мій ФОП»"
+                const balance = Math.max(
+                    0,
+                    Number(product.depositAmount) || 0
+                );
+
+                let rate = 0;
+
+                if (balance >= 40000) rate = 0.40;
+                else if (balance >= 20000) rate = 0.35;
+                else if (balance >= 10000) rate = 0.30;
+                else if (balance >= 4000) rate = 0.25;
+
+                pay(
+                    balance * rate,
+                    "Депозит «Зростаючий»"
+                );
+                break;
+            }
+
+            case "deposit_chest": {
+                if (!monthly) break;
+
+                /*
+                   До створення окремого реєстру
+                   внесків виплата власнику
+                   розраховується за його вкладом.
+                   Чужі внески тут не нараховуємо.
+                */
+                pay(
+                    principal * 0.25,
+                    "Депозит «Скриня»"
+                );
+                break;
+            }
+
+            case "deposit_line": {
+                if (monthly) {
+                    pay(
+                        Math.max(
+                            0,
+                            Number(product.depositAmount) || 0
+                        ) * 0.25,
+                        "Депозитна лінія"
                     );
                 }
                 break;
+            }
+
+            case "ovdp": {
+                if (monthly && elapsed <= 18) {
+                    pay(
+                        principal * 0.20,
+                        "ОВДП: купонний дохід"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(principal);
+                }
+                break;
+            }
+
+            case "etf": {
+                if (monthly && elapsed <= 18) {
+                    pay(
+                        principal * 0.25,
+                        "ETF: інвестиційний дохід"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(principal);
+                }
+                break;
+            }
+
+            case "common_stock": {
+                if (
+                    elapsed >= 9 &&
+                    !product.dividendPaid
+                ) {
+                    product.dividendPaid = true;
+
+                    pay(
+                        principal * 0.75,
+                        "Звичайні акції: дивіденди"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(principal * 1.25);
+                }
+                break;
+            }
+
+            case "preferred_stock": {
+                if (monthly && elapsed <= 18) {
+                    pay(
+                        principal * 0.25,
+                        "Привілейовані акції: дивіденди"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(principal * 1.25);
+                }
+                break;
+            }
+
+            case "dividend_stock": {
+                if (monthly && elapsed <= 18) {
+                    pay(
+                        principal * 0.30,
+                        "Дивідендні акції"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(principal * 1.25);
+                }
+                break;
+            }
+
+            case "my_fop": {
+                if (monthly) {
+                    pay(
+                        2000,
+                        "Мій ФОП: дохід"
+                    );
+                }
+
+                if (elapsed % 6 === 0) {
+                    charge(
+                        1000,
+                        "Мій ФОП: обслуговування"
+                    );
+                }
+                break;
+            }
 
             case "cash_credit":
-                processFixedLoan(
-                    player,
-                    product,
-                    elapsed,
-                    1000,
-                    6,
-                    "Кредит готівкою"
+            case "premium_cash_credit": {
+                const total = Math.max(
+                    0,
+                    Number(product.totalDue) ||
+                    Number(product.originalPrincipal) * 1.5
                 );
+
+                if (!total) break;
+
+                const paid = Math.max(
+                    0,
+                    Number(product.totalRepaid) || 0
+                );
+
+                const remaining = Math.max(0, total - paid);
+
+                if (!remaining) {
+                    product.principalDue = 0;
+                    product.active = false;
+                    break;
+                }
+
+                const dueTurn = Number(
+                    product.nextPaymentTurn || 3
+                );
+
+                if (elapsed < dueTurn) break;
+
+                const paymentsMade =
+                    Number(product.paymentsMade) || 0;
+
+                const payment = paymentsMade >= 5
+                    ? remaining
+                    : Math.min(
+                        remaining,
+                        round50(total / 6)
+                    );
+
+                if (
+                    charge(
+                        payment,
+                        bankProductName(product) +
+                        ": кредитний платіж"
+                    )
+                ) {
+                    product.totalRepaid = paid + payment;
+                    product.paymentsMade = paymentsMade + 1;
+                    product.principalDue = Math.max(
+                        0,
+                        total - product.totalRepaid
+                    );
+                    product.nextPaymentTurn =
+                        elapsed + 3;
+
+                    if (product.principalDue <= 0) {
+                        product.active = false;
+                        addLog(
+                            "✅ " +
+                            bankProductName(product) +
+                            ": кредит погашено."
+                        );
+                    }
+                } else {
+                    applyEffects(player, {
+                        reputation: -5
+                    });
+
+                    product.nextPaymentTurn =
+                        elapsed + 1;
+
+                    addLog(
+                        "⚠️ " +
+                        bankProductName(product) +
+                        ": платіж перенесено на наступний хід; −5 репутації."
+                    );
+                }
+
                 break;
+            }
 
             case "credit_card_100":
-                processFixedLoan(
-                    player,
-                    product,
-                    elapsed,
-                    1000,
-                    3,
-                    "100 днів 2.0"
-                );
-                break;
-
-            case "premium_cash_credit":
-                processFixedLoan(
-                    player,
-                    product,
-                    elapsed,
-                    6000,
-                    6,
-                    "Premium кредит"
-                );
-                break;
-
-            case "premium_credit_card":
-                processFixedLoan(
-                    player,
-                    product,
-                    elapsed,
-                    3000,
-                    3,
-                    "Premium кредитна картка"
-                );
-                break;
-
-            case "currency_account":
-                income(2000, 1, 6);
+            case "premium_credit_card": {
+                const debt = getDebt(product);
 
                 if (
-                    elapsed >= 6 &&
-                    !product.bonusPeriodEnded
+                    elapsed >=
+                        Number(product.gracePeriodTurns || 9) &&
+                    debt > 0 &&
+                    !product.gracePenaltyApplied
                 ) {
-                    product.bonusPeriodEnded = true;
-
-                    payBankIncome(
-                        player,
-                        product,
-                        6000,
-                        "Валютний рахунок: повернення вкладених коштів"
+                    const used = Math.max(
+                        0,
+                        Number(product.originalPrincipal) ||
+                        Number(product.creditAmount) || 0
                     );
+
+                    const surcharge = round50(used * 0.5);
+
+                    product.principalDue =
+                        debt + surcharge;
+
+                    product.interestAccrued =
+                        (Number(product.interestAccrued) || 0) +
+                        surcharge;
+
+                    product.gracePenaltyApplied = true;
 
                     addLog(
-                        "🏦 Валютний рахунок: бонусний період завершено. " +
-                        "Рахунок залишається підключеним для міжнародних операцій."
+                        "💳 " +
+                        bankProductName(product) +
+                        ": завершився пільговий період; " +
+                        "до боргу додано " +
+                        formatMoney(surcharge) +
+                        " грн."
                     );
                 }
                 break;
+            }
 
-            case "acquiring":
-                income(2000, 1, 6);
-                close(6, 0);
-                break;
+            case "overdraft": {
+                const debt = getDebt(product);
 
-            case "business_elite":
-                income(3000, 2, 6);
-                close(6, 0);
-                break;
-
-            case "varta_247":
-                close(6, 0);
-                break;
-
-            case "life_insurance":
-                if (elapsed % 2 === 0) {
-                    chargeBankPayment(
-                        player,
-                        product,
-                        2000,
-                        "Внесок: страхування життя"
-                    );
-                }
-
-                if (elapsed % 6 === 0) {
-                    payBankIncome(
-                        player,
-                        product,
-                        8000,
-                        "Накопичувальне страхування життя"
-                    );
-                }
-                break;
-
-            case "internet_acquiring":
-                if (
-                    elapsed >= 6 &&
-                    !product.bonusPeriodEnded
-                ) {
-                    product.bonusPeriodEnded = true;
-
-                    addLog(
-                        "🏦 Інтернет-еквайринг: період бонусів завершено; " +
-                        "сервіс залишається підключеним."
-                    );
-                }
-                break;
-
-            case "overdraft":
-                if (elapsed % 2 === 0) {
-                    const interest = Math.round(
-                        (Number(product.principalDue) || 0) * 0.2
-                    );
+                if (monthly && debt > 0 && elapsed <= 18) {
+                    const interest = round50(debt * 0.20);
 
                     if (
-                        !chargeBankPayment(
-                            player,
-                            product,
+                        !charge(
                             interest,
-                            "Відсотки за овердрафтом"
+                            "Овердрафт: відсотки"
                         )
                     ) {
-                        applyEffects(player, {
-                            reputation: -10,
-                            energy: -10
-                        });
+                        product.interestAccrued =
+                            (Number(product.interestAccrued) || 0) +
+                            interest;
 
                         addLog(
-                            "⚠️ Овердрафт: несплачений платіж, " +
-                            "−10 репутації та −10 енергії."
+                            "⚠️ Овердрафт: несплачені відсотки " +
+                            formatMoney(interest) +
+                            " грн залишаються зобов'язанням."
                         );
                     }
                 }
+
+                if (
+                    elapsed >= 18 &&
+                    !product.maturityNotified
+                ) {
+                    product.maturityNotified = true;
+
+                    addLog(
+                        "🏦 Овердрафт: строк 18 ходів завершено. " +
+                        "Непогашений борг зберігається."
+                    );
+                }
                 break;
+            }
+
+            case "life_insurance": {
+                if (monthly && elapsed < 18) {
+                    charge(
+                        2000,
+                        "Страхування життя: внесок"
+                    );
+                }
+
+                if (elapsed >= 18) {
+                    finish(15000);
+                }
+                break;
+            }
+
+            case "green_card":
+            case "varta_247":
+            case "extra_motor_insurance": {
+                if (elapsed >= 6) {
+                    finish(0);
+                }
+                break;
+            }
+
+            case "home_insurance": {
+                // Діє до страхового випадку.
+                break;
+            }
+
+            case "currency_account": {
+                /*
+                   Валютний результат визначається
+                   окремою операцією з кубиком d6.
+                   Регулярного доходу немає.
+                */
+                const lastOperationTurn = Number(
+                    product.lastCurrencyOperationTurn ??
+                    product.activatedTurn
+                );
+
+                if (
+                    currentTurn - lastOperationTurn >= 36
+                ) {
+                    product.active = false;
+
+                    addLog(
+                        "🏦 Валютний рахунок закрито " +
+                        "після 36 ходів без операцій."
+                    );
+                }
+                break;
+            }
+
+            case "internet_acquiring": {
+                if (
+                    elapsed >= 6 &&
+                    !product.bonusPeriodEnded
+                ) {
+                    product.bonusPeriodEnded = true;
+
+                    addLog(
+                        "🏦 Інтернет-еквайринг: " +
+                        "бонусний період завершено, " +
+                        "сервіс залишається активним."
+                    );
+                }
+                break;
+            }
+
+            case "business_elite": {
+                if (elapsed >= 6) {
+                    finish(0);
+                }
+                break;
+            }
+
+            case "acquiring": {
+                if (elapsed <= 6) {
+                    pay(
+                        2000,
+                        "Еквайринг: дохід"
+                    );
+                }
+
+                if (
+                    elapsed >= 6 &&
+                    !product.bonusPeriodEnded
+                ) {
+                    product.bonusPeriodEnded = true;
+
+                    addLog(
+                        "🏦 Еквайринг: 6 ходів доходу завершено; " +
+                        "сервіс залишається активним."
+                    );
+                }
+                break;
+            }
         }
     });
 
     updatePlayerStatsUI();
 }
+
 
 // СЮДИ ВСТАВ ОБИДВІ ФУНКЦІЇ:
 // bankInvestmentValue
@@ -31315,39 +31839,80 @@ function chargeBankPayment(
    Повернення можливе лише один раз.
 ========================================================= */
 
+
 function closeBankProductWithReturn(
     player,
     product,
     amount,
     title
 ) {
-
     if (
         !player ||
         !product ||
         product.active === false
     ) {
-        return;
+        return false;
     }
 
-    const value =
-        Math.max(
-            0,
-            Number(amount) || 0
-        );
+    const value = Number(amount);
+    const currentMoney = Number(player.money);
 
-    player.money += value;
+    // Забороняємо некоректні суми повернення.
+    if (
+        !Number.isSafeInteger(value) ||
+        value < 0 ||
+        value % 50 !== 0 ||
+        !Number.isFinite(currentMoney)
+    ) {
+        return false;
+    }
 
-    product.active = false;
-
-    addLog(
-        `✅ ${title}: продукт завершено.${
-            value
-                ? ` Повернення +${formatMoney(value)} грн.`
-                : ""
-        }`
+    // Не дозволяємо закрити продукт із боргом.
+    const principalDebt = Math.max(
+        0,
+        Number(product.principalDue) || 0
     );
 
+    const interestDebt = Math.max(
+        0,
+        Number(product.interestAccrued) || 0
+    );
+
+    if (principalDebt + interestDebt > 0) {
+        addLog(
+            `⚠️ ${title}: закриття неможливе, ` +
+            `доки є непогашений борг.`
+        );
+
+        return false;
+    }
+
+    // Перевіряємо, чи можна безпечно додати гроші.
+    if (
+        !Number.isSafeInteger(currentMoney + value)
+    ) {
+        return false;
+    }
+
+    // Повернення відбувається лише один раз.
+    player.money = currentMoney + value;
+    product.active = false;
+
+    product.closedTurn =
+        Number(player.turnsCompleted) || 0;
+
+    product.returnedAmount = value;
+
+    addLog(
+        `✅ ${title}: продукт завершено.` +
+        (
+            value > 0
+                ? ` Повернення +${formatMoney(value)} грн.`
+                : ""
+        )
+    );
+
+    return true;
 }
 
 
@@ -31415,84 +31980,93 @@ function processClassicDeposit(
    Не завершує хід і не витрачає звернення.
 ========================================================= */
 
-function repayBankOverdraft(
-    player,
-    product,
-    amount
-) {
-
-    const value =
-        Number(amount);
-
-    if (
-        !player ||
-        product?.id !== "overdraft" ||
-        product.active === false ||
-        !Number.isFinite(value) ||
-        value <= 0 ||
-        value > player.money ||
-        value > product.principalDue
-    ) {
-        return false;
-    }
-
-    product.principalDue -= value;
-
-    player.money -= value;
-
-    addLog(
-        `🏦 Овердрафт: повернуто ${formatMoney(value)} грн; залишок ${formatMoney(product.principalDue)} грн.`
-    );
-
-    if (
-        product.principalDue === 0
-    ) {
-        product.active = false;
-    }
-
-    return true;
-
-}
-
-
 function showBankOverdraftRepayment(
     product,
     audience = "business"
 ) {
+    const player = gameState?.player;
 
     if (
+        !player ||
         !product ||
+        product.id !== "overdraft" ||
         product.active === false
     ) {
         return;
     }
 
+    const principal = Math.max(
+        0,
+        Number(product.principalDue) || 0
+    );
+
+    const unpaidInterest = Math.max(
+        0,
+        Number(product.interestAccrued) || 0
+    );
+
+    const totalDebt = principal + unpaidInterest;
+
+    const availableMoney = Math.max(
+        0,
+        Number(player.money) || 0
+    );
+
+    const maxPayment =
+        Math.floor(
+            Math.min(totalDebt, availableMoney) / 50
+        ) * 50;
+
+    if (totalDebt <= 0) {
+        product.active = false;
+        showBankHub(audience);
+        return;
+    }
 
     openGameInfoModal(`
-
         <div class="bank-card-game-modal">
 
-            <h2>
-                Повернути овердрафт
-            </h2>
+            <h2>Погашення овердрафту</h2>
 
             <p>
-                Залишок боргу:
-                ${formatMoney(product.principalDue || 0)} грн.
+                Основний борг:
+                <strong>${formatMoney(principal)} грн</strong>
             </p>
+
+            <p>
+                Несплачені відсотки:
+                <strong>${formatMoney(unpaidInterest)} грн</strong>
+            </p>
+
+            <p>
+                Загальний борг:
+                <strong>${formatMoney(totalDebt)} грн</strong>
+            </p>
+
+            <p>
+                Доступно на рахунку:
+                <strong>${formatMoney(availableMoney)} грн</strong>
+            </p>
+
+            <p>
+                Можна погасити частину або весь борг.
+                Сума платежу має бути кратною 50 грн.
+                Спочатку погашаються несплачені відсотки,
+                потім основний борг.
+            </p>
+
+            <label for="bankOverdraftAmount">
+                Сума погашення, грн
+            </label>
 
             <input
                 id="bankOverdraftAmount"
                 type="number"
-                min="1"
-                step="1"
-                max="${product.principalDue}"
-                value="${
-                    Math.min(
-                        gameState.player.money,
-                        product.principalDue
-                    )
-                }"
+                min="50"
+                step="50"
+                max="${maxPayment}"
+                value="${maxPayment >= 50 ? maxPayment : ""}"
+                ${maxPayment < 50 ? "disabled" : ""}
             >
 
             <p id="bankRepaymentMessage"></p>
@@ -31500,8 +32074,9 @@ function showBankOverdraftRepayment(
             <button
                 id="bankOverdraftRepayButton"
                 class="main-game-btn"
+                ${maxPayment < 50 ? "disabled" : ""}
             >
-                ПОВЕРНУТИ
+                ПОГАСИТИ
             </button>
 
             <button
@@ -31512,68 +32087,75 @@ function showBankOverdraftRepayment(
             </button>
 
         </div>
-
     `);
-
 
     bindBankClick(
         "bankOverdraftRepayButton",
         () => {
+            const input = document.getElementById(
+                "bankOverdraftAmount"
+            );
 
-            const amount =
-                document
-                    .getElementById(
-                        "bankOverdraftAmount"
-                    )
-                    ?.value;
+            const message = document.getElementById(
+                "bankRepaymentMessage"
+            );
+
+            const amount = Number(input?.value);
+
+            const currentDebt =
+                Math.max(0, Number(product.principalDue) || 0) +
+                Math.max(0, Number(product.interestAccrued) || 0);
+
+            const currentMoney = Math.max(
+                0,
+                Number(player.money) || 0
+            );
 
             if (
-                repayBankOverdraft(
-                    gameState.player,
-                    product,
-                    amount
-                )
+                !input?.value ||
+                !Number.isSafeInteger(amount) ||
+                amount < 50 ||
+                amount % 50 !== 0 ||
+                amount > currentDebt ||
+                amount > currentMoney
             ) {
-
-                updateGameUI();
-
-                showBankHub(
-                    audience
-                );
-
-            } else {
-
-                const message =
-                    document.getElementById(
-                        "bankRepaymentMessage"
-                    );
-
                 if (message) {
-
                     message.textContent =
-                        "Вкажи суму в межах боргу та доступних грошей.";
-
+                        "Вкажи суму, кратну 50 грн, " +
+                        "яка не перевищує борг і доступні гроші.";
                 }
 
+                return;
             }
 
+            const success = repayBankOverdraft(
+                player,
+                product,
+                amount
+            );
+
+            if (!success) {
+                if (message) {
+                    message.textContent =
+                        "Не вдалося виконати погашення. " +
+                        "Перевір суму та спробуй ще раз.";
+                }
+
+                return;
+            }
+
+            updateGameUI();
+            showBankHub(audience);
         }
     );
-
 
     bindBankClick(
         "bankOverdraftBackButton",
         () => {
-
-            showBankHub(
-                audience
-            );
-
+            showBankHub(audience);
         }
     );
-
 }
-
 
 /* =========================================================
    ІНТЕГРАЦІЯ З КАРТКАМИ — БОНУС ОНЛАЙН-ПРОДАЖУ
