@@ -29627,18 +29627,35 @@ function showBankHub(audience = "personal") {
        Однаковий розрахунок для тексту кнопки
        та фактичного повернення грошей.
     */
-    const earlyReturnAmount = product => {
-        const baseAmount = BANK_EARLY_RETURNS[product.id];
+    
+const earlyReturnAmount = product => {
+    if (!product || product.active === false) {
+        return null;
+    }
 
-        if (
-            !Number.isFinite(baseAmount) ||
-            baseAmount <= 0
-        ) {
+    const balance = Number(product.depositAmount);
+
+    if (
+        !Number.isSafeInteger(balance) ||
+        balance < 0 ||
+        balance % 50 !== 0
+    ) {
+        return null;
+    }
+
+    switch (product.id) {
+        case "deposit_growing":
+        case "deposit_line":
+            return balance;
+
+        case "ovdp":
+            return Math.round((balance * 0.60) / 50) * 50;
+
+        default:
             return null;
-        }
+    }
+};
 
-        return bankInvestmentValue(product, baseAmount);
-    };
 
     openGameInfoModal(`
         <div class="bank-hub-modal">
@@ -29695,11 +29712,24 @@ function showBankHub(audience = "personal") {
 
                                                 <small>
                                                     ${
-                                                        product.id === "overdraft"
-                                                            ? `Борг: ${formatMoney(
-                                                                product.principalDue || 0
-                                                            )} грн`
-                                                            : "Активний продукт"
+                                                      
+product.id === "overdraft"
+    ? `
+        Загальний борг: ${formatMoney(
+            (Number(product.principalDue) || 0) +
+            (Number(product.interestAccrued) || 0)
+        )} грн
+
+        | Основний борг: ${formatMoney(
+            Number(product.principalDue) || 0
+        )} грн
+
+        | Відсотки: ${formatMoney(
+            Number(product.interestAccrued) || 0
+        )} грн
+    `
+    : "Активний продукт"
+
                                                     }
                                                 </small>
 
@@ -29881,15 +29911,22 @@ function showBankHub(audience = "personal") {
 
                 button.disabled = true;
 
-                closeBankProductWithReturn(
-                    player,
-                    product,
-                    amount,
-                    bankProductName(product)
-                );
+               
+const success = closeBankProductWithReturn(
+    player,
+    product,
+    amount,
+    bankProductName(product)
+);
 
-                updateGameUI();
-                showBankHub(audience);
+if (!success) {
+    button.disabled = false;
+    return;
+}
+
+updateGameUI();
+showBankHub(audience);
+
             });
         });
 
@@ -30667,6 +30704,24 @@ function activateBankProduct(card, context = {}) {
             investedAmount / baseAmount;
     }
 
+/* =====================================================
+   ДЕПОЗИТ «СКРИНЯ» — РЕЄСТР ВНЕСКІВ
+===================================================== */
+
+if (productId === "deposit_chest") {
+    const ownerId = String(player.id);
+
+    product.ownerId = ownerId;
+
+    product.contributions = {
+        [ownerId]: investedAmount
+    };
+
+    product.depositAmount = investedAmount;
+
+    product.chestCreatedTurn = activatedTurn;
+}
+
     if (isClassic) {
         Object.assign(product, {
             termMonths: term.months,
@@ -31326,21 +31381,44 @@ function processActiveBankProducts(player) {
                 break;
             }
 
-            case "deposit_chest": {
-                if (!monthly) break;
+        
+case "deposit_chest": {
+    if (!monthly) break;
 
-                /*
-                   До створення окремого реєстру
-                   внесків виплата власнику
-                   розраховується за його вкладом.
-                   Чужі внески тут не нараховуємо.
-                */
-                pay(
-                    principal * 0.25,
-                    "Депозит «Скриня»"
-                );
-                break;
-            }
+    const contributions =
+        product.contributions;
+
+    // Поки окремого реєстру немає,
+    // використовуємо лише вклад власника.
+    if (
+        !contributions ||
+        typeof contributions !== "object"
+    ) {
+        pay(
+            principal * 0.25,
+            "Скриня: дохід власника"
+        );
+        break;
+    }
+
+    // Дохід власника — тільки від його внеску.
+    const ownerId = String(
+        product.ownerId ?? player.id
+    );
+
+    const ownerContribution = Math.max(
+        0,
+        Number(contributions[ownerId]) || 0
+    );
+
+    pay(
+        ownerContribution * 0.25,
+        "Скриня: дохід власника"
+    );
+
+    break;
+}
+
 
             case "deposit_line": {
                 if (monthly) {
@@ -31840,6 +31918,7 @@ function chargeBankPayment(
 ========================================================= */
 
 
+
 function closeBankProductWithReturn(
     player,
     product,
@@ -31914,6 +31993,7 @@ function closeBankProductWithReturn(
 
     return true;
 }
+
 
 
 /* =========================================================
