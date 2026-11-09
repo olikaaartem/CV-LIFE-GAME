@@ -30340,7 +30340,7 @@ ${
 
     bindBankClick("passportBackTop", goBack);
     bindBankClick("passportBackButton", goBack);
-}
+
 
 if (product.id === "overdraft") {
     bindBankClick(
@@ -30353,7 +30353,7 @@ if (product.id === "overdraft") {
         }
     );
 }
-
+}
 /* =========================================================
    145.2.1. ІНФОРМАЦІЯ ПРО БАНКІВСЬКИЙ ПРОДУКТ
 
