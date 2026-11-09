@@ -30161,14 +30161,7 @@ function showBankProductPassport(
                     CV ЖИТТЯ · ПАСПОРТ ПРОДУКТУ
                 </span>
 
-                <button
-                    type="button"
-                    id="passportBackTop"
-                    class="secondary-game-btn"
-                    style="width:auto;margin:0;"
-                >
-                    ✕
-                </button>
+              
             </div>
 
             <div style="font-size:44px;">
@@ -30338,7 +30331,6 @@ ${
         showBankHub(audience);
     };
 
-    bindBankClick("passportBackTop", goBack);
     bindBankClick("passportBackButton", goBack);
 
 
