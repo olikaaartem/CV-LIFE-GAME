@@ -29700,7 +29700,13 @@ const earlyReturnAmount = product => {
                                         earlyReturnAmount(product);
 
                                     return `
-                                        <div class="bank-product-card">
+                                       <div
+                                                 class="bank-product-card"
+                                                 data-bank-passport-index="${index}"
+                                                 role="button"
+                                                 tabindex="0"
+                                                 style="cursor:pointer;"
+                                             >
                                             <span class="bank-product-icon">
                                                 ${catalog?.icon || "🏦"}
                                             </span>
@@ -29885,6 +29891,47 @@ product.id === "overdraft"
             });
         });
 
+   
+/* =====================================================
+   ВІДКРИТТЯ ПАСПОРТА АКТИВНОГО ПРОДУКТУ
+===================================================== */
+
+document.querySelectorAll("[data-bank-passport-index]")
+    .forEach(card => {
+
+        const openPassport = () => {
+            const index = Number(
+                card.dataset.bankPassportIndex
+            );
+
+            const product = owned[index];
+
+            if (!product || product.active === false) {
+                return;
+            }
+
+            showBankProductPassport(product, audience);
+        };
+
+        card.addEventListener("click", event => {
+            if (event.target.closest("button")) return;
+            openPassport();
+        });
+
+        card.addEventListener("keydown", event => {
+            if (
+                event.target !== card ||
+                !["Enter", " "].includes(event.key)
+            ) {
+                return;
+            }
+
+            event.preventDefault();
+            openPassport();
+        });
+    });
+
+
     /*
        Дострокове закриття вкладів.
     */
@@ -29976,6 +30023,307 @@ showBankHub(audience);
         "closeBankHubButton",
         closeGameInfoModal
     );
+}
+
+/* =====================================================
+   ПАСПОРТ АКТИВНОГО БАНКІВСЬКОГО ПРОДУКТУ
+===================================================== */
+
+function showBankProductPassport(
+    product,
+    audience = "personal"
+) {
+    if (!product || product.active === false) {
+        showBankHub(audience);
+        return;
+    }
+
+    const catalog = BANK_PRODUCTS.find(
+        item => item.id === product.id
+    );
+
+    const name = bankProductName(product);
+    const icon = catalog?.icon || "🏦";
+
+    const playerTurns = Number(
+        gameState.playerTurns
+    ) || 0;
+
+    const activatedTurn = Number(
+        product.activatedTurn
+    ) || 0;
+
+    const elapsed = Math.max(
+        0,
+        playerTurns - activatedTurn
+    );
+
+    const termTurns = Number(
+        product.termTurns
+    ) || 0;
+
+    const remaining = termTurns > 0
+        ? Math.max(0, termTurns - elapsed)
+        : null;
+
+    const balance = Math.max(
+        0,
+        Number(product.depositAmount) || 0
+    );
+
+    const principalDue = Math.max(
+        0,
+        Number(product.principalDue) || 0
+    );
+
+    const interestDue = Math.max(
+        0,
+        Number(product.interestAccrued) || 0
+    );
+
+    const totalDebt = principalDue + interestDue;
+
+    const isChest = product.id === "deposit_chest";
+
+    const contributions = isChest &&
+        product.contributions &&
+        typeof product.contributions === "object"
+            ? product.contributions
+            : {};
+
+    const contributionTotal = Object.values(
+        contributions
+    ).reduce(
+        (sum, value) =>
+            sum + Math.max(0, Number(value) || 0),
+        0
+    );
+
+    const displayedBalance = isChest
+        ? contributionTotal
+        : balance;
+
+    const stat = (label, value) => `
+        <div style="
+            padding:14px;
+            background:#f7f7f5;
+            border:1px solid #e8e8e5;
+            border-radius:14px;
+        ">
+            <small style="display:block;color:#666;">
+                ${label}
+            </small>
+            <strong style="font-size:19px;">
+                ${value}
+            </strong>
+        </div>
+    `;
+
+    const hasDeposit =
+        displayedBalance > 0 ||
+        [
+            "deposit_classic",
+            "deposit_growing",
+            "deposit_chest",
+            "deposit_line",
+            "ovdp",
+            "etf",
+            "common_stock",
+            "preferred_stock",
+            "dividend_stock"
+        ].includes(product.id);
+
+    const isCredit = [
+        "cash_credit",
+        "premium_cash_credit",
+        "credit_card_100",
+        "premium_credit_card",
+        "overdraft"
+    ].includes(product.id);
+
+    openGameInfoModal(`
+        <div class="bank-product-passport"
+             style="max-width:720px;margin:auto;">
+
+            <div style="
+                display:flex;
+                justify-content:space-between;
+                align-items:center;
+                gap:12px;
+                margin-bottom:20px;
+            ">
+                <span style="
+                    font-size:12px;
+                    font-weight:700;
+                    letter-spacing:1px;
+                    color:#777;
+                ">
+                    CV ЖИТТЯ · ПАСПОРТ ПРОДУКТУ
+                </span>
+
+                <button
+                    type="button"
+                    id="passportBackTop"
+                    class="secondary-game-btn"
+                    style="width:auto;margin:0;"
+                >
+                    ✕
+                </button>
+            </div>
+
+            <div style="font-size:44px;">
+                ${icon}
+            </div>
+
+            <h2 style="margin:8px 0;">
+                ${name}
+            </h2>
+
+            <p style="color:#16803c;">
+                ● Активний продукт
+            </p>
+
+            <div style="
+                display:grid;
+                grid-template-columns:
+                    repeat(auto-fit,minmax(170px,1fr));
+                gap:12px;
+                margin:20px 0;
+            ">
+
+                ${
+                    hasDeposit
+                        ? stat(
+                            "Сума вкладення",
+                            `${formatMoney(displayedBalance)} грн`
+                        )
+                        : ""
+                }
+
+                ${
+                    isCredit
+                        ? stat(
+                            "Загальна заборгованість",
+                            `${formatMoney(totalDebt)} грн`
+                        )
+                        : ""
+                }
+
+                ${
+                    isCredit
+                        ? stat(
+                            "Основний борг",
+                            `${formatMoney(principalDue)} грн`
+                        )
+                        : ""
+                }
+
+                ${
+                    isCredit
+                        ? stat(
+                            "Нараховані відсотки",
+                            `${formatMoney(interestDue)} грн`
+                        )
+                        : ""
+                }
+
+                ${stat(
+                    "Минуло власних ходів",
+                    String(elapsed)
+                )}
+
+                ${
+                    remaining !== null
+                        ? stat(
+                            "Залишилося ходів",
+                            String(remaining)
+                        )
+                        : ""
+                }
+
+                ${
+                    isChest
+                        ? stat(
+                            "Дохід за 3 ходи власника",
+                            `${formatMoney(
+                                displayedBalance * 0.25
+                            )} грн`
+                        )
+                        : ""
+                }
+
+            </div>
+
+            <h3>📋 Умови продукту</h3>
+
+            <div style="
+                padding:16px;
+                background:#fff9dd;
+                border-radius:14px;
+                margin:12px 0 20px;
+            ">
+                ${
+                    bankCatalogCard(product.id)?.rulesText ||
+                    catalog?.description ||
+                    "Умови продукту не знайдено."
+                }
+            </div>
+
+            ${
+                isChest
+                    ? `
+                        <h3>👥 Внески учасників</h3>
+
+                        <div style="
+                            padding:14px;
+                            border:1px solid #e8e8e5;
+                            border-radius:14px;
+                            margin-bottom:20px;
+                        ">
+                            ${
+                                Object.entries(contributions)
+                                    .map(([id, amount]) => `
+                                        <p>
+                                            ${id === String(product.ownerId)
+                                                ? "👑 Власник"
+                                                : "👤 Учасник"}
+                                            :
+                                            ${formatMoney(amount)} грн
+                                        </p>
+                                    `).join("")
+                                || "Внесків поки немає."
+                            }
+                        </div>
+                    `
+                    : ""
+            }
+
+            <h3>⚙️ Керування продуктом</h3>
+
+            <p style="color:#666;font-size:14px;">
+                Доступні фінансові операції
+                підключатимемо до паспорта
+                відповідно до правил кожного продукту.
+            </p>
+
+            <button
+                type="button"
+                id="passportBackButton"
+                class="main-game-btn"
+                style="width:100%;margin-top:16px;"
+            >
+                ← НАЗАД ДО МОГО БАНКУ
+            </button>
+
+        </div>
+    `);
+
+    const goBack = () => {
+        showBankHub(audience);
+    };
+
+    bindBankClick("passportBackTop", goBack);
+    bindBankClick("passportBackButton", goBack);
 }
 
 /* =========================================================
@@ -31187,6 +31535,86 @@ function showClassicDepositTermChoice(card, context = {}) {
     updatePreview();
 }
 
+
+/* =====================================================
+   ДЕПОЗИТ «СКРИНЯ» — ПОПОВНЕННЯ
+===================================================== */
+
+function contributeToDepositChest(
+    owner,
+    contributor,
+    amount
+) {
+    if (!owner || !contributor) return false;
+
+    const contribution = Number(amount);
+
+    if (
+        !Number.isSafeInteger(contribution) ||
+        contribution <= 0 ||
+        contribution % 50 !== 0
+    ) {
+        return false;
+    }
+
+    if (
+        owner.id == null ||
+        contributor.id == null ||
+        (Number(contributor.money) || 0) < contribution
+    ) {
+        return false;
+    }
+
+    const bank = ensureBankState(owner);
+
+    const chest = bank.products.find(
+        product =>
+            product.id === "deposit_chest" &&
+            product.active !== false &&
+            String(product.ownerId) === String(owner.id)
+    );
+
+    if (!chest) return false;
+
+    if (
+        !chest.contributions ||
+        typeof chest.contributions !== "object"
+    ) {
+        return false;
+    }
+
+    const contributorId = String(contributor.id);
+
+    const previous = Number(
+        chest.contributions[contributorId] || 0
+    );
+
+    if (
+        !Number.isSafeInteger(previous) ||
+        previous < 0
+    ) {
+        return false;
+    }
+
+    contributor.money -= contribution;
+
+    chest.contributions[contributorId] =
+        previous + contribution;
+
+    chest.depositAmount =
+        Object.values(chest.contributions)
+            .reduce(
+                (sum, value) =>
+                    sum + (Number(value) || 0),
+                0
+            );
+
+    addLog(
+        `🏦 Скриня: внесок ${formatMoney(contribution)} грн`
+    );
+
+    return true;
+}
 
 
 /* =========================================================
