@@ -29718,7 +29718,42 @@ const earlyReturnAmount = product => {
 
                                                 <small>
                                                     ${
-                                                      
+
+
+<h3>⚙️ Керування продуктом</h3>
+
+${
+    product.id === "deposit_growing"
+        ? `
+            <button
+                type="button"
+                id="passportTopUpGrowing"
+                class="main-game-btn"
+                style="width:100%;margin:12px 0;"
+            >
+                ➕ ПОПОВНИТИ ДЕПОЗИТ
+            </button>
+        `
+        : product.id === "overdraft"
+        ? `
+            <button
+                type="button"
+                id="passportRepayOverdraft"
+                class="main-game-btn"
+                style="width:100%;margin:12px 0;"
+            >
+                💳 ПОГАСИТИ БОРГ
+            </button>
+        `
+        : `
+            <p style="color:#666;font-size:14px;">
+                Доступні операції залежать
+                від умов цього продукту.
+            </p>
+        `
+}
+
+                                                       
 product.id === "overdraft"
     ? `
         Загальний борг: ${formatMoney(
@@ -30045,9 +30080,11 @@ function showBankProductPassport(
     const name = bankProductName(product);
     const icon = catalog?.icon || "🏦";
 
-    const playerTurns = Number(
-        gameState.playerTurns
-    ) || 0;
+   
+const playerTurns = Number(
+    gameState.player.turnsCompleted
+) || 0;
+
 
     const activatedTurn = Number(
         product.activatedTurn
@@ -30345,6 +30382,58 @@ if (product.id === "overdraft") {
         }
     );
 }
+
+
+if (product.id === "deposit_growing") {
+    bindBankClick("passportTopUpGrowing", () => {
+        const player = gameState.player;
+
+        const answer = window.prompt(
+            `Скільки гривень поповнити?\n` +
+            `Доступно: ${formatMoney(player.money)} грн\n` +
+            `Крок: 50 грн`
+        );
+
+        if (answer === null) return;
+
+        const amount = Number(answer.trim());
+
+        if (
+            !Number.isSafeInteger(amount) ||
+            amount <= 0 ||
+            amount % 50 !== 0 ||
+            amount > Number(player.money)
+        ) {
+            window.alert(
+                "Введи додатну суму, кратну 50 грн, " +
+                "не більшу за доступний баланс."
+            );
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Поповнити депозит на ` +
+            `${formatMoney(amount)} грн?`
+        );
+
+        if (!confirmed) return;
+
+        const success = topUpGrowingDeposit(
+            player,
+            product,
+            amount
+        );
+
+        if (!success) {
+            window.alert("Не вдалося поповнити депозит.");
+            return;
+        }
+
+        showBankProductPassport(product, audience);
+    });
+}
+
+   
 }
 /* =========================================================
    145.2.1. ІНФОРМАЦІЯ ПРО БАНКІВСЬКИЙ ПРОДУКТ
@@ -31636,6 +31725,51 @@ function contributeToDepositChest(
     return true;
 }
 
+
+/* =====================================================
+   ПОПОВНЕННЯ ДЕПОЗИТУ «ЗРОСТАЮЧИЙ»
+===================================================== */
+
+function topUpGrowingDeposit(player, product, amount) {
+    if (!player || !product) return false;
+
+    if (
+        product.id !== "deposit_growing" ||
+        product.active === false
+    ) {
+        return false;
+    }
+
+    const sum = Number(amount);
+    const balance = Number(product.depositAmount);
+    const wallet = Number(player.money);
+
+    if (
+        !Number.isSafeInteger(sum) ||
+        sum <= 0 ||
+        sum % 50 !== 0 ||
+        !Number.isSafeInteger(balance) ||
+        balance < 0 ||
+        !Number.isFinite(wallet) ||
+        wallet < sum
+    ) {
+        return false;
+    }
+
+    player.money = wallet - sum;
+    product.depositAmount = balance + sum;
+
+    addLog(
+        `🏦 Депозит «Зростаючий»: поповнення ` +
+        `${formatMoney(sum)} грн. ` +
+        `Новий залишок: ` +
+        `${formatMoney(product.depositAmount)} грн.`
+    );
+
+    updateGameUI();
+
+    return true;
+}
 
 /* =========================================================
    РОЗРАХУНОК ДОХОДУ ВІД ІНВЕСТИЦІЙ
