@@ -30298,13 +30298,29 @@ function showBankProductPassport(
                     : ""
             }
 
-            <h3>⚙️ Керування продуктом</h3>
+          
+<h3>⚙️ Керування продуктом</h3>
 
+${
+    product.id === "overdraft"
+        ? `
+            <button
+                type="button"
+                id="passportRepayOverdraft"
+                class="main-game-btn"
+                style="width:100%;margin:12px 0;"
+            >
+                💳 ПОГАСИТИ БОРГ
+            </button>
+        `
+        : `
             <p style="color:#666;font-size:14px;">
-                Доступні фінансові операції
-                підключатимемо до паспорта
-                відповідно до правил кожного продукту.
+                Доступні операції залежать
+                від умов цього продукту.
             </p>
+        `
+}
+
 
             <button
                 type="button"
@@ -30324,6 +30340,18 @@ function showBankProductPassport(
 
     bindBankClick("passportBackTop", goBack);
     bindBankClick("passportBackButton", goBack);
+}
+
+if (product.id === "overdraft") {
+    bindBankClick(
+        "passportRepayOverdraft",
+        () => {
+            showBankOverdraftRepayment(
+                product,
+                audience
+            );
+        }
+    );
 }
 
 /* =========================================================
