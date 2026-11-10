@@ -2038,6 +2038,60 @@ function addLog(
 
 }
 
+/* =====================================================
+   CV ЖИТТЯ — ФІНАНСОВА ІСТОРІЯ
+===================================================== */
+
+function addFinancialLog({
+    type,
+    title,
+    amount,
+    balanceBefore,
+    balanceAfter,
+    productId = null
+}) {
+    const sum = Number(amount);
+    const before = Number(balanceBefore);
+    const after = Number(balanceAfter);
+
+    if (
+        !Number.isFinite(sum) ||
+        !Number.isFinite(before) ||
+        !Number.isFinite(after) ||
+        sum === 0
+    ) {
+        return false;
+    }
+
+    const operation = {
+        type: String(type || "other"),
+        title: String(title || "Фінансова операція"),
+        amount: sum,
+        balanceBefore: before,
+        balanceAfter: after,
+        productId,
+        turn: Number(gameState.playerTurns) || 0,
+        timestamp: new Date().toISOString()
+    };
+
+    if (!Array.isArray(gameState.financialHistory)) {
+        gameState.financialHistory = [];
+    }
+
+    gameState.financialHistory.push(operation);
+
+    const sign = sum > 0 ? "+" : "";
+
+    addLog(
+        `💰 ${operation.title}: ` +
+        `${sign}${formatMoney(sum)} грн ` +
+        `(${formatMoney(before)} → ` +
+        `${formatMoney(after)} грн)`
+    );
+
+    return true;
+}
+
 /* =========================================================
    ЗАМІНА ЕКРАНА
 ========================================================= */
@@ -29185,12 +29239,7 @@ function bankActivationProblem(player, card, context = {}) {
         return "Цей продукт уже підключений.";
     }
 
-    if (
-        context?.source === "hub" &&
-        bank.extraVisits < 1
-    ) {
-        return "Додаткові звернення вичерпано. Можна підключити продукт, коли випадеш на клітинку Банку.";
-    }
+   
 
     const availableMoney = Number(player.money) || 0;
 
@@ -29671,9 +29720,7 @@ const earlyReturnAmount = product => {
             </p>
 
             <div class="bank-summary-strip">
-                <span>
-                    🎟 Звернення: ${bank.extraVisits}
-                </span>
+               
 
                 <span>
                     ⭐ Premium: ${bank.premium ? "Так" : "Ні"}
@@ -31228,7 +31275,35 @@ function activateBankProduct(card, context = {}) {
         }
     }
 
-    applyEffects(player, effects);
+  
+const balanceBeforeActivation = Number(player.money);
+
+applyEffects(player, effects);
+
+const balanceAfterActivation = Number(player.money);
+
+const activationMoneyChange =
+    balanceAfterActivation - balanceBeforeActivation;
+
+if (
+    Number.isSafeInteger(balanceBeforeActivation) &&
+    Number.isSafeInteger(balanceAfterActivation) &&
+    Number.isSafeInteger(activationMoneyChange) &&
+    activationMoneyChange !== 0
+) {
+    addFinancialLog({
+        type: "bank_activation",
+        title:
+            activationMoneyChange < 0
+                ? `Підключення «${originalCard.title}»: списання`
+                : `Підключення «${originalCard.title}»: зарахування`,
+        amount: activationMoneyChange,
+        balanceBefore: balanceBeforeActivation,
+        balanceAfter: balanceAfterActivation,
+        productId: productId
+    });
+}
+
 
     const activatedTurn =
         (Number(player.turnsCompleted) || 0) +
@@ -31327,16 +31402,6 @@ if (productId === "deposit_chest") {
 
     bank.products.push(product);
 
-    /*
-       Звернення списується тільки
-       після успішного підключення.
-    */
-    if (ctx.source === "hub") {
-        bank.extraVisits = Math.max(
-            0,
-            bank.extraVisits - 1
-        );
-    }
 
     addLog(
         `🏦 Підключено: ${originalCard.title}` +
@@ -31350,11 +31415,7 @@ if (productId === "deposit_chest") {
                 ? `; отримано ${formatMoney(creditAmount)} грн`
                 : ""
         ) +
-        (
-            ctx.source === "hub"
-                ? "; використано 1 додаткове звернення"
-                : ""
-        ) +
+       
         "."
     );
 
@@ -31448,6 +31509,10 @@ if (productId === "deposit_chest") {
         }
     );
 }
+
+
+
+
 
 /*
    Спільне вікно суми для депозитів та інвестицій.
@@ -31849,12 +31914,16 @@ function topUpGrowingDeposit(player, product, amount) {
     player.money = wallet - sum;
     product.depositAmount = balance + sum;
 
-    addLog(
-        `🏦 Депозит «Зростаючий»: поповнення ` +
-        `${formatMoney(sum)} грн. ` +
-        `Новий залишок: ` +
-        `${formatMoney(product.depositAmount)} грн.`
-    );
+   
+addFinancialLog({
+    type: "bank_deposit_topup",
+    title: `Поповнення депозиту «Зростаючий» · залишок ${formatMoney(product.depositAmount)} грн`,
+    amount: -sum,
+    balanceBefore: wallet,
+    balanceAfter: player.money,
+    productId: product.id
+});
+
 
     updateGameUI();
 
@@ -31895,11 +31964,16 @@ function withdrawGrowingDeposit(player, product, amount) {
     product.depositAmount = balance - sum;
     player.money = wallet + sum;
 
-    addLog(
-        `🏦 Депозит «Зростаючий»: зняття ` +
-        `${formatMoney(sum)} грн. ` +
-        `Залишок: ${formatMoney(product.depositAmount)} грн.`
-    );
+   
+addFinancialLog({
+    type: "bank_deposit_withdrawal",
+    title: `Зняття з депозиту «Зростаючий» · залишок ${formatMoney(product.depositAmount)} грн`,
+    amount: sum,
+    balanceBefore: wallet,
+    balanceAfter: player.money,
+    productId: product.id
+});
+
 
     updateGameUI();
 
@@ -32521,9 +32595,7 @@ function payBankIncome(
     amount,
     title
 ) {
-
-    const value =
-        Number(amount);
+    const value = Number(amount);
 
     if (
         !player ||
@@ -32532,17 +32604,28 @@ function payBankIncome(
         !Number.isFinite(value) ||
         value <= 0
     ) {
-        return;
+        return false;
     }
 
-    player.money += value;
+    const balanceBefore = Number(player.money);
 
-    addLog(
-        `🏦 ${title}: +${formatMoney(value)} грн`
-    );
+    if (!Number.isFinite(balanceBefore)) {
+        return false;
+    }
 
+    player.money = balanceBefore + value;
+
+    addFinancialLog({
+        type: "bank_income",
+        title: title || "Банківський дохід",
+        amount: value,
+        balanceBefore: balanceBefore,
+        balanceAfter: player.money,
+        productId: product.id
+    });
+
+    return true;
 }
-
 
 /* =========================================================
    145.2.6. ПЛАТІЖ ЗА БАНКІВСЬКИМ ПРОДУКТОМ
@@ -32586,13 +32669,26 @@ function chargeBankPayment(
 
     }
 
-    player.money -= value;
+   
+const balanceBefore = Number(player.money);
 
-    addLog(
-        `🏦 ${title}: −${formatMoney(value)} грн`
-    );
+if (!Number.isFinite(balanceBefore)) {
+    return false;
+}
 
-    return true;
+player.money = balanceBefore - value;
+
+addFinancialLog({
+    type: "bank_payment",
+    title: title || "Банківський платіж",
+    amount: -value,
+    balanceBefore: balanceBefore,
+    balanceAfter: player.money,
+    productId: product.id
+});
+
+return true;
+
 
 }
 
@@ -32699,14 +32795,21 @@ function closeBankProductWithReturn(
 
     product.returnedAmount = value;
 
-    addLog(
-        `✅ ${title}: продукт завершено.` +
-        (
-            value > 0
-                ? ` Повернення +${formatMoney(value)} грн.`
-                : ""
-        )
-    );
+   
+if (value > 0) {
+    addFinancialLog({
+        type: "bank_product_return",
+        title: `${title}: повернення коштів`,
+        amount: value,
+        balanceBefore: currentMoney,
+        balanceAfter: player.money,
+        productId: product.id
+    });
+}
+
+addLog(
+    `✅ ${title}: продукт завершено.`
+);
 
     return true;
 }
@@ -32769,6 +32872,65 @@ function processClassicDeposit(
 }
 
 
+
+function repayBankOverdraft(player, product, amount) {
+    if (
+        !player ||
+        !product ||
+        product.id !== "overdraft" ||
+        product.active === false
+    ) {
+        return false;
+    }
+
+    const sum = Number(amount);
+    const money = Number(player.money);
+    const interest = Number(product.interestAccrued) || 0;
+    const principal = Number(product.principalDue) || 0;
+    const debt = interest + principal;
+
+    if (
+        !Number.isSafeInteger(sum) ||
+        sum <= 0 ||
+        sum % 50 !== 0 ||
+        !Number.isSafeInteger(money) ||
+        money < sum ||
+        !Number.isSafeInteger(interest) ||
+        !Number.isSafeInteger(principal) ||
+        interest < 0 ||
+        principal < 0 ||
+        sum > debt
+    ) {
+        return false;
+    }
+
+    const interestPayment = Math.min(sum, interest);
+    const principalPayment = sum - interestPayment;
+
+    player.money = money - sum;
+    product.interestAccrued = interest - interestPayment;
+    product.principalDue = principal - principalPayment;
+
+    if (
+        product.principalDue === 0 &&
+        product.interestAccrued === 0
+    ) {
+        product.active = false;
+    }
+
+    
+addFinancialLog({
+    type: "bank_repayment",
+    title: "Погашення овердрафту",
+    amount: -sum,
+    balanceBefore: money,
+    balanceAfter: player.money,
+    productId: product.id
+});
+
+
+    return true;
+}
 
 /* =========================================================
    ПОВЕРНЕННЯ ОВЕРДРАФТУ
