@@ -29720,48 +29720,7 @@ const earlyReturnAmount = product => {
                                                     ${
 
 
-<h3>⚙️ Керування продуктом</h3>
 
-${
-    getBankProductOperations(product).includes("topup")
-        ? `
-            <button
-                type="button"
-                id="passportTopUpGrowing"
-                class="main-game-btn"
-                style="width:100%;margin:12px 0;"
-            >
-                ➕ ПОПОВНИТИ ДЕПОЗИТ
-            </button>
-            
-<button
-    type="button"
-    id="passportWithdrawGrowing"
-    class="main-game-btn"
-    style="width:100%;margin:12px 0;"
->
-    ➖ ЗНЯТИ КОШТИ
-</button>
-
-        `
-        : product.id === "overdraft"
-        ? `
-            <button
-                type="button"
-                id="passportRepayOverdraft"
-                class="main-game-btn"
-                style="width:100%;margin:12px 0;"
-            >
-                💳 ПОГАСИТИ БОРГ
-            </button>
-        `
-        : `
-            <p style="color:#666;font-size:14px;">
-                Доступні операції залежать
-                від умов цього продукту.
-            </p>
-        `
-}
 
                                                        
 product.id === "overdraft"
