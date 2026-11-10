@@ -29723,7 +29723,7 @@ const earlyReturnAmount = product => {
 <h3>⚙️ Керування продуктом</h3>
 
 ${
-    product.id === "deposit_growing"
+    getBankProductOperations(product).includes("topup")
         ? `
             <button
                 type="button"
@@ -29733,6 +29733,16 @@ ${
             >
                 ➕ ПОПОВНИТИ ДЕПОЗИТ
             </button>
+            
+<button
+    type="button"
+    id="passportWithdrawGrowing"
+    class="main-game-btn"
+    style="width:100%;margin:12px 0;"
+>
+    ➖ ЗНЯТИ КОШТИ
+</button>
+
         `
         : product.id === "overdraft"
         ? `
@@ -30064,6 +30074,91 @@ showBankHub(audience);
    ПАСПОРТ АКТИВНОГО БАНКІВСЬКОГО ПРОДУКТУ
 ===================================================== */
 
+/* =====================================================
+   BANK HUB — ДОСТУПНІ ОПЕРАЦІЇ ПРОДУКТІВ
+===================================================== */
+
+const BANK_PRODUCT_OPERATIONS = {
+    deposit_growing: ["topup", "withdraw"],
+    deposit_line: ["topup", "withdraw"],
+    deposit_chest: ["contribute", "owner_withdraw"],
+    overdraft: ["repay"],
+    cash_credit: ["repay"],
+    premium_cash_credit: ["repay"],
+    credit_card_100: ["repay"],
+    premium_credit_card: ["repay"],
+    currency_account: ["exchange"],
+    ovdp: ["sell_early"]
+};
+
+function getBankProductOperations(product) {
+    if (!product || product.active === false) {
+        return [];
+    }
+
+    return BANK_PRODUCT_OPERATIONS[product.id] || [];
+}
+
+/* =====================================================
+   BANK HUB — КНОПКИ ОПЕРАЦІЙ У ПАСПОРТІ
+===================================================== */
+
+function renderBankPassportOperations(product) {
+    const operations = getBankProductOperations(product);
+
+    const buttons = {
+        topup: {
+            id: "passportTopUpGrowing",
+            label: "➕ ПОПОВНИТИ ДЕПОЗИТ",
+            products: ["deposit_growing"]
+        },
+
+        withdraw: {
+            id: "passportWithdrawGrowing",
+            label: "➖ ЗНЯТИ КОШТИ",
+            products: ["deposit_growing"]
+        },
+
+        repay: {
+            id: "passportRepayOverdraft",
+            label: "💳 ПОГАСИТИ БОРГ",
+            products: ["overdraft"]
+        }
+    };
+
+    const html = operations
+        .filter(operation => {
+            const button = buttons[operation];
+
+            return (
+                button &&
+                button.products.includes(product.id)
+            );
+        })
+        .map(operation => {
+            const button = buttons[operation];
+
+            return `
+                <button
+                    type="button"
+                    id="${button.id}"
+                    class="main-game-btn"
+                    style="width:100%;margin:12px 0;"
+                >
+                    ${button.label}
+                </button>
+            `;
+        })
+        .join("");
+
+    return html || `
+        <p style="color:#666;font-size:14px;">
+            Доступні операції залежать
+            від умов цього продукту.
+        </p>
+    `;
+}
+
 function showBankProductPassport(
     product,
     audience = "personal"
@@ -30331,25 +30426,8 @@ const playerTurns = Number(
           
 <h3>⚙️ Керування продуктом</h3>
 
-${
-    product.id === "overdraft"
-        ? `
-            <button
-                type="button"
-                id="passportRepayOverdraft"
-                class="main-game-btn"
-                style="width:100%;margin:12px 0;"
-            >
-                💳 ПОГАСИТИ БОРГ
-            </button>
-        `
-        : `
-            <p style="color:#666;font-size:14px;">
-                Доступні операції залежать
-                від умов цього продукту.
-            </p>
-        `
-}
+
+${renderBankPassportOperations(product)}
 
 
             <button
@@ -30431,6 +30509,59 @@ if (product.id === "deposit_growing") {
 
         showBankProductPassport(product, audience);
     });
+
+
+if (product.id === "deposit_growing") {
+    bindBankClick("passportWithdrawGrowing", () => {
+        const player = gameState.player;
+        const balance = Number(product.depositAmount) || 0;
+
+        const answer = window.prompt(
+            `Скільки гривень зняти?\n` +
+            `На депозиті: ${formatMoney(balance)} грн\n` +
+            `Крок: 50 грн`
+        );
+
+        if (answer === null) return;
+
+        const amount = Number(answer.trim());
+
+        if (
+            !Number.isSafeInteger(amount) ||
+            amount <= 0 ||
+            amount % 50 !== 0 ||
+            amount > balance
+        ) {
+            window.alert(
+                "Введи додатну суму, кратну 50 грн, " +
+                "не більшу за залишок депозиту."
+            );
+            return;
+        }
+
+        const confirmed = window.confirm(
+            `Зняти ${formatMoney(amount)} грн ` +
+            `із депозиту «Зростаючий»?`
+        );
+
+        if (!confirmed) return;
+
+        const success = withdrawGrowingDeposit(
+            player,
+            product,
+            amount
+        );
+
+        if (!success) {
+            window.alert("Не вдалося зняти кошти.");
+            return;
+        }
+
+        showBankProductPassport(product, audience);
+    });
+}
+
+   
 }
 
    
@@ -31764,6 +31895,51 @@ function topUpGrowingDeposit(player, product, amount) {
         `${formatMoney(sum)} грн. ` +
         `Новий залишок: ` +
         `${formatMoney(product.depositAmount)} грн.`
+    );
+
+    updateGameUI();
+
+    return true;
+}
+
+/* =====================================================
+   ЧАСТКОВЕ ЗНЯТТЯ — ДЕПОЗИТ «ЗРОСТАЮЧИЙ»
+===================================================== */
+
+function withdrawGrowingDeposit(player, product, amount) {
+    if (!player || !product) return false;
+
+    if (
+        product.id !== "deposit_growing" ||
+        product.active === false
+    ) {
+        return false;
+    }
+
+    const sum = Number(amount);
+    const balance = Number(product.depositAmount);
+    const wallet = Number(player.money);
+
+    if (
+        !Number.isSafeInteger(sum) ||
+        sum <= 0 ||
+        sum % 50 !== 0 ||
+        !Number.isSafeInteger(balance) ||
+        balance < sum ||
+        !Number.isSafeInteger(wallet) ||
+        wallet < 0 ||
+        !Number.isSafeInteger(wallet + sum)
+    ) {
+        return false;
+    }
+
+    product.depositAmount = balance - sum;
+    player.money = wallet + sum;
+
+    addLog(
+        `🏦 Депозит «Зростаючий»: зняття ` +
+        `${formatMoney(sum)} грн. ` +
+        `Залишок: ${formatMoney(product.depositAmount)} грн.`
     );
 
     updateGameUI();
