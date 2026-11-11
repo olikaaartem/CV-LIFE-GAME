@@ -28868,6 +28868,10 @@ function showParticipantInfo(
 
 }
 /* =========================================================
+  початок віділення
+========================================================= */
+
+/* =========================================================
    145.2. КАТАЛОГ БАНКІВСЬКИХ ПРОДУКТІВ
 
    Повна заміна банківського блоку до розділу 145.3.
@@ -29848,7 +29852,7 @@ const earlyReturnAmount = product => {
     if (
         !Number.isSafeInteger(balance) ||
         balance < 0 ||
-        balance % 50 !== 0
+        balance % BANK_MONEY_STEP !== 0
     ) {
         return null;
     }
@@ -29859,7 +29863,7 @@ const earlyReturnAmount = product => {
             return balance;
 
         case "ovdp":
-            return Math.round((balance * 0.60) / 50) * 50;
+            return bankRoundMoney(balance * 0.60);
 
         default:
             return null;
@@ -30636,7 +30640,7 @@ if (product.id === "deposit_growing") {
         const answer = window.prompt(
             `Скільки гривень поповнити?\n` +
             `Доступно: ${formatMoney(player.money)} грн\n` +
-            `Крок: 50 грн`
+            `Крок: 100 грн`
         );
 
         if (answer === null) return;
@@ -30646,11 +30650,11 @@ if (product.id === "deposit_growing") {
         if (
             !Number.isSafeInteger(amount) ||
             amount <= 0 ||
-            amount % 50 !== 0 ||
+            amount % BANK_MONEY_STEP !== 0 ||
             amount > Number(player.money)
         ) {
             window.alert(
-                "Введи додатну суму, кратну 50 грн, " +
+                "Введи додатну суму, кратну 100 грн, " +
                 "не більшу за доступний баланс."
             );
             return;
@@ -30686,7 +30690,7 @@ if (product.id === "deposit_growing") {
         const answer = window.prompt(
             `Скільки гривень зняти?\n` +
             `На депозиті: ${formatMoney(balance)} грн\n` +
-            `Крок: 50 грн`
+            `Крок: 100 грн`
         );
 
         if (answer === null) return;
@@ -30696,11 +30700,11 @@ if (product.id === "deposit_growing") {
         if (
             !Number.isSafeInteger(amount) ||
             amount <= 0 ||
-            amount % 50 !== 0 ||
+            amount % BANK_MONEY_STEP !== 0 ||
             amount > balance
         ) {
             window.alert(
-                "Введи додатну суму, кратну 50 грн, " +
+                "Введи додатну суму, кратну 100 грн, " +
                 "не більшу за залишок депозиту."
             );
             return;
@@ -32634,7 +32638,7 @@ function contributeToDepositChest(
     if (
         !Number.isSafeInteger(contribution) ||
         contribution <= 0 ||
-        contribution % 50 !== 0
+        contribution % BANK_MONEY_STEP !== 0
     ) {
         return false;
     }
@@ -33150,114 +33154,38 @@ function processActiveBankProducts(player) {
             ========================================= */
 
             case "deposit_growing": {
-
-                const balance = Number(
-                    product.depositAmount
-                );
-
-                if (
-                    !Number.isSafeInteger(balance) ||
-                    balance <= 0
-                ) {
-                    break;
+                // Дохід за кожен власний завершений хід за фактичним залишком.
+                // Оскільки lastBankProcessedTurn оновлено перед switch,
+                // за один виклик додаємо дохід тільки за один новий хід.
+                const balance = Math.max(0, Number(product.depositAmount) || 0);
+                const rate = balance >= 40000 ? 0.40
+                    : balance >= 20000 ? 0.35
+                    : balance >= 10000 ? 0.30
+                    : balance >= 4000 ? 0.25 : 0;
+                if (!Number.isFinite(Number(product.accruedIncome))) {
+                    product.accruedIncome = 0;
                 }
-
-                /* =====================================
-                   1. ВИЗНАЧЕННЯ СТАВКИ
-                ===================================== */
-
-                let rate = 0;
-
-                if (balance >= 40000) {
-                    rate = 0.40;
-                } else if (balance >= 20000) {
-                    rate = 0.35;
-                } else if (balance >= 10000) {
-                    rate = 0.30;
-                } else if (balance >= 4000) {
-                    rate = 0.25;
+                // Старі вже оплачені періоди не нараховуємо повторно.
+                const paidPeriods = Math.max(0, Number(product.incomePeriodsPaid) || 0);
+                const processedTurn = Math.max(0, Number(product.lastGrowingAccrualTurn) || 0);
+                if (elapsed > processedTurn && elapsed > paidPeriods * BANK_TURNS_PER_MONTH) {
+                    product.accruedIncome += balance * rate / BANK_TURNS_PER_MONTH;
+                    product.lastGrowingAccrualTurn = elapsed;
                 }
-
-                if (rate <= 0) {
-                    break;
+                if (monthly) {
+                    const due = bankRoundMoney(product.accruedIncome);
+                    if (due > 0 && pay(due, "Депозит «Зростаючий»: дохід за 3 ходи")) {
+                        product.accruedIncome = Math.max(0, product.accruedIncome - due);
+                        product.totalIncomePaid = (Number(product.totalIncomePaid) || 0) + due;
+                        product.incomePeriodsPaid = Math.floor(elapsed / BANK_TURNS_PER_MONTH);
+                        product.lastIncomeTurn = currentTurn;
+                    }
                 }
-
-                /* =====================================
-                   2. ПЕРЕВІРКА ФІНАНСОВИХ ПЕРІОДІВ
-                ===================================== */
-
-                const completedPeriods = Math.floor(
-                    elapsed / BANK_TURNS_PER_MONTH
-                );
-
-                const paidPeriods = Math.max(
-                    0,
-                    Number(product.incomePeriodsPaid) || 0
-                );
-
-                if (
-                    completedPeriods <= paidPeriods
-                ) {
-                    break;
-                }
-
-                /* =====================================
-                   3. РОЗРАХУНОК ДОХОДУ
-                ===================================== */
-
-                const income = bankRoundMoney(
-                    balance * rate
-                );
-
-                if (income <= 0) {
-                    break;
-                }
-
-                /* =====================================
-                   4. ВИПЛАТА ЗА НЕОПЛАЧЕНІ ПЕРІОДИ
-
-                   На кожному виклику обробляємо
-                   один період, щоб не створювати
-                   неконтрольованих нарахувань.
-                ===================================== */
-
-                const success = pay(
-                    income,
-                    "Депозит «Зростаючий»: " +
-                    `дохід за період ${paidPeriods + 1}`
-                );
-
-                /* =====================================
-                   5. ФІКСАЦІЯ УСПІШНОЇ ВИПЛАТИ
-                ===================================== */
-
-                if (success) {
-
-                    product.incomePeriodsPaid =
-                        paidPeriods + 1;
-
-                    product.lastIncomeTurn =
-                        currentTurn;
-                }
-
                 break;
             }
 
-
-
-           
             /* =========================================
                ДЕПОЗИТ «СКРИНЯ»
-
-               Правка №39.17
-
-               - Дохід власника: 25% за місяць.
-               - Один місяць = 3 власні ходи.
-               - Дохід залежить від внеску власника.
-               - Успішні виплати фіксуються.
-               - Невиконані виплати не губляться.
-               - Повторна виплата за той самий
-                 період не допускається.
             ========================================= */
 
             case "deposit_chest": {
@@ -35131,6 +35059,10 @@ function applyBankBusinessProtection(
 }
 
 
+
+/* =========================================================
+   кінець видалення
+========================================================= */
 /* =========================================================
    145.3. ЖУРНАЛ ХОДІВ
 ========================================================= */
