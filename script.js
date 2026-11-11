@@ -32326,14 +32326,72 @@ function bankInvestmentValue(product, amount) {
 }
 
 
+/* =========================================================
+   39.6. BANK HUB — ЄДИНІ ФІНАНСОВІ РОЗРАХУНКИ
+========================================================= */
+
+const BANK_MONEY_STEP = 100;
+
+function bankRoundMoney(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.round(n / BANK_MONEY_STEP) * BANK_MONEY_STEP;
+}
+
+function bankFloorMoney(value) {
+    const n = Number(value);
+    if (!Number.isFinite(n)) return 0;
+    return Math.floor(Math.max(0, n) / BANK_MONEY_STEP) * BANK_MONEY_STEP;
+}
+
+function bankValidMoneyAmount(
+    value,
+    minimum = BANK_MONEY_STEP,
+    maximum = Infinity
+) {
+    const n = Number(value);
+    return Number.isSafeInteger(n) &&
+        n >= minimum &&
+        n <= maximum &&
+        n % BANK_MONEY_STEP === 0;
+}
+
+function bankCalculateIncome(principal, rate) {
+    return bankRoundMoney(
+        Math.max(0, Number(principal) || 0) *
+        Math.max(0, Number(rate) || 0)
+    );
+}
+
+function bankCalculatePayment(totalDebt, paymentsRemaining) {
+    const debt = Math.max(0, Number(totalDebt) || 0);
+    const count = Math.max(
+        1,
+        Math.floor(Number(paymentsRemaining) || 1)
+    );
+
+    if (count === 1) return debt;
+
+    return Math.min(
+        debt,
+        bankRoundMoney(debt / count)
+    );
+}
+
+
+/* =========================================================
+   39.6.1. ОБРОБКА АКТИВНИХ БАНКІВСЬКИХ ПРОДУКТІВ
+
+   1 місяць = 3 завершені ходи гравця.
+   Розрахункові суми округлюються до 100 грн.
+   Останній кредитний платіж закриває точний борг.
+========================================================= */
+
 function processActiveBankProducts(player) {
     if (!player?.bank) return;
 
     const bank = ensureBankState(player);
     const currentTurn = Number(player.turnsCompleted) || 0;
-
-    const round50 = value =>
-        Math.round((Number(value) || 0) / 50) * 50;
 
     const getPrincipal = product => {
         const saved = Number(product.depositAmount);
@@ -32343,6 +32401,7 @@ function processActiveBankProducts(player) {
         }
 
         const card = bankCatalogCard(product.id);
+
         return Math.max(
             0,
             -Number(card?.initialEffects?.money || 0)
@@ -32371,40 +32430,45 @@ function processActiveBankProducts(player) {
 
         product.lastBankProcessedTurn = elapsed;
 
-        const monthly = elapsed % BANK_TURNS_PER_MONTH === 0;
+        const monthly =
+            elapsed % BANK_TURNS_PER_MONTH === 0;
 
         const pay = (amount, title) => {
-            const value = round50(amount);
+            const value = bankRoundMoney(amount);
 
-            if (value > 0) {
-                payBankIncome(
-                    player,
-                    product,
-                    value,
-                    title
-                );
-            }
+            if (value <= 0) return false;
+
+            return payBankIncome(
+                player,
+                product,
+                value,
+                title
+            );
         };
 
-        const charge = (amount, title) =>
+        const charge = (amount, title, exact = false) =>
             chargeBankPayment(
                 player,
                 product,
-                round50(amount),
+                exact ? Number(amount) : bankRoundMoney(amount),
                 title
             );
 
-        const finish = (amount = 0) =>
+        const finish = (amount = 0, exact = false) =>
             closeBankProductWithReturn(
                 player,
                 product,
-                round50(amount),
+                exact ? Number(amount) : bankRoundMoney(amount),
                 bankProductName(product)
             );
 
         const principal = getPrincipal(product);
 
         switch (product.id) {
+
+            /* =========================================
+               ДЕПОЗИТИ
+            ========================================= */
 
             case "deposit_classic": {
                 processClassicDeposit(
@@ -32437,44 +32501,37 @@ function processActiveBankProducts(player) {
                 break;
             }
 
-        
-case "deposit_chest": {
-    if (!monthly) break;
+            case "deposit_chest": {
+                if (!monthly) break;
 
-    const contributions =
-        product.contributions;
+                const contributions = product.contributions;
 
-    // Поки окремого реєстру немає,
-    // використовуємо лише вклад власника.
-    if (
-        !contributions ||
-        typeof contributions !== "object"
-    ) {
-        pay(
-            principal * 0.25,
-            "Скриня: дохід власника"
-        );
-        break;
-    }
+                if (
+                    !contributions ||
+                    typeof contributions !== "object"
+                ) {
+                    pay(
+                        principal * 0.25,
+                        "Скриня: дохід власника"
+                    );
+                    break;
+                }
 
-    // Дохід власника — тільки від його внеску.
-    const ownerId = String(
-        product.ownerId ?? player.id
-    );
+                const ownerId = String(
+                    product.ownerId ?? player.id
+                );
 
-    const ownerContribution = Math.max(
-        0,
-        Number(contributions[ownerId]) || 0
-    );
+                const ownerContribution = Math.max(
+                    0,
+                    Number(contributions[ownerId]) || 0
+                );
 
-    pay(
-        ownerContribution * 0.25,
-        "Скриня: дохід власника"
-    );
-
-    break;
-}
-
+                pay(
+                    ownerContribution * 0.25,
+                    "Скриня: дохід власника"
+                );
+                break;
+            }
 
             case "deposit_line": {
                 if (monthly) {
@@ -32489,6 +32546,10 @@ case "deposit_chest": {
                 break;
             }
 
+            /* =========================================
+               ІНВЕСТИЦІЇ
+            ========================================= */
+
             case "ovdp": {
                 if (monthly && elapsed <= 18) {
                     pay(
@@ -32498,7 +32559,7 @@ case "deposit_chest": {
                 }
 
                 if (elapsed >= 18) {
-                    finish(principal);
+                    finish(principal, true);
                 }
                 break;
             }
@@ -32512,7 +32573,7 @@ case "deposit_chest": {
                 }
 
                 if (elapsed >= 18) {
-                    finish(principal);
+                    finish(principal, true);
                 }
                 break;
             }
@@ -32564,6 +32625,10 @@ case "deposit_chest": {
                 break;
             }
 
+            /* =========================================
+               БІЗНЕС
+            ========================================= */
+
             case "my_fop": {
                 if (monthly) {
                     pay(
@@ -32580,6 +32645,10 @@ case "deposit_chest": {
                 }
                 break;
             }
+
+            /* =========================================
+               КРЕДИТИ ГОТІВКОЮ
+            ========================================= */
 
             case "cash_credit":
             case "premium_cash_credit": {
@@ -32613,18 +32682,18 @@ case "deposit_chest": {
                 const paymentsMade =
                     Number(product.paymentsMade) || 0;
 
-                const payment = paymentsMade >= 5
-                    ? remaining
-                    : Math.min(
+                const payment =
+                    bankCalculatePayment(
                         remaining,
-                        round50(total / 6)
+                        Math.max(1, 6 - paymentsMade)
                     );
 
                 if (
                     charge(
                         payment,
                         bankProductName(product) +
-                        ": кредитний платіж"
+                        ": кредитний платіж",
+                        true
                     )
                 ) {
                     product.totalRepaid = paid + payment;
@@ -32633,11 +32702,12 @@ case "deposit_chest": {
                         0,
                         total - product.totalRepaid
                     );
-                    product.nextPaymentTurn =
-                        elapsed + 3;
+
+                    product.nextPaymentTurn = elapsed + 3;
 
                     if (product.principalDue <= 0) {
                         product.active = false;
+
                         addLog(
                             "✅ " +
                             bankProductName(product) +
@@ -32649,18 +32719,21 @@ case "deposit_chest": {
                         reputation: -5
                     });
 
-                    product.nextPaymentTurn =
-                        elapsed + 1;
+                    product.nextPaymentTurn = elapsed + 1;
 
                     addLog(
                         "⚠️ " +
                         bankProductName(product) +
-                        ": платіж перенесено на наступний хід; −5 репутації."
+                        ": платіж перенесено на наступний хід; " +
+                        "−5 репутації."
                     );
                 }
-
                 break;
             }
+
+            /* =========================================
+               КРЕДИТНІ КАРТКИ
+            ========================================= */
 
             case "credit_card_100":
             case "premium_credit_card": {
@@ -32678,10 +32751,10 @@ case "deposit_chest": {
                         Number(product.creditAmount) || 0
                     );
 
-                    const surcharge = round50(used * 0.5);
+                    const surcharge =
+                        bankCalculateIncome(used, 0.5);
 
-                    product.principalDue =
-                        debt + surcharge;
+                    product.principalDue = debt + surcharge;
 
                     product.interestAccrued =
                         (Number(product.interestAccrued) || 0) +
@@ -32701,11 +32774,16 @@ case "deposit_chest": {
                 break;
             }
 
+            /* =========================================
+               ОВЕРДРАФТ
+            ========================================= */
+
             case "overdraft": {
                 const debt = getDebt(product);
 
                 if (monthly && debt > 0 && elapsed <= 18) {
-                    const interest = round50(debt * 0.20);
+                    const interest =
+                        bankCalculateIncome(debt, 0.20);
 
                     if (
                         !charge(
@@ -32739,6 +32817,10 @@ case "deposit_chest": {
                 break;
             }
 
+            /* =========================================
+               СТРАХУВАННЯ
+            ========================================= */
+
             case "life_insurance": {
                 if (monthly && elapsed < 18) {
                     charge(
@@ -32748,7 +32830,7 @@ case "deposit_chest": {
                 }
 
                 if (elapsed >= 18) {
-                    finish(15000);
+                    finish(15000, true);
                 }
                 break;
             }
@@ -32767,12 +32849,11 @@ case "deposit_chest": {
                 break;
             }
 
+            /* =========================================
+               ВАЛЮТНИЙ РАХУНОК
+            ========================================= */
+
             case "currency_account": {
-                /*
-                   Валютний результат визначається
-                   окремою операцією з кубиком d6.
-                   Регулярного доходу немає.
-                */
                 const lastOperationTurn = Number(
                     product.lastCurrencyOperationTurn ??
                     product.activatedTurn
@@ -32790,6 +32871,10 @@ case "deposit_chest": {
                 }
                 break;
             }
+
+            /* =========================================
+               ІНТЕРНЕТ-ЕКВАЙРИНГ
+            ========================================= */
 
             case "internet_acquiring": {
                 if (
@@ -32841,10 +32926,6 @@ case "deposit_chest": {
     updatePlayerStatsUI();
 }
 
-
-// СЮДИ ВСТАВ ОБИДВІ ФУНКЦІЇ:
-// bankInvestmentValue
-// processActiveBankProducts
 
 /* =========================================================
    145.2.5. ДОХІД ВІД БАНКІВСЬКОГО ПРОДУКТУ
