@@ -32042,120 +32042,206 @@ function contributeToDepositChest(
 }
 
 
-/* =====================================================
-   ПОПОВНЕННЯ ДЕПОЗИТУ «ЗРОСТАЮЧИЙ»
-===================================================== */
-
-function topUpGrowingDeposit(player, product, amount) {
-    if (!player || !product) return false;
-
-    if (
-        product.id !== "deposit_growing" ||
-        product.active === false
-    ) {
-        return false;
-    }
-
-    const sum = Number(amount);
-    const balance = Number(product.depositAmount);
-    const wallet = Number(player.money);
-
-    if (
-        !Number.isSafeInteger(sum) ||
-        sum <= 0 ||
-        sum % 50 !== 0 ||
-        !Number.isSafeInteger(balance) ||
-        balance < 0 ||
-        !Number.isFinite(wallet) ||
-        wallet < sum
-    ) {
-        return false;
-    }
-
-    player.money = wallet - sum;
-    product.depositAmount = balance + sum;
-
-   
-addFinancialLog({
-    type: "bank_deposit_topup",
-    title: `Поповнення депозиту «Зростаючий» · залишок ${formatMoney(product.depositAmount)} грн`,
-    amount: -sum,
-    balanceBefore: wallet,
-    balanceAfter: player.money,
-    productId: product.id
-});
-
-
-    updateGameUI();
-
-    return true;
-}
-
-/* =====================================================
-   ЧАСТКОВЕ ЗНЯТТЯ — ДЕПОЗИТ «ЗРОСТАЮЧИЙ»
-===================================================== */
-
-function withdrawGrowingDeposit(player, product, amount) {
-    if (!player || !product) return false;
-
-    if (
-        product.id !== "deposit_growing" ||
-        product.active === false
-    ) {
-        return false;
-    }
-
-    const sum = Number(amount);
-    const balance = Number(product.depositAmount);
-    const wallet = Number(player.money);
-
-    if (
-        !Number.isSafeInteger(sum) ||
-        sum <= 0 ||
-        sum % 50 !== 0 ||
-        !Number.isSafeInteger(balance) ||
-        balance < sum ||
-        !Number.isSafeInteger(wallet) ||
-        wallet < 0 ||
-        !Number.isSafeInteger(wallet + sum)
-    ) {
-        return false;
-    }
-
-    product.depositAmount = balance - sum;
-    player.money = wallet + sum;
-
-   
-addFinancialLog({
-    type: "bank_deposit_withdrawal",
-    title: `Зняття з депозиту «Зростаючий» · залишок ${formatMoney(product.depositAmount)} грн`,
-    amount: sum,
-    balanceBefore: wallet,
-    balanceAfter: player.money,
-    productId: product.id
-});
-
-
-    updateGameUI();
-
-    return true;
-}
 
 /* =========================================================
-   РОЗРАХУНОК ДОХОДУ ВІД ІНВЕСТИЦІЙ
+   BANK HUB — ДЕПОЗИТНІ ОПЕРАЦІЇ ТА ІНВЕСТИЦІЇ
 
-   Для «Зростаючого»:
-   - ставка залежить від поточного вкладу;
-   - прибуток округлюється до 50 грн;
-   - розрахунок проводиться кожні 3 ходи
-     у processActiveBankProducts.
+   Правка №39.5
 
-   Для інших інвестицій зберігаємо
-   попередній принцип масштабування.
+   - Крок внесків і зняття: 100 грн
+   - Розрахунковий дохід: округлення до 100 грн
+   - Перевірка коштів та залишку
+   - Фінансова історія
+   - Захист від некоректних сум
+   - Збереження існуючих інвестиційних коефіцієнтів
 ========================================================= */
+
+
+/* =====================================================
+   1. СПІЛЬНА ПЕРЕВІРКА ДЕПОЗИТНОЇ ОПЕРАЦІЇ
+===================================================== */
+
+function bankValidateDepositOperation(
+    player,
+    product,
+    amount,
+    operation
+) {
+    if (!player || !product) return null;
+
+    if (product.active === false) return null;
+
+    if (product.id !== "deposit_growing") {
+        return null;
+    }
+
+    const sum = Number(amount);
+    const balance = Number(product.depositAmount);
+    const wallet = Number(player.money);
+
+    if (
+        !Number.isSafeInteger(sum) ||
+        !bankValidMoneyAmount(sum) ||
+        !Number.isSafeInteger(balance) ||
+        balance < 0 ||
+        !Number.isSafeInteger(wallet) ||
+        wallet < 0
+    ) {
+        return null;
+    }
+
+    if (
+        operation === "topup" &&
+        wallet < sum
+    ) {
+        return null;
+    }
+
+    if (
+        operation === "withdraw" &&
+        balance < sum
+    ) {
+        return null;
+    }
+
+    if (
+        !["topup", "withdraw"].includes(operation)
+    ) {
+        return null;
+    }
+
+    const newBalance =
+        operation === "topup"
+            ? balance + sum
+            : balance - sum;
+
+    const newWallet =
+        operation === "topup"
+            ? wallet - sum
+            : wallet + sum;
+
+    if (
+        !Number.isSafeInteger(newBalance) ||
+        !Number.isSafeInteger(newWallet) ||
+        newBalance < 0 ||
+        newWallet < 0
+    ) {
+        return null;
+    }
+
+    return {
+        sum,
+        balance,
+        wallet,
+        newBalance,
+        newWallet
+    };
+}
+
+
+/* =====================================================
+   2. ПОПОВНЕННЯ ДЕПОЗИТУ «ЗРОСТАЮЧИЙ»
+===================================================== */
+
+function topUpGrowingDeposit(
+    player,
+    product,
+    amount
+) {
+    const operation = bankValidateDepositOperation(
+        player,
+        product,
+        amount,
+        "topup"
+    );
+
+    if (!operation) return false;
+
+    player.money = operation.newWallet;
+    product.depositAmount = operation.newBalance;
+
+    addFinancialLog({
+        type: "bank_deposit_topup",
+        title:
+            "Поповнення депозиту «Зростаючий» · " +
+            "залишок " +
+            formatMoney(operation.newBalance) +
+            " грн",
+        amount: -operation.sum,
+        balanceBefore: operation.wallet,
+        balanceAfter: operation.newWallet,
+        productId: product.id
+    });
+
+    updateGameUI();
+
+    return true;
+}
+
+
+/* =====================================================
+   3. ЧАСТКОВЕ ЗНЯТТЯ З ДЕПОЗИТУ
+===================================================== */
+
+function withdrawGrowingDeposit(
+    player,
+    product,
+    amount
+) {
+    const operation = bankValidateDepositOperation(
+        player,
+        product,
+        amount,
+        "withdraw"
+    );
+
+    if (!operation) return false;
+
+    player.money = operation.newWallet;
+    product.depositAmount = operation.newBalance;
+
+    addFinancialLog({
+        type: "bank_deposit_withdrawal",
+        title:
+            "Зняття з депозиту «Зростаючий» · " +
+            "залишок " +
+            formatMoney(operation.newBalance) +
+            " грн",
+        amount: operation.sum,
+        balanceBefore: operation.wallet,
+        balanceAfter: operation.newWallet,
+        productId: product.id
+    });
+
+    updateGameUI();
+
+    return true;
+}
+
+
+/* =====================================================
+   4. РОЗРАХУНОК ІНВЕСТИЦІЙНОГО ДОХОДУ
+
+   «Зростаючий»:
+   - від 4 000 грн: 25%
+   - від 10 000 грн: 30%
+   - від 20 000 грн: 35%
+   - від 40 000 грн: 40%
+
+   Періодичність нарахування визначає
+   processActiveBankProducts.
+
+   Інші інвестиції:
+   зберігаємо існуючий коефіцієнт
+   масштабування вкладеної суми.
+===================================================== */
 
 function bankInvestmentValue(product, amount) {
     if (!product) return 0;
+
+    /* ---------------------------------------------
+       ДЕПОЗИТ «ЗРОСТАЮЧИЙ»
+    --------------------------------------------- */
 
     if (product.id === "deposit_growing") {
         const balance = Number(product.depositAmount);
@@ -32177,10 +32263,12 @@ function bankInvestmentValue(product, amount) {
             rate = 0.30;
         }
 
-        return Math.round(
-            (balance * rate) / 50
-        ) * 50;
+        return bankCalculateIncome(balance, rate);
     }
+
+    /* ---------------------------------------------
+       ПРОДУКТИ ЗІ ЗМІННОЮ СУМОЮ ІНВЕСТИЦІЇ
+    --------------------------------------------- */
 
     const flexibleIds = [
         "deposit_chest",
@@ -32195,6 +32283,10 @@ function bankInvestmentValue(product, amount) {
     if (!flexibleIds.includes(product.id)) {
         return amount;
     }
+
+    /* ---------------------------------------------
+       КОЕФІЦІЄНТ ІНВЕСТИЦІЇ
+    --------------------------------------------- */
 
     let multiplier =
         Number(product.investmentMultiplier);
@@ -32219,8 +32311,20 @@ function bankInvestmentValue(product, amount) {
                 : 1;
     }
 
-    return Math.round(amount * multiplier);
+    /* ---------------------------------------------
+       РОЗРАХУНОК ТА ОКРУГЛЕННЯ ДО 100 ГРН
+    --------------------------------------------- */
+
+    const calculatedAmount =
+        Number(amount) * multiplier;
+
+    if (!Number.isFinite(calculatedAmount)) {
+        return 0;
+    }
+
+    return bankRoundMoney(calculatedAmount);
 }
+
 
 function processActiveBankProducts(player) {
     if (!player?.bank) return;
