@@ -31119,37 +31119,53 @@ function activateBankProduct(card, context = {}) {
        Вибір суми кредиту або овердрафту.
        Вікно відкривається лише до підтвердження.
     */
-    if (
-        isCredit &&
-        card.creditConfirmed !== true
-    ) {
+    
+
+    /* =====================================================
+       145.2.4.1. КРЕДИТИ ТА ОВЕРДРАФТ
+       
+       Єдиний крок введення: 100 грн.
+       Перевірка суми до підтвердження.
+       Розрахунок платежів і відсотків.
+       Захист від подвійного підтвердження.
+    ===================================================== */
+
+    if (isCredit && card.creditConfirmed !== true) {
+
         const limit = isOverdraft
             ? getBankOverdraftLimit(player)
             : null;
 
         const defaultAmount = isOverdraft
-            ? Math.min(limit, 10000)
+            ? bankFloorMoney(Math.min(limit, 10000))
             : Math.max(
-                50,
-                Number(originalCard.initialEffects?.money) || 50
+                BANK_MONEY_STEP,
+                bankRoundMoney(
+                    Number(originalCard.initialEffects?.money) ||
+                    BANK_MONEY_STEP
+                )
             );
 
         openGameInfoModal(`
             <div class="bank-card-game-modal">
+
                 <div class="cycle-notice-icon">🏦</div>
 
                 <h2>${originalCard.title}</h2>
 
                 <p>
-                    Обери суму з кроком 50 грн.
+                    Обери суму кредиту.
+                    Крок — ${BANK_MONEY_STEP} грн.
                 </p>
 
                 ${
                     isOverdraft
                         ? `
                             <p>
-                                Твій максимальний ліміт:
-                                ${formatMoney(limit)} грн.
+                                Максимальний ліміт:
+                                <strong>
+                                    ${formatMoney(limit)} грн
+                                </strong>
                             </p>
                         `
                         : ""
@@ -31166,9 +31182,9 @@ function activateBankProduct(card, context = {}) {
                 <input
                     id="bankCreditAmount"
                     type="number"
-                    min="50"
+                    min="${BANK_MONEY_STEP}"
                     ${isOverdraft ? `max="${limit}"` : ""}
-                    step="50"
+                    step="${BANK_MONEY_STEP}"
                     value="${defaultAmount}"
                     style="
                         display:block;
@@ -31199,6 +31215,7 @@ function activateBankProduct(card, context = {}) {
                 >
                     НАЗАД
                 </button>
+
             </div>
         `);
 
@@ -31213,81 +31230,173 @@ function activateBankProduct(card, context = {}) {
 
         let submitted = false;
 
+        /* =============================================
+           ПЕРЕВІРКА СУМИ
+        ============================================= */
+
         const getAmount = () => {
+
             const raw = amountInput.value.trim();
             const amount = Number(raw);
 
             const valid =
                 raw !== "" &&
-                Number.isSafeInteger(amount) &&
-                amount >= 50 &&
-                amount % 50 === 0 &&
-                (
-                    !isOverdraft ||
-                    amount <= getBankOverdraftLimit(player)
+                bankValidMoneyAmount(
+                    amount,
+                    BANK_MONEY_STEP,
+                    isOverdraft ? limit : Infinity
                 );
 
             return { amount, valid };
         };
 
+        /* =============================================
+           ПОПЕРЕДНІЙ РОЗРАХУНОК
+        ============================================= */
+
         const updatePreview = () => {
+
             const { amount, valid } = getAmount();
 
             confirmButton.disabled = !valid || submitted;
 
             if (!valid) {
-                preview.textContent =
-                    isOverdraft
-                        ? `Обери суму від 50 до ${formatMoney(limit)} грн, кратну 50.`
-                        : "Введи додатну суму, кратну 50 грн.";
+
+                preview.textContent = isOverdraft
+                    ? `Введи суму від ${BANK_MONEY_STEP} до ` +
+                      `${formatMoney(limit)} грн, кратну ` +
+                      `${BANK_MONEY_STEP} грн.`
+                    : `Введи суму, кратну ` +
+                      `${BANK_MONEY_STEP} грн.`;
+
                 return;
             }
+
+            /* ОВЕРДРАФТ */
 
             if (isOverdraft) {
+
+                const interest =
+                    bankCalculateIncome(amount, 0.20);
+
                 preview.innerHTML = `
-                    Отримаєш:
-                    ${formatMoney(amount)} грн.<br>
+                    <strong>
+                        Отримаєш:
+                        ${formatMoney(amount)} грн
+                    </strong>
 
-                    Відсотки кожні 3 особистих ходи:
-                    20% від непогашеного боргу.<br>
+                    <p>
+                        Відсотки за один фінансовий період:
+                        ${formatMoney(interest)} грн
+                        за незмінного боргу.
+                    </p>
 
-                    Максимальний строк:
-                    18 особистих ходів.
+                    <p>
+                        Ставка: 20% від непогашеного боргу.
+                        Нарахування кожні 3 особистих ходи.
+                    </p>
+
+                    <p>
+                        Строк: 18 особистих ходів.
+                    </p>
                 `;
+
                 return;
             }
+
+            /* КРЕДИТ ГОТІВКОЮ */
 
             if (
                 productId === "cash_credit" ||
                 productId === "premium_cash_credit"
             ) {
+
                 const total = amount * 1.5;
 
+                const payments = [];
+                let remaining = total;
+
+                for (let i = 0; i < 6; i++) {
+
+                    const payment = bankCalculatePayment(
+                        remaining,
+                        6 - i
+                    );
+
+                    payments.push(payment);
+                    remaining = Math.max(
+                        0,
+                        remaining - payment
+                    );
+                }
+
                 preview.innerHTML = `
-                    Отримаєш:
-                    ${formatMoney(amount)} грн.<br>
+                    <strong>
+                        Отримаєш:
+                        ${formatMoney(amount)} грн
+                    </strong>
 
-                    Загальна сума повернення:
-                    ${formatMoney(total)} грн.<br>
+                    <p>
+                        Загальна сума повернення:
+                        ${formatMoney(total)} грн
+                    </p>
 
-                    6 платежів кожні 3 особистих ходи.
-                    Суми платежів мають бути кратними 50 грн.
+                    <p>
+                        Переплата:
+                        ${formatMoney(total - amount)} грн
+                    </p>
+
+                    <p>
+                        6 платежів кожні 3 особистих ходи.
+                    </p>
+
+                    <p>
+                        Платежі:
+                        ${payments.map(
+                            (payment, index) =>
+                                `${index + 1}. ` +
+                                `${formatMoney(payment)} грн`
+                        ).join("; ")}
+                    </p>
                 `;
+
                 return;
             }
 
+            /* КРЕДИТНА КАРТКА */
+
+            const penalty =
+                bankCalculateIncome(amount, 0.50);
+
             preview.innerHTML = `
-                Обраний кредитний ліміт:
-                ${formatMoney(amount)} грн.<br>
+                <strong>
+                    Кредитний ліміт:
+                    ${formatMoney(amount)} грн
+                </strong>
 
-                Пільговий період:
-                9 особистих ходів.<br>
+                <p>
+                    Пільговий період:
+                    9 особистих ходів.
+                </p>
 
-                Якщо борг залишиться після пільгового
-                періоду, одноразова переплата —
-                50% від початково використаної суми.
+                <p>
+                    Якщо борг залишиться після
+                    пільгового періоду, одноразова
+                    переплата становитиме 50%
+                    від початково використаної суми.
+                </p>
+
+                <p>
+                    При повному використанні ліміту
+                    розрахункова переплата:
+                    ${formatMoney(penalty)} грн.
+                </p>
             `;
         };
+
+        /* =============================================
+           ПІДТВЕРДЖЕННЯ
+        ============================================= */
 
         amountInput.addEventListener(
             "input",
@@ -31295,6 +31404,7 @@ function activateBankProduct(card, context = {}) {
         );
 
         confirmButton.addEventListener("click", () => {
+
             if (submitted) return;
 
             const { amount, valid } = getAmount();
@@ -31317,6 +31427,10 @@ function activateBankProduct(card, context = {}) {
             );
         });
 
+        /* =============================================
+           ПОВЕРНЕННЯ
+        ============================================= */
+
         bindBankClick(
             "bankCreditCancelButton",
             () => showBankCard(originalCard, ctx)
@@ -31326,6 +31440,23 @@ function activateBankProduct(card, context = {}) {
         return;
     }
 
+    /* =====================================================
+       145.2.4.2. ФІНАЛЬНА ПЕРЕВІРКА АКТИВАЦІЇ
+
+       Депозити та інвестиції:
+       - крок 100 грн;
+       - ОВДП — крок 5 000 грн;
+       - перевірка доступних коштів.
+
+       Кредити та овердрафт:
+       - крок 100 грн;
+       - перевірка кредитного ліміту;
+       - захист від некоректної суми.
+
+       Гроші списуються або зараховуються
+       тільки після успішної перевірки.
+    ===================================================== */
+
     const effects = {
         ...(originalCard.initialEffects || {})
     };
@@ -31333,67 +31464,137 @@ function activateBankProduct(card, context = {}) {
     let investedAmount = 0;
     let creditAmount = 0;
 
-    /*
-       Остаточна перевірка вкладеної суми.
-    */
+    /* =====================================================
+       1. ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
+    ===================================================== */
+
     if (isInvestment) {
+
         investedAmount = -Number(
             card.initialEffects?.money
         );
 
-        const step = isOvdp ? 5000 : 50;
+        const investmentStep = isOvdp
+            ? 5000
+            : BANK_MONEY_STEP;
+
+        const availableMoney = Math.max(
+            0,
+            Number(player.money) || 0
+        );
 
         const validInvestment =
             Number.isSafeInteger(investedAmount) &&
+            Number.isSafeInteger(baseAmount) &&
             baseAmount > 0 &&
             investedAmount >= baseAmount &&
-            investedAmount <= (Number(player.money) || 0) &&
-            investedAmount % step === 0 &&
+            investedAmount <= availableMoney &&
+            investedAmount % investmentStep === 0 &&
             (!isClassic || Boolean(term));
 
         if (!validInvestment) {
+
+            addLog(
+                "⚠️ Банк: некоректна сума " +
+                "депозиту або інвестиції."
+            );
+
             showClassicDepositTermChoice(
                 originalCard,
                 ctx
             );
+
             return;
         }
 
         effects.money = -investedAmount;
     }
 
-    /*
-       Остаточна перевірка кредитної суми.
-    */
+    /* =====================================================
+       2. КРЕДИТИ ТА ОВЕРДРАФТ
+    ===================================================== */
+
     if (isCredit) {
+
         creditAmount = Number(
             card.selectedCreditAmount
         );
 
+        const creditMaximum = isOverdraft
+            ? getBankOverdraftLimit(player)
+            : Infinity;
+
         const validCredit =
-            Number.isSafeInteger(creditAmount) &&
-            creditAmount >= 50 &&
-            creditAmount % 50 === 0 &&
-            (
-                !isOverdraft ||
-                creditAmount <= getBankOverdraftLimit(player)
+            card.creditConfirmed === true &&
+            bankValidMoneyAmount(
+                creditAmount,
+                BANK_MONEY_STEP,
+                creditMaximum
             );
 
         if (!validCredit) {
+
+            addLog(
+                "⚠️ Банк: некоректна сума " +
+                "кредиту або перевищено ліміт."
+            );
+
             activateBankProduct(
                 originalCard,
                 ctx
             );
+
             return;
         }
 
         effects.money = creditAmount;
     }
 
-    /*
-       Повторна перевірка доступності
-       перед фактичним підключенням.
-    */
+    /* =====================================================
+       3. ЗАХИСТ ВІД НЕКОРЕКТНОГО БАЛАНСУ
+    ===================================================== */
+
+    const moneyChange = Number(effects.money || 0);
+
+    if (
+        !Number.isFinite(moneyChange) ||
+        !Number.isSafeInteger(moneyChange)
+    ) {
+
+        addLog(
+            "⚠️ Банк: операцію скасовано. " +
+            "Некоректна фінансова сума."
+        );
+
+        showBankCard(originalCard, ctx);
+        return;
+    }
+
+    if (
+        moneyChange < 0 &&
+        (Number(player.money) || 0) < -moneyChange
+    ) {
+
+        addLog(
+            "⚠️ Банк: недостатньо коштів " +
+            "для підключення продукту."
+        );
+
+        showBankCard(originalCard, ctx);
+        return;
+    }
+
+    /* =====================================================
+       4. ПОВТОРНА ПЕРЕВІРКА ПРАВИЛ БАНКУ
+
+       Перевіряємо:
+       - доступність продукту;
+       - передумови;
+       - Premium;
+       - наявні активні продукти;
+       - інші обмеження Bank HUB.
+    ===================================================== */
+
     const finalProblem = bankActivationProblem(
         player,
         {
@@ -31404,9 +31605,26 @@ function activateBankProduct(card, context = {}) {
     );
 
     if (finalProblem) {
+
+        addLog(
+            "⚠️ Банк: підключення продукту " +
+            "не пройшло фінальну перевірку."
+        );
+
         showBankCard(originalCard, ctx);
         return;
     }
+
+    /* =====================================================
+       ПЕРЕВІРКИ ЗАВЕРШЕНО
+
+       Далі виконується наявний код:
+       - надання Premium;
+       - applyEffects;
+       - запис фінансової історії;
+       - створення банківського продукту.
+    ===================================================== */
+
 
     /*
        Premium надається лише після
@@ -31470,88 +31688,132 @@ if (
         (Number(player.turnsCompleted) || 0) +
         (ctx.source === "cell" ? 1 : 0);
 
+    /* =====================================================
+       145.2.4.4. СТВОРЕННЯ АКТИВНОГО ПРОДУКТУ
+
+       Зберігаємо умови на момент оформлення:
+       - суму вкладу або кредиту;
+       - строк;
+       - прибуток;
+       - боргові зобов'язання;
+       - стан виконання;
+       - захист від повторних виплат.
+    ===================================================== */
+
     const product = {
         id: productId,
         cardId: originalCard.id,
         active: true,
         activatedTurn,
-        lastBankProcessedTurn: 0
+        lastBankProcessedTurn: 0,
+        returnProcessed: false,
+        maturityProcessed: false,
+        closedTurn: null
     };
 
-    /*
-       Збереження депозитів та інвестицій.
-    */
+    /* =====================================================
+       1. ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
+    ===================================================== */
+
     if (isInvestment) {
+
         product.depositAmount = investedAmount;
+
         product.investmentMultiplier =
             investedAmount / baseAmount;
     }
 
-/* =====================================================
-   ДЕПОЗИТ «СКРИНЯ» — РЕЄСТР ВНЕСКІВ
-===================================================== */
+    /* =====================================================
+       2. ДЕПОЗИТ «СКРИНЯ»
 
-if (productId === "deposit_chest") {
-    const ownerId = String(player.id);
+       Зберігаємо власника та початковий внесок.
+       Подальші поповнення ведуться окремо.
+    ===================================================== */
 
-    product.ownerId = ownerId;
+    if (productId === "deposit_chest") {
 
-    product.contributions = {
-        [ownerId]: investedAmount
-    };
+        const ownerId = String(player.id);
 
-    product.depositAmount = investedAmount;
+        product.ownerId = ownerId;
 
-    product.chestCreatedTurn = activatedTurn;
-}
+        product.contributions = {
+            [ownerId]: investedAmount
+        };
+
+        product.depositAmount = investedAmount;
+        product.chestCreatedTurn = activatedTurn;
+    }
+
+    /* =====================================================
+       3. КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
+
+       Фіксуємо прибуток при відкритті.
+       Після цього ставка не перераховується.
+    ===================================================== */
 
     if (isClassic) {
+
+        const fixedProfit = bankRoundMoney(
+            term.profit * investedAmount / baseAmount
+        );
+
         Object.assign(product, {
             termMonths: term.months,
             termTurns: term.turns,
-            profit: Math.round(
-                (
-                    term.profit *
-                    investedAmount /
-                    baseAmount
-                ) / 50
-            ) * 50
+            depositAmount: investedAmount,
+            profit: fixedProfit,
+            maturityTurn: activatedTurn + term.turns
         });
     }
 
-    /*
-       Збереження кредитних зобов'язань.
-       Поля використовуватимемо при
-       оновленні механіки погашення.
-    */
+    /* =====================================================
+       4. КРЕДИТИ
+    ===================================================== */
+
     if (isCredit) {
+
         product.creditAmount = creditAmount;
         product.principalDue = creditAmount;
         product.originalPrincipal = creditAmount;
         product.totalRepaid = 0;
         product.interestAccrued = 0;
 
+        /* =============================================
+           КРЕДИТ ГОТІВКОЮ — 6 ПЛАТЕЖІВ
+        ============================================= */
+
         if (
             productId === "cash_credit" ||
             productId === "premium_cash_credit"
         ) {
+
             product.totalDue = creditAmount * 1.5;
             product.paymentsTotal = 6;
             product.paymentsMade = 0;
             product.paymentInterval = 3;
         }
 
+        /* =============================================
+           КРЕДИТНА КАРТКА — ПІЛЬГОВИЙ ПЕРІОД
+        ============================================= */
+
         if (
             productId === "credit_card_100" ||
             productId === "premium_credit_card"
         ) {
+
             product.creditLimit = creditAmount;
             product.gracePeriodTurns = 9;
             product.graceStartTurn = activatedTurn;
             product.gracePenaltyApplied = false;
         }
 
+        /* =============================================
+           ОВЕРДРАФТ
+        ============================================= */
+
         if (isOverdraft) {
+
             product.overdraftLimit =
                 getBankOverdraftLimit(player);
 
@@ -31560,6 +31822,43 @@ if (productId === "deposit_chest") {
             product.interestRate = 0.20;
         }
     }
+
+    /* =====================================================
+       5. ПЕРЕВІРКА ПЕРЕД ЗБЕРЕЖЕННЯМ
+
+       Не допускаємо продуктів із некоректними
+       фінансовими значеннями.
+    ===================================================== */
+
+    if (
+        isInvestment &&
+        (
+            !Number.isSafeInteger(product.depositAmount) ||
+            product.depositAmount <= 0
+        )
+    ) {
+        addLog(
+            "⚠️ Банк: некоректна сума вкладу."
+        );
+        return;
+    }
+
+    if (
+        isClassic &&
+        (
+            !Number.isSafeInteger(product.profit) ||
+            product.profit < 0 ||
+            !Number.isSafeInteger(product.termTurns) ||
+            product.termTurns <= 0
+        )
+    ) {
+        addLog(
+            "⚠️ Банк: некоректні умови депозиту."
+        );
+        return;
+    }
+
+
 
     bank.products.push(product);
 
@@ -31675,77 +31974,157 @@ if (productId === "deposit_chest") {
 
 
 
-/*
-   Спільне вікно суми для депозитів та інвестицій.
-   Назву функції залишаємо, щоб зберегти наявні виклики.
-*/
+
+/* =========================================================
+   145.2.4.3. ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
+
+   Єдине вікно оформлення:
+   - депозити: крок 100 грн;
+   - інвестиції: крок 100 грн;
+   - ОВДП: крок 5 000 грн;
+   - перевірка мінімальної суми;
+   - перевірка балансу гравця;
+   - вибір строку класичного депозиту;
+   - попередній розрахунок доходу;
+   - захист від подвійного підтвердження.
+
+   Назву функції зберігаємо для сумісності.
+========================================================= */
 
 function showClassicDepositTermChoice(card, context = {}) {
+
     const player = gameState.player;
     if (!player || !card) return;
 
     const ctx = bankContext(context);
+
     const originalCard = bankCatalogCard(card.productId);
     if (!originalCard) return;
 
-    const isClassic = card.productId === "deposit_classic";
-    const isOvdp = card.productId === "ovdp";
+    const productId = originalCard.productId;
+
+    const isClassic = productId === "deposit_classic";
+    const isOvdp = productId === "ovdp";
+
+    /* =====================================================
+       1. ПРАВИЛА СУМИ
+    ===================================================== */
+
+    const step = isOvdp ? 5000 : BANK_MONEY_STEP;
+
+    const baseAmount = Math.max(
+        0,
+        -Number(originalCard.initialEffects?.money || 0)
+    );
 
     const minimumAmount = isOvdp
         ? 5000
-        : Math.max(
-            0,
-            -Number(originalCard.initialEffects?.money || 0)
-        );
+        : Math.ceil(baseAmount / step) * step;
+
+    const availableMoney = Math.max(
+        0,
+        Number(player.money) || 0
+    );
+
+    const maximumAmount =
+        Math.floor(availableMoney / step) * step;
 
     if (
         !Number.isSafeInteger(minimumAmount) ||
         minimumAmount <= 0
     ) {
+        addLog(
+            "⚠️ Банк: некоректна мінімальна сума продукту."
+        );
         return;
     }
 
-    const availableMoney = Number(player.money) || 0;
-    const step = isOvdp ? 5000 : 50;
+    /* =====================================================
+       2. ПОПЕРЕДНЬО ОБРАНА СУМА
+    ===================================================== */
 
-    const previousAmount =
-        -Number(card.initialEffects?.money);
+    const previousAmount = -Number(
+        card.initialEffects?.money
+    );
 
-    const initialAmount =
+    const previousValid =
         Number.isSafeInteger(previousAmount) &&
         previousAmount >= minimumAmount &&
-        previousAmount <= availableMoney &&
-        previousAmount % step === 0
-            ? previousAmount
-            : minimumAmount;
+        previousAmount <= maximumAmount &&
+        previousAmount % step === 0;
+
+    const initialAmount = previousValid
+        ? previousAmount
+        : minimumAmount;
+
+    const hasEnoughMoney =
+        maximumAmount >= minimumAmount;
+
+    /* =====================================================
+       3. ВІКНО ОФОРМЛЕННЯ
+    ===================================================== */
 
     openGameInfoModal(`
         <div class="bank-card-game-modal">
-            <div class="cycle-notice-icon">🏦</div>
 
-            <h2>${originalCard.title}</h2>
+            <div class="cycle-notice-icon">
+                🏦
+            </div>
+
+            <h2>
+                ${originalCard.title}
+            </h2>
 
             <p>
-                Мінімальний вклад:
-                ${formatMoney(minimumAmount)} грн.
-                <br>
-                ${
-                    isOvdp
-                        ? "Одна облігація коштує 5 000 грн. Можна купити лише цілу кількість облігацій."
-                        : "Можна обрати більшу суму, кратну 50 грн, у межах доступних коштів."
-                }
+                Мінімальна сума:
+                <strong>
+                    ${formatMoney(minimumAmount)} грн
+                </strong>
             </p>
 
             <p>
-                Доступно:
-                ${formatMoney(availableMoney)} грн.
+                Крок:
+                <strong>
+                    ${formatMoney(step)} грн
+                </strong>
             </p>
+
+            ${
+                isOvdp
+                    ? `
+                        <p>
+                            Одна облігація коштує
+                            5 000 грн.
+                            Купувати можна лише
+                            цілу кількість облігацій.
+                        </p>
+                    `
+                    : ""
+            }
+
+            <p>
+                Доступні кошти:
+                <strong>
+                    ${formatMoney(availableMoney)} грн
+                </strong>
+            </p>
+
+            ${
+                !hasEnoughMoney
+                    ? `
+                        <p>
+                            ⚠️ Недостатньо коштів
+                            для оформлення продукту.
+                        </p>
+                    `
+                    : ""
+            }
 
             <label for="bankInvestmentAmount">
                 ${
                     isOvdp
                         ? "Загальна вартість ОВДП, грн"
-                        : "Сума вкладу, грн"
+                        : "Сума депозиту / інвестиції, грн"
                 }
             </label>
 
@@ -31753,9 +32132,10 @@ function showClassicDepositTermChoice(card, context = {}) {
                 id="bankInvestmentAmount"
                 type="number"
                 min="${minimumAmount}"
-                max="${Math.floor(availableMoney)}"
+                max="${maximumAmount}"
                 step="${step}"
                 value="${initialAmount}"
+                ${!hasEnoughMoney ? "disabled" : ""}
                 style="
                     display:block;
                     width:100%;
@@ -31769,7 +32149,7 @@ function showClassicDepositTermChoice(card, context = {}) {
                 isClassic
                     ? `
                         <label for="bankInvestmentTerm">
-                            Термін депозиту
+                            Строк класичного депозиту
                         </label>
 
                         <select
@@ -31802,10 +32182,10 @@ function showClassicDepositTermChoice(card, context = {}) {
                     : ""
             }
 
-            <p
+            <div
                 id="bankInvestmentPreview"
                 aria-live="polite"
-            ></p>
+            ></div>
 
             <button
                 id="bankInvestmentConfirmButton"
@@ -31813,7 +32193,7 @@ function showClassicDepositTermChoice(card, context = {}) {
                 class="main-game-btn"
                 disabled
             >
-                ПІДТВЕРДИТИ ВКЛАД
+                ПІДТВЕРДИТИ
             </button>
 
             <button
@@ -31823,8 +32203,13 @@ function showClassicDepositTermChoice(card, context = {}) {
             >
                 НАЗАД
             </button>
+
         </div>
     `);
+
+    /* =====================================================
+       4. ЕЛЕМЕНТИ ВІКНА
+    ===================================================== */
 
     const amountInput =
         document.getElementById("bankInvestmentAmount");
@@ -31838,11 +32223,20 @@ function showClassicDepositTermChoice(card, context = {}) {
     const confirmButton =
         document.getElementById("bankInvestmentConfirmButton");
 
+    if (!amountInput || !preview || !confirmButton) {
+        return;
+    }
+
     let submitted = false;
 
+    /* =====================================================
+       5. ПЕРЕВІРКА ВИБОРУ
+    ===================================================== */
+
     const getSelection = () => {
-        const rawValue = amountInput.value.trim();
-        const amount = Number(rawValue);
+
+        const raw = amountInput.value.trim();
+        const amount = Number(raw);
 
         const term = isClassic
             ? BANK_CLASSIC_TERMS.find(
@@ -31851,76 +32245,185 @@ function showClassicDepositTermChoice(card, context = {}) {
             )
             : null;
 
-        const valid =
-            rawValue !== "" &&
+        const validAmount =
+            raw !== "" &&
             Number.isSafeInteger(amount) &&
             amount >= minimumAmount &&
-            amount <= (Number(player.money) || 0) &&
-            amount % step === 0 &&
-            (!isClassic || Boolean(term));
+            amount <= maximumAmount &&
+            amount % step === 0;
 
-        return { amount, term, valid };
+        return {
+            amount,
+            term,
+            valid:
+                validAmount &&
+                (!isClassic || Boolean(term))
+        };
     };
 
+    /* =====================================================
+       6. ПОПЕРЕДНІЙ РОЗРАХУНОК
+    ===================================================== */
+
     const updatePreview = () => {
+
         const { amount, term, valid } = getSelection();
 
-        confirmButton.disabled = !valid || submitted;
+        confirmButton.disabled =
+            !valid || submitted || !hasEnoughMoney;
 
-        if (!valid) {
+        if (!hasEnoughMoney) {
+
             preview.textContent =
-                `Введи суму від ${formatMoney(minimumAmount)} грн ` +
-                `до ${formatMoney(Number(player.money) || 0)} грн, ` +
-                `кратну ${formatMoney(step)} грн.`;
+                "Недостатньо коштів для оформлення.";
+
             return;
         }
 
-        if (isClassic) {
-            const profit = Math.round(
-                (term.profit * amount / minimumAmount) / 50
-            ) * 50;
+        if (!valid) {
 
-            preview.innerHTML = `
-                Зараз буде списано:
-                ${formatMoney(amount)} грн.<br>
-
-                Термін: ${term.months} міс. —
-                ${term.turns} особистих ходів.<br>
-
-                Дохід наприкінці:
-                +${formatMoney(profit)} грн.<br>
-
-                Разом повернеться:
-                ${formatMoney(amount + profit)} грн.
-            `;
-        } else if (isOvdp) {
-            preview.innerHTML = `
-                Кількість облігацій:
-                ${amount / 5000} шт.<br>
-
-                Зараз буде списано:
-                ${formatMoney(amount)} грн.<br>
-
-                Термін: 18 особистих ходів.<br>
-
-                Дохід кожні 3 ходи:
-                +${formatMoney(amount * 0.20)} грн.<br>
-
-                Наприкінці повертається
-                основна сума:
-                ${formatMoney(amount)} грн.
-            `;
-        } else {
             preview.textContent =
-                `Зараз буде списано ${formatMoney(amount)} грн. ` +
-                `Подальші виплати — за умовами картки продукту.`;
+                `Введи суму від ` +
+                `${formatMoney(minimumAmount)} до ` +
+                `${formatMoney(maximumAmount)} грн, ` +
+                `кратну ${formatMoney(step)} грн.`;
+
+            return;
         }
+
+        /* =============================================
+           КЛАСИЧНИЙ ДЕПОЗИТ
+        ============================================= */
+
+        if (isClassic) {
+
+            const profit = bankRoundMoney(
+                term.profit * amount / minimumAmount
+            );
+
+            preview.innerHTML = `
+                <p>
+                    Зараз буде списано:
+                    <strong>
+                        ${formatMoney(amount)} грн
+                    </strong>
+                </p>
+
+                <p>
+                    Строк:
+                    ${term.months} міс. —
+                    ${term.turns} особистих ходів.
+                </p>
+
+                <p>
+                    Дохід наприкінці:
+                    <strong>
+                        +${formatMoney(profit)} грн
+                    </strong>
+                </p>
+
+                <p>
+                    Загальна сума повернення:
+                    <strong>
+                        ${formatMoney(amount + profit)} грн
+                    </strong>
+                </p>
+            `;
+
+            return;
+        }
+
+        /* =============================================
+           ОВДП
+        ============================================= */
+
+        if (isOvdp) {
+
+            const bondsCount = amount / 5000;
+
+            const coupon = bankCalculateIncome(
+                amount,
+                0.20
+            );
+
+            preview.innerHTML = `
+                <p>
+                    Кількість облігацій:
+                    <strong>
+                        ${bondsCount} шт.
+                    </strong>
+                </p>
+
+                <p>
+                    Зараз буде списано:
+                    <strong>
+                        ${formatMoney(amount)} грн
+                    </strong>
+                </p>
+
+                <p>
+                    Строк:
+                    18 особистих ходів.
+                </p>
+
+                <p>
+                    Купонний дохід кожні 3 ходи:
+                    <strong>
+                        +${formatMoney(coupon)} грн
+                    </strong>
+                </p>
+
+                <p>
+                    Наприкінці повертається:
+                    <strong>
+                        ${formatMoney(amount)} грн
+                    </strong>
+                </p>
+            `;
+
+            return;
+        }
+
+        /* =============================================
+           ІНШІ ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
+        ============================================= */
+
+        preview.innerHTML = `
+            <p>
+                Зараз буде списано:
+                <strong>
+                    ${formatMoney(amount)} грн
+                </strong>
+            </p>
+
+            <p>
+                Подальший дохід і строки
+                визначаються умовами
+                банківського продукту.
+            </p>
+        `;
     };
 
-    amountInput.addEventListener("input", updatePreview);
-    termSelect?.addEventListener("change", updatePreview);
+    /* =====================================================
+       7. ОНОВЛЕННЯ РОЗРАХУНКУ
+    ===================================================== */
+
+    amountInput.addEventListener(
+        "input",
+        updatePreview
+    );
+
+    termSelect?.addEventListener(
+        "change",
+        updatePreview
+    );
+
+    /* =====================================================
+       8. ПІДТВЕРДЖЕННЯ
+    ===================================================== */
 
     confirmButton.addEventListener("click", () => {
+
         if (submitted) return;
 
         const { amount, term, valid } = getSelection();
@@ -31932,6 +32435,12 @@ function showClassicDepositTermChoice(card, context = {}) {
 
         submitted = true;
         confirmButton.disabled = true;
+
+        /* =============================================
+           Передаємо підтверджену суму
+           до activateBankProduct().
+           Гроші тут НЕ списуємо.
+        ============================================= */
 
         activateBankProduct(
             {
@@ -31952,6 +32461,10 @@ function showClassicDepositTermChoice(card, context = {}) {
         );
     });
 
+    /* =====================================================
+       9. ПОВЕРНЕННЯ ДО КАРТКИ
+    ===================================================== */
+
     bindBankClick(
         "bankInvestmentCancelButton",
         () => showBankCard(originalCard, ctx)
@@ -31959,6 +32472,7 @@ function showClassicDepositTermChoice(card, context = {}) {
 
     updatePreview();
 }
+
 
 
 /* =====================================================
@@ -33039,123 +33553,134 @@ return true;
 }
 
 
-/* =========================================================
-   145.2.7. КРЕДИТ ІЗ ФІКСОВАНИМИ ПЛАТЕЖАМИ
-
-   Основний платіж — кожного 2-го ходу.
-   Несплачений платіж перевіряється наступного ходу.
-
-   Для кредитної картки:
-   за прострочення один окремий четвертий платіж.
-
-   За погодженням:
-   звичайна і Premium — додаткова плата 1 000 грн.
-========================================================= */
-/* =========================================================
-   145.2.7. КРЕДИТ ІЗ ФІКСОВАНИМИ ПЛАТЕЖАМИ
-
-   Основний платіж — кожного 2-го ходу.
-   Несплачений платіж перевіряється наступного ходу.
-
-   ПРОСТРОЧЕННЯ:
-
-   Кредит готівкою:
-   -2 репутації;
-   платіж переноситься.
-
-   Звичайна кредитна картка:
-   один додатковий 4-й платіж 1 000 грн.
-
-   Premium кредитна картка:
-   один додатковий 4-й платіж 2 000 грн.
-========================================================= */
 
 /* =========================================================
-   145.2.8. ЗАКРИТТЯ ПРОДУКТУ З ПОВЕРНЕННЯМ КОШТІВ
+   145.2.8. ЗАКРИТТЯ БАНКІВСЬКОГО ПРОДУКТУ
 
-   Повернення можливе лише один раз.
+   - повернення коштів лише один раз;
+   - крок банківських сум — 100 грн;
+   - точний залишок дозволено повернути;
+   - продукт із боргом не закривається;
+   - фінансова історія зберігається;
+   - повторне нарахування заблоковане.
+
+   Використовується для:
+   - депозитів;
+   - ОВДП;
+   - інвестицій;
+   - інших продуктів із поверненням коштів.
 ========================================================= */
-
-
 
 function closeBankProductWithReturn(
     player,
     product,
     amount,
-    title
+    title = "Банківський продукт"
 ) {
+
+    /* =====================================================
+       1. ПЕРЕВІРКА СТАНУ ПРОДУКТУ
+    ===================================================== */
+
     if (
         !player ||
         !product ||
-        product.active === false
+        product.active === false ||
+        product.closedTurn != null
     ) {
         return false;
     }
 
     const value = Number(amount);
-    const currentMoney = Number(player.money);
+    const balanceBefore = Number(player.money);
 
-    // Забороняємо некоректні суми повернення.
     if (
         !Number.isSafeInteger(value) ||
         value < 0 ||
-        value % 50 !== 0 ||
-        !Number.isFinite(currentMoney)
+        !Number.isSafeInteger(balanceBefore) ||
+        !Number.isSafeInteger(balanceBefore + value)
     ) {
         return false;
     }
 
-    // Не дозволяємо закрити продукт із боргом.
-    const principalDebt = Math.max(
-        0,
-        Number(product.principalDue) || 0
-    );
+    /* =====================================================
+       2. ПЕРЕВІРКА БОРГОВИХ ЗОБОВ'ЯЗАНЬ
+    ===================================================== */
 
-    const interestDebt = Math.max(
-        0,
-        Number(product.interestAccrued) || 0
-    );
+    const principalDebt =
+        Number(product.principalDue) || 0;
+
+    const interestDebt =
+        Number(product.interestAccrued) || 0;
+
+    if (
+        !Number.isFinite(principalDebt) ||
+        !Number.isFinite(interestDebt) ||
+        principalDebt < 0 ||
+        interestDebt < 0
+    ) {
+        return false;
+    }
 
     if (principalDebt + interestDebt > 0) {
+
         addLog(
-            `⚠️ ${title}: закриття неможливе, ` +
-            `доки є непогашений борг.`
+            `⚠️ ${title}: неможливо закрити продукт. ` +
+            `Є непогашений борг ` +
+            `${formatMoney(principalDebt + interestDebt)} грн.`
         );
 
         return false;
     }
 
-    // Перевіряємо, чи можна безпечно додати гроші.
+    /* =====================================================
+       3. ЗАХИСТ ВІД ПОВТОРНОГО ПОВЕРНЕННЯ
+    ===================================================== */
+
     if (
-        !Number.isSafeInteger(currentMoney + value)
+        product.returnProcessed === true
     ) {
         return false;
     }
 
-    // Повернення відбувається лише один раз.
-    player.money = currentMoney + value;
+    /* =====================================================
+       4. ПОВЕРНЕННЯ КОШТІВ
+    ===================================================== */
+
+    player.money = balanceBefore + value;
+
     product.active = false;
+    product.returnProcessed = true;
 
     product.closedTurn =
         Number(player.turnsCompleted) || 0;
 
     product.returnedAmount = value;
 
-   
-if (value > 0) {
-    addFinancialLog({
-        type: "bank_product_return",
-        title: `${title}: повернення коштів`,
-        amount: value,
-        balanceBefore: currentMoney,
-        balanceAfter: player.money,
-        productId: product.id
-    });
-}
+    /* =====================================================
+       5. ФІНАНСОВА ІСТОРІЯ
+    ===================================================== */
 
-addLog(
-    `✅ ${title}: продукт завершено.`
-);
+    if (value > 0) {
+
+        addFinancialLog({
+            type: "bank_product_return",
+            title: `${title}: повернення коштів`,
+            amount: value,
+            balanceBefore,
+            balanceAfter: player.money,
+            productId: product.id
+        });
+    }
+
+    /* =====================================================
+       6. ПОВІДОМЛЕННЯ ПРО ЗАВЕРШЕННЯ
+    ===================================================== */
+
+    addLog(
+        `✅ ${title}: продукт завершено. ` +
+        `Повернуто ${formatMoney(value)} грн.`
+    );
 
     return true;
 }
@@ -33163,63 +33688,193 @@ addLog(
 
 
 /* =========================================================
-   КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ — ЗАВЕРШЕННЯ
+   145.2.8.1. КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
 
    1 місяць = 3 особисті ходи.
+
+   Логіка:
+   1. Перевірити активність депозиту.
+   2. Визначити строк завершення.
+   3. Отримати вкладену суму.
+   4. Розрахувати дохід.
+   5. Повернути вклад + дохід одним платежем.
+   6. Закрити продукт без повторної виплати.
+
+   Дострокове зняття тут не виконується.
 ========================================================= */
+
 function processClassicDeposit(
     player,
     product,
     elapsedTurns
 ) {
+
+    /* =====================================================
+       1. ПЕРЕВІРКА ПРОДУКТУ
+    ===================================================== */
+
     if (
         !player ||
         !product ||
-        product.active === false
+        product.id !== "deposit_classic" ||
+        product.active === false ||
+        product.returnProcessed === true ||
+        product.closedTurn != null
     ) {
-        return;
+        return false;
     }
+
+    /* =====================================================
+       2. ВИЗНАЧЕННЯ СТРОКУ
+    ===================================================== */
 
     const months = Number(product.termMonths);
+    const savedTurns = Number(product.termTurns);
 
-    const termTurns = months > 0
-        ? months * BANK_TURNS_PER_MONTH
-        : Number(product.termTurns);
+    const termTurns =
+        Number.isSafeInteger(savedTurns) &&
+        savedTurns > 0
+            ? savedTurns
+            : Number.isSafeInteger(months) && months > 0
+                ? months * BANK_TURNS_PER_MONTH
+                : 0;
+
+    const elapsed = Number(elapsedTurns);
 
     if (
-        !Number.isFinite(termTurns) ||
+        !Number.isSafeInteger(termTurns) ||
         termTurns <= 0 ||
-        elapsedTurns < termTurns
+        !Number.isSafeInteger(elapsed) ||
+        elapsed < termTurns
     ) {
-        return;
+        return false;
     }
 
-    // Для раніше підключених депозитів — 4 000 грн.
+    /* =====================================================
+       3. СУМА ВКЛАДУ
+
+       Для старих продуктів, у яких сума
+       не збереглася, використовується
+       початкова сума з каталогу.
+    ===================================================== */
+
     const savedAmount = Number(product.depositAmount);
 
-    const depositAmount =
-        Number.isFinite(savedAmount) && savedAmount > 0
-            ? savedAmount
-            : 4000;
+    const catalogCard = bankCatalogCard(product.id);
 
-    const profit = Math.max(
+    const catalogAmount = Math.max(
         0,
-        Number(product.profit) || 0
+        -Number(catalogCard?.initialEffects?.money || 0)
     );
 
-    product.termTurns = termTurns;
+    const depositAmount =
+        Number.isSafeInteger(savedAmount) &&
+        savedAmount > 0
+            ? savedAmount
+            : catalogAmount;
 
-    closeBankProductWithReturn(
+    if (
+        !Number.isSafeInteger(depositAmount) ||
+        depositAmount <= 0
+    ) {
+
+        addLog(
+            "⚠️ Класичний депозит: " +
+            "не вдалося визначити суму вкладу."
+        );
+
+        return false;
+    }
+
+    /* =====================================================
+       4. ДОХІД
+
+       Використовуємо прибуток, який
+       був зафіксований під час оформлення.
+
+       Не перераховуємо відсоткову ставку
+       повторно, щоб не змінювати умови
+       вже відкритого депозиту.
+    ===================================================== */
+
+    const savedProfit = Number(product.profit);
+
+    if (
+        !Number.isFinite(savedProfit) ||
+        savedProfit < 0
+    ) {
+
+        addLog(
+            "⚠️ Класичний депозит: " +
+            "некоректний збережений прибуток."
+        );
+
+        return false;
+    }
+
+    const profit = bankRoundMoney(savedProfit);
+
+    const totalReturn = depositAmount + profit;
+
+    if (
+        !Number.isSafeInteger(totalReturn) ||
+        totalReturn <= 0
+    ) {
+        return false;
+    }
+
+    /* =====================================================
+       5. ЗАВЕРШЕННЯ ДЕПОЗИТУ
+
+       Гроші нараховуються лише через
+       closeBankProductWithReturn().
+
+       Ця функція самостійно:
+       - перевіряє повторне повернення;
+       - зараховує кошти;
+       - закриває продукт;
+       - записує фінансову операцію.
+    ===================================================== */
+
+    const success = closeBankProductWithReturn(
         player,
         product,
-        depositAmount + profit,
-        "Класичний Строковий"
+        totalReturn,
+        "Класичний строковий депозит"
     );
+
+    if (!success) {
+        return false;
+    }
+
+    /* =====================================================
+       6. ФІКСАЦІЯ РЕЗУЛЬТАТУ
+    ===================================================== */
+
+    product.termTurns = termTurns;
+    product.depositAmount = depositAmount;
+    product.profit = profit;
+
+    product.maturityProcessed = true;
+
+    return true;
 }
 
 
+/* =========================================================
+   145.2.9. ОВЕРДРАФТ — ПОГАШЕННЯ ЗОБОВ'ЯЗАНЬ
+
+   - часткове або повне погашення;
+   - стандартний крок 100 грн;
+   - точний залишок боргу можна закрити повністю;
+   - спочатку відсотки, потім основний борг;
+   - без витрачання банківського звернення;
+   - без завершення ходу;
+   - запис кожної успішної операції.
+========================================================= */
 
 function repayBankOverdraft(player, product, amount) {
+
     if (
         !player ||
         !product ||
@@ -33231,64 +33886,124 @@ function repayBankOverdraft(player, product, amount) {
 
     const sum = Number(amount);
     const money = Number(player.money);
+
     const interest = Number(product.interestAccrued) || 0;
     const principal = Number(product.principalDue) || 0;
+
     const debt = interest + principal;
+
+    /* =====================================================
+       1. ПЕРЕВІРКА БОРГУ ТА ПЛАТЕЖУ
+    ===================================================== */
 
     if (
         !Number.isSafeInteger(sum) ||
-        sum <= 0 ||
-        sum % 50 !== 0 ||
         !Number.isSafeInteger(money) ||
-        money < sum ||
         !Number.isSafeInteger(interest) ||
         !Number.isSafeInteger(principal) ||
+        sum <= 0 ||
+        debt <= 0 ||
         interest < 0 ||
         principal < 0 ||
+        money < sum ||
         sum > debt
     ) {
         return false;
     }
 
+    /*
+       Частковий платіж — кратний 100 грн.
+       Повне погашення — точна сума боргу,
+       навіть якщо залишок менший за 100 грн.
+    */
+
+    const fullRepayment = sum === debt;
+
+    if (
+        !fullRepayment &&
+        !bankValidMoneyAmount(sum)
+    ) {
+        return false;
+    }
+
+    /* =====================================================
+       2. РОЗПОДІЛ ПЛАТЕЖУ
+    ===================================================== */
+
     const interestPayment = Math.min(sum, interest);
     const principalPayment = sum - interestPayment;
 
-    player.money = money - sum;
-    product.interestAccrued = interest - interestPayment;
-    product.principalDue = principal - principalPayment;
+    const remainingInterest = interest - interestPayment;
+    const remainingPrincipal = principal - principalPayment;
 
     if (
-        product.principalDue === 0 &&
-        product.interestAccrued === 0
+        remainingInterest < 0 ||
+        remainingPrincipal < 0
     ) {
-        product.active = false;
+        return false;
     }
 
-    
-addFinancialLog({
-    type: "bank_repayment",
-    title: "Погашення овердрафту",
-    amount: -sum,
-    balanceBefore: money,
-    balanceAfter: player.money,
-    productId: product.id
-});
+    /* =====================================================
+       3. СПИСАННЯ КОШТІВ
+    ===================================================== */
 
+    player.money = money - sum;
+
+    product.interestAccrued = remainingInterest;
+    product.principalDue = remainingPrincipal;
+
+    /* =====================================================
+       4. ФІНАНСОВА ІСТОРІЯ
+    ===================================================== */
+
+    addFinancialLog({
+        type: "bank_repayment",
+        title: "Погашення овердрафту",
+        amount: -sum,
+        balanceBefore: money,
+        balanceAfter: player.money,
+        productId: product.id
+    });
+
+    /* =====================================================
+       5. ЗАКРИТТЯ ОВЕРДРАФТУ
+    ===================================================== */
+
+    if (
+        remainingPrincipal === 0 &&
+        remainingInterest === 0
+    ) {
+        product.active = false;
+        product.closedTurn =
+            Number(player.turnsCompleted) || 0;
+
+        addLog(
+            "✅ Овердрафт повністю погашено. " +
+            "Банківський продукт закрито."
+        );
+    }
 
     return true;
 }
 
-/* =========================================================
-   ПОВЕРНЕННЯ ОВЕРДРАФТУ
 
-   Частково або повністю.
-   Не завершує хід і не витрачає звернення.
+/* =========================================================
+   145.2.9.1. ВІКНО ПОГАШЕННЯ ОВЕРДРАФТУ
+
+   Показує:
+   - основний борг;
+   - несплачені відсотки;
+   - загальний борг;
+   - доступні кошти;
+   - суму погашення;
+   - результат перевірки.
 ========================================================= */
 
 function showBankOverdraftRepayment(
     product,
     audience = "business"
 ) {
+
     const player = gameState?.player;
 
     if (
@@ -33305,58 +34020,96 @@ function showBankOverdraftRepayment(
         Number(product.principalDue) || 0
     );
 
-    const unpaidInterest = Math.max(
+    const interest = Math.max(
         0,
         Number(product.interestAccrued) || 0
     );
 
-    const totalDebt = principal + unpaidInterest;
+    const totalDebt = principal + interest;
 
     const availableMoney = Math.max(
         0,
         Number(player.money) || 0
     );
 
-    const maxPayment =
-        Math.floor(
-            Math.min(totalDebt, availableMoney) / 50
-        ) * 50;
+    /* =====================================================
+       1. ВИЗНАЧАЄМО ДОСТУПНИЙ ПЛАТІЖ
+    ===================================================== */
 
     if (totalDebt <= 0) {
+
         product.active = false;
         showBankHub(audience);
         return;
     }
 
+    const maximumPartialPayment = bankFloorMoney(
+        Math.min(totalDebt, availableMoney)
+    );
+
+    const canRepayFully =
+        availableMoney >= totalDebt;
+
+    const initialAmount = canRepayFully
+        ? totalDebt
+        : maximumPartialPayment;
+
+    const canPay =
+        canRepayFully ||
+        maximumPartialPayment >= BANK_MONEY_STEP;
+
+    /* =====================================================
+       2. ВІКНО ПОГАШЕННЯ
+    ===================================================== */
+
     openGameInfoModal(`
         <div class="bank-card-game-modal">
 
-            <h2>Погашення овердрафту</h2>
+            <div class="cycle-notice-icon">
+                🏦
+            </div>
+
+            <h2>
+                Погашення овердрафту
+            </h2>
 
             <p>
                 Основний борг:
-                <strong>${formatMoney(principal)} грн</strong>
+                <strong>
+                    ${formatMoney(principal)} грн
+                </strong>
             </p>
 
             <p>
                 Несплачені відсотки:
-                <strong>${formatMoney(unpaidInterest)} грн</strong>
+                <strong>
+                    ${formatMoney(interest)} грн
+                </strong>
             </p>
 
             <p>
                 Загальний борг:
-                <strong>${formatMoney(totalDebt)} грн</strong>
+                <strong>
+                    ${formatMoney(totalDebt)} грн
+                </strong>
             </p>
 
             <p>
-                Доступно на рахунку:
-                <strong>${formatMoney(availableMoney)} грн</strong>
+                Доступні кошти:
+                <strong>
+                    ${formatMoney(availableMoney)} грн
+                </strong>
             </p>
 
             <p>
-                Можна погасити частину або весь борг.
-                Сума платежу має бути кратною 50 грн.
-                Спочатку погашаються несплачені відсотки,
+                Часткове погашення — крок
+                ${BANK_MONEY_STEP} грн.
+                Повністю закрити борг можна
+                його точною залишковою сумою.
+            </p>
+
+            <p>
+                Спочатку погашаються відсотки,
                 потім основний борг.
             </p>
 
@@ -33367,25 +34120,37 @@ function showBankOverdraftRepayment(
             <input
                 id="bankOverdraftAmount"
                 type="number"
-                min="50"
-                step="50"
-                max="${maxPayment}"
-                value="${maxPayment >= 50 ? maxPayment : ""}"
-                ${maxPayment < 50 ? "disabled" : ""}
+                min="1"
+                step="any"
+                max="${Math.min(totalDebt, availableMoney)}"
+                value="${canPay ? initialAmount : ""}"
+                ${!canPay ? "disabled" : ""}
+                style="
+                    display:block;
+                    width:100%;
+                    box-sizing:border-box;
+                    padding:12px;
+                    margin:8px 0 16px;
+                "
             >
 
-            <p id="bankRepaymentMessage"></p>
+            <p
+                id="bankRepaymentMessage"
+                aria-live="polite"
+            ></p>
 
             <button
                 id="bankOverdraftRepayButton"
+                type="button"
                 class="main-game-btn"
-                ${maxPayment < 50 ? "disabled" : ""}
+                ${!canPay ? "disabled" : ""}
             >
                 ПОГАСИТИ
             </button>
 
             <button
                 id="bankOverdraftBackButton"
+                type="button"
                 class="secondary-game-btn"
             >
                 НАЗАД
@@ -33394,73 +34159,135 @@ function showBankOverdraftRepayment(
         </div>
     `);
 
-    bindBankClick(
-        "bankOverdraftRepayButton",
-        () => {
-            const input = document.getElementById(
-                "bankOverdraftAmount"
+    /* =====================================================
+       3. ЕЛЕМЕНТИ ВІКНА
+    ===================================================== */
+
+    const amountInput =
+        document.getElementById("bankOverdraftAmount");
+
+    const message =
+        document.getElementById("bankRepaymentMessage");
+
+    const repayButton =
+        document.getElementById("bankOverdraftRepayButton");
+
+    if (!amountInput || !repayButton) return;
+
+    let submitted = false;
+
+    /* =====================================================
+       4. ПЕРЕВІРКА ВВЕДЕНОЇ СУМИ
+    ===================================================== */
+
+    const validatePayment = () => {
+
+        const raw = amountInput.value.trim();
+        const amount = Number(raw);
+
+        const currentDebt =
+            Math.max(0, Number(product.principalDue) || 0) +
+            Math.max(0, Number(product.interestAccrued) || 0);
+
+        const currentMoney =
+            Math.max(0, Number(player.money) || 0);
+
+        const isFullRepayment =
+            amount === currentDebt;
+
+        const valid =
+            raw !== "" &&
+            Number.isSafeInteger(amount) &&
+            amount > 0 &&
+            amount <= currentDebt &&
+            amount <= currentMoney &&
+            (
+                isFullRepayment ||
+                bankValidMoneyAmount(amount)
             );
 
-            const message = document.getElementById(
-                "bankRepaymentMessage"
-            );
+        return { amount, valid };
+    };
 
-            const amount = Number(input?.value);
+    /* =====================================================
+       5. ПІДКАЗКА ТА КНОПКА
+    ===================================================== */
 
-            const currentDebt =
-                Math.max(0, Number(product.principalDue) || 0) +
-                Math.max(0, Number(product.interestAccrued) || 0);
+    const updatePreview = () => {
 
-            const currentMoney = Math.max(
-                0,
-                Number(player.money) || 0
-            );
+        const { amount, valid } = validatePayment();
 
-            if (
-                !input?.value ||
-                !Number.isSafeInteger(amount) ||
-                amount < 50 ||
-                amount % 50 !== 0 ||
-                amount > currentDebt ||
-                amount > currentMoney
-            ) {
-                if (message) {
-                    message.textContent =
-                        "Вкажи суму, кратну 50 грн, " +
-                        "яка не перевищує борг і доступні гроші.";
-                }
+        repayButton.disabled = !valid || submitted;
 
-                return;
-            }
+        if (message) {
 
-            const success = repayBankOverdraft(
-                player,
-                product,
-                amount
-            );
-
-            if (!success) {
-                if (message) {
-                    message.textContent =
-                        "Не вдалося виконати погашення. " +
-                        "Перевір суму та спробуй ще раз.";
-                }
-
-                return;
-            }
-
-            updateGameUI();
-            showBankHub(audience);
+            message.textContent = valid
+                ? `Після платежу залишиться борг: ` +
+                  `${formatMoney(totalDebt - amount)} грн.`
+                : "Введи суму, кратну 100 грн, " +
+                  "або точну суму для повного погашення.";
         }
+    };
+
+    amountInput.addEventListener(
+        "input",
+        updatePreview
     );
+
+    /* =====================================================
+       6. ПІДТВЕРДЖЕННЯ ПЛАТЕЖУ
+    ===================================================== */
+
+    repayButton.addEventListener("click", () => {
+
+        if (submitted) return;
+
+        const { amount, valid } = validatePayment();
+
+        if (!valid) {
+            updatePreview();
+            return;
+        }
+
+        submitted = true;
+        repayButton.disabled = true;
+
+        const success = repayBankOverdraft(
+            player,
+            product,
+            amount
+        );
+
+        if (!success) {
+
+            submitted = false;
+            updatePreview();
+
+            if (message) {
+                message.textContent =
+                    "Не вдалося виконати платіж. " +
+                    "Перевір суму та залишок коштів.";
+            }
+
+            return;
+        }
+
+        updateGameUI();
+        showBankHub(audience);
+    });
+
+    /* =====================================================
+       7. ПОВЕРНЕННЯ ДО BANK HUB
+    ===================================================== */
 
     bindBankClick(
         "bankOverdraftBackButton",
-        () => {
-            showBankHub(audience);
-        }
+        () => showBankHub(audience)
     );
+
+    updatePreview();
 }
+
 
 /* =========================================================
    ІНТЕГРАЦІЯ З КАРТКАМИ — БОНУС ОНЛАЙН-ПРОДАЖУ
