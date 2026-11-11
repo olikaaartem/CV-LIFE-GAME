@@ -29805,6 +29805,83 @@ function addCardBankButton(
 
 }
 
+function bankConfirmEarlyClosure(product, returnAmount) {
+    const name = bankProductName(product);
+    const invested = Math.max(
+        0,
+        Number(product.depositAmount) || 0
+    );
+
+    const pending = Math.max(
+        0,
+        Number(product.accruedIncome) || 0
+    );
+
+    const lostPrincipal = Math.max(
+        0,
+        invested - returnAmount
+    );
+
+    const lines = [
+        `⚠️ ТИ ТОЧНО ХОЧЕШ ЗАКРИТИ ПРОДУКТ?`,
+        ``,
+        `🏦 ${name}`,
+        ``,
+        `💰 Вкладено: ${formatMoney(invested)} грн`,
+        `✅ Отримаєш зараз: ${formatMoney(returnAmount)} грн`
+    ];
+
+    if (lostPrincipal > 0) {
+        lines.push(
+            `❌ Втрата вкладених коштів: ` +
+            `${formatMoney(lostPrincipal)} грн`
+        );
+    }
+
+    if (pending > 0) {
+        lines.push(
+            `📈 Нараховано, але ще не виплачено: ` +
+            `${formatMoney(pending)} грн`
+        );
+    }
+
+    if (product.id === "deposit_growing") {
+        const rate = invested >= 40000 ? 0.40
+            : invested >= 20000 ? 0.35
+            : invested >= 10000 ? 0.30
+            : invested >= 4000 ? 0.25 : 0;
+
+        const projected = bankRoundMoney(invested * rate);
+
+        lines.push(
+            `📉 Орієнтовний дохід за наступні 3 ходи: ` +
+            `${formatMoney(projected)} грн`
+        );
+        lines.push(
+            `Розрахунок за умови незмінного залишку та ставки.`
+        );
+    }
+
+    if (product.id === "ovdp") {
+        lines.push(
+            `📉 Достроковий продаж: повертається 60% ` +
+            `вкладеної суми за правилами гри.`
+        );
+    }
+
+    lines.push(
+        ``,
+        `Після закриття нові доходи не нараховуватимуться.`,
+        `Нарахований, але не виплачений дохід не входить ` +
+        `до зазначеної суми повернення.`,
+        ``,
+        `ОК — так, закрити`,
+        `Скасувати — ні, залишити`
+    );
+
+    return window.confirm(lines.join("\n"));
+}
+
 /* =========================================================
    145.2. БАНК — ОСНОВНИЙ HUB
 
@@ -30172,16 +30249,23 @@ document.querySelectorAll("[data-bank-passport-index]")
                     return;
                 }
 
-                button.disabled = true;
+              const confirmed = bankConfirmEarlyClosure(
+    product,
+    amount
+);
 
-               
+if (!confirmed) {
+    return;
+}
+
+button.disabled = true;
+
 const success = closeBankProductWithReturn(
     player,
     product,
     amount,
     bankProductName(product)
 );
-
 if (!success) {
     button.disabled = false;
     return;
