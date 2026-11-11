@@ -31625,79 +31625,28 @@ function activateBankProduct(card, context = {}) {
        - створення банківського продукту.
     ===================================================== */
 
+    /* =====================================================
+       145.2.4.5. БЕЗПЕЧНА АКТИВАЦІЯ BANK HUB
 
-    /*
-       Premium надається лише після
-       успішного проходження перевірок.
-    */
-    if (
-        originalCard.premiumRequired &&
-        !bank.premium
-    ) {
-        bank.premium = true;
+       Порядок операцій:
+       1. Підготовка продукту.
+       2. Збереження фінансових умов.
+       3. Перевірка всіх значень.
+       4. Зміна ресурсів гравця.
+       5. Реєстрація активного продукту.
+       6. Запис фінансової історії.
+       7. Надання Premium.
 
-        if (!bank.premiumExtraGranted) {
-            const extra = Math.max(
-                0,
-                Number(
-                    GAME_CONFIG.premiumExtraBankTokens
-                ) || 0
-            );
-
-            bank.extraVisits += extra;
-            bank.premiumExtraGranted = true;
-
-            addLog(
-                `⭐ Отримано Premium та +${extra} ` +
-                `додаткових звернень до Банку.`
-            );
-        }
-    }
-
-  
-const balanceBeforeActivation = Number(player.money);
-
-applyEffects(player, effects);
-
-const balanceAfterActivation = Number(player.money);
-
-const activationMoneyChange =
-    balanceAfterActivation - balanceBeforeActivation;
-
-if (
-    Number.isSafeInteger(balanceBeforeActivation) &&
-    Number.isSafeInteger(balanceAfterActivation) &&
-    Number.isSafeInteger(activationMoneyChange) &&
-    activationMoneyChange !== 0
-) {
-    addFinancialLog({
-        type: "bank_activation",
-        title:
-            activationMoneyChange < 0
-                ? `Підключення «${originalCard.title}»: списання`
-                : `Підключення «${originalCard.title}»: зарахування`,
-        amount: activationMoneyChange,
-        balanceBefore: balanceBeforeActivation,
-        balanceAfter: balanceAfterActivation,
-        productId: productId
-    });
-}
-
+       До завершення перевірок гроші
+       гравця не змінюються.
+    ===================================================== */
 
     const activatedTurn =
         (Number(player.turnsCompleted) || 0) +
         (ctx.source === "cell" ? 1 : 0);
 
     /* =====================================================
-       145.2.4.4. СТВОРЕННЯ АКТИВНОГО ПРОДУКТУ
-
-       Зберігаємо умови на момент оформлення:
-       - суму вкладу або кредиту;
-       - строк;
-       - прибуток;
-       - боргові зобов'язання;
-       - стан виконання;
-       - захист від повторних виплат.
+       1. СТВОРЕННЯ ОБ'ЄКТА ПРОДУКТУ
     ===================================================== */
 
     const product = {
@@ -31705,14 +31654,16 @@ if (
         cardId: originalCard.id,
         active: true,
         activatedTurn,
+
         lastBankProcessedTurn: 0,
+
         returnProcessed: false,
         maturityProcessed: false,
         closedTurn: null
     };
 
     /* =====================================================
-       1. ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
+       2. ДЕПОЗИТИ ТА ІНВЕСТИЦІЇ
     ===================================================== */
 
     if (isInvestment) {
@@ -31724,10 +31675,7 @@ if (
     }
 
     /* =====================================================
-       2. ДЕПОЗИТ «СКРИНЯ»
-
-       Зберігаємо власника та початковий внесок.
-       Подальші поповнення ведуться окремо.
+       3. ДЕПОЗИТ «СКРИНЯ»
     ===================================================== */
 
     if (productId === "deposit_chest") {
@@ -31745,10 +31693,7 @@ if (
     }
 
     /* =====================================================
-       3. КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
-
-       Фіксуємо прибуток при відкритті.
-       Після цього ставка не перераховується.
+       4. КЛАСИЧНИЙ СТРОКОВИЙ ДЕПОЗИТ
     ===================================================== */
 
     if (isClassic) {
@@ -31767,7 +31712,7 @@ if (
     }
 
     /* =====================================================
-       4. КРЕДИТИ
+       5. КРЕДИТНІ ПРОДУКТИ
     ===================================================== */
 
     if (isCredit) {
@@ -31778,9 +31723,9 @@ if (
         product.totalRepaid = 0;
         product.interestAccrued = 0;
 
-        /* =============================================
-           КРЕДИТ ГОТІВКОЮ — 6 ПЛАТЕЖІВ
-        ============================================= */
+        /* ---------------------------------------------
+           КРЕДИТ ГОТІВКОЮ
+        --------------------------------------------- */
 
         if (
             productId === "cash_credit" ||
@@ -31791,11 +31736,12 @@ if (
             product.paymentsTotal = 6;
             product.paymentsMade = 0;
             product.paymentInterval = 3;
+            product.nextPaymentTurn = 3;
         }
 
-        /* =============================================
-           КРЕДИТНА КАРТКА — ПІЛЬГОВИЙ ПЕРІОД
-        ============================================= */
+        /* ---------------------------------------------
+           КРЕДИТНА КАРТКА
+        --------------------------------------------- */
 
         if (
             productId === "credit_card_100" ||
@@ -31808,9 +31754,9 @@ if (
             product.gracePenaltyApplied = false;
         }
 
-        /* =============================================
+        /* ---------------------------------------------
            ОВЕРДРАФТ
-        ============================================= */
+        --------------------------------------------- */
 
         if (isOverdraft) {
 
@@ -31824,43 +31770,240 @@ if (
     }
 
     /* =====================================================
-       5. ПЕРЕВІРКА ПЕРЕД ЗБЕРЕЖЕННЯМ
+       6. ПЕРЕВІРКА СУМИ ВКЛАДУ
+    ===================================================== */
 
-       Не допускаємо продуктів із некоректними
-       фінансовими значеннями.
+    if (isInvestment) {
+
+        const step = isOvdp
+            ? 5000
+            : BANK_MONEY_STEP;
+
+        const validDeposit =
+            Number.isSafeInteger(product.depositAmount) &&
+            product.depositAmount >= baseAmount &&
+            product.depositAmount > 0 &&
+            product.depositAmount % step === 0 &&
+            Number.isFinite(product.investmentMultiplier) &&
+            product.investmentMultiplier > 0;
+
+        if (!validDeposit) {
+
+            addLog(
+                "⚠️ Банк: некоректні параметри " +
+                "депозиту або інвестиції."
+            );
+
+            return;
+        }
+    }
+
+    /* =====================================================
+       7. ПЕРЕВІРКА СТРОКОВОГО ДЕПОЗИТУ
+    ===================================================== */
+
+    if (isClassic) {
+
+        const validClassic =
+            Number.isSafeInteger(product.termTurns) &&
+            product.termTurns > 0 &&
+            Number.isSafeInteger(product.profit) &&
+            product.profit >= 0 &&
+            Number.isSafeInteger(product.maturityTurn);
+
+        if (!validClassic) {
+
+            addLog(
+                "⚠️ Банк: некоректні умови " +
+                "строкового депозиту."
+            );
+
+            return;
+        }
+    }
+
+    /* =====================================================
+       8. ПЕРЕВІРКА КРЕДИТНИХ ЗОБОВ'ЯЗАНЬ
+    ===================================================== */
+
+    if (isCredit) {
+
+        const validCredit =
+            Number.isSafeInteger(product.creditAmount) &&
+            product.creditAmount >= BANK_MONEY_STEP &&
+            product.creditAmount % BANK_MONEY_STEP === 0 &&
+            Number.isSafeInteger(product.principalDue) &&
+            product.principalDue > 0;
+
+        if (!validCredit) {
+
+            addLog(
+                "⚠️ Банк: некоректні параметри кредиту."
+            );
+
+            return;
+        }
+
+        if (
+            product.totalDue != null &&
+            (
+                !Number.isSafeInteger(product.totalDue) ||
+                product.totalDue < product.creditAmount
+            )
+        ) {
+
+            addLog(
+                "⚠️ Банк: некоректна сума " +
+                "кредитних зобов'язань."
+            );
+
+            return;
+        }
+    }
+
+    /* =====================================================
+       9. ФІНАЛЬНА ПЕРЕВІРКА БАЛАНСУ
+    ===================================================== */
+
+    const balanceBeforeActivation =
+        Number(player.money);
+
+    const expectedMoneyChange =
+        Number(effects.money || 0);
+
+    const expectedBalance =
+        balanceBeforeActivation + expectedMoneyChange;
+
+    if (
+        !Number.isSafeInteger(balanceBeforeActivation) ||
+        !Number.isSafeInteger(expectedMoneyChange) ||
+        !Number.isSafeInteger(expectedBalance) ||
+        expectedBalance < 0
+    ) {
+
+        addLog(
+            "⚠️ Банк: операцію скасовано. " +
+            "Некоректний баланс або недостатньо коштів."
+        );
+
+        return;
+    }
+
+    /* =====================================================
+       10. ЗАСТОСУВАННЯ ЕФЕКТІВ
+
+       Лише після всіх перевірок.
+    ===================================================== */
+
+    applyEffects(player, effects);
+
+    const balanceAfterActivation =
+        Number(player.money);
+
+    const activationMoneyChange =
+        balanceAfterActivation - balanceBeforeActivation;
+
+    /* =====================================================
+       11. КОНТРОЛЬ РЕЗУЛЬТАТУ ОПЕРАЦІЇ
+
+       Якщо фактична зміна грошей
+       відрізняється від очікуваної,
+       продукт не реєструємо.
+
+       Відновлюємо попередній баланс.
     ===================================================== */
 
     if (
-        isInvestment &&
-        (
-            !Number.isSafeInteger(product.depositAmount) ||
-            product.depositAmount <= 0
-        )
+        !Number.isSafeInteger(balanceAfterActivation) ||
+        activationMoneyChange !== expectedMoneyChange
     ) {
+
+        player.money = balanceBeforeActivation;
+
         addLog(
-            "⚠️ Банк: некоректна сума вкладу."
+            "⚠️ Банк: операцію скасовано через " +
+            "невідповідність фінансового результату."
         );
+
+        updateGameUI();
         return;
     }
 
-    if (
-        isClassic &&
-        (
-            !Number.isSafeInteger(product.profit) ||
-            product.profit < 0 ||
-            !Number.isSafeInteger(product.termTurns) ||
-            product.termTurns <= 0
-        )
-    ) {
-        addLog(
-            "⚠️ Банк: некоректні умови депозиту."
-        );
-        return;
-    }
+    /* =====================================================
+       12. РЕЄСТРАЦІЯ ПРОДУКТУ
 
-
+       Фінансова операція успішна.
+       Продукт зберігається в Bank HUB.
+    ===================================================== */
 
     bank.products.push(product);
+
+    /* =====================================================
+       13. ФІНАНСОВА ІСТОРІЯ
+    ===================================================== */
+
+    if (activationMoneyChange !== 0) {
+
+        addFinancialLog({
+            type: "bank_activation",
+
+            title:
+                activationMoneyChange < 0
+                    ? `Підключення «${originalCard.title}»: списання`
+                    : `Підключення «${originalCard.title}»: зарахування`,
+
+            amount: activationMoneyChange,
+
+            balanceBefore: balanceBeforeActivation,
+            balanceAfter: balanceAfterActivation,
+
+            productId
+        });
+    }
+
+    /* =====================================================
+       14. PREMIUM
+
+       Надається тільки після успішної
+       активації продукту.
+    ===================================================== */
+
+    if (
+        originalCard.premiumRequired &&
+        !bank.premium
+    ) {
+
+        bank.premium = true;
+
+        if (!bank.premiumExtraGranted) {
+
+            const extra = Math.max(
+                0,
+                Number(
+                    GAME_CONFIG.premiumExtraBankTokens
+                ) || 0
+            );
+
+            bank.extraVisits += extra;
+            bank.premiumExtraGranted = true;
+
+            addLog(
+                `⭐ Отримано Premium та +${extra} ` +
+                `додаткових звернень до Банку.`
+            );
+        }
+    }
+
+    /* =====================================================
+       АКТИВАЦІЯ ЗАВЕРШЕНА
+
+       Далі залишається наявний код:
+       - повідомлення про підключення;
+       - оновлення HUD;
+       - модальне вікно;
+       - повернення до Bank HUB або гри.
+    ===================================================== */
+
 
 
     addLog(
@@ -32993,72 +33136,333 @@ function processActiveBankProducts(player) {
                 break;
             }
 
-            case "deposit_growing": {
-                if (!monthly) break;
+          
+            /* =========================================
+               ДЕПОЗИТ «ЗРОСТАЮЧИЙ»
 
-                const balance = Math.max(
-                    0,
-                    Number(product.depositAmount) || 0
+               Правка №39.16
+
+               - Дохід кожні 3 власні ходи.
+               - Ставка залежить від суми вкладу.
+               - Не допускаємо подвійної виплати.
+               - Невдалу виплату повторюємо
+                 під час наступної обробки.
+            ========================================= */
+
+            case "deposit_growing": {
+
+                const balance = Number(
+                    product.depositAmount
                 );
+
+                if (
+                    !Number.isSafeInteger(balance) ||
+                    balance <= 0
+                ) {
+                    break;
+                }
+
+                /* =====================================
+                   1. ВИЗНАЧЕННЯ СТАВКИ
+                ===================================== */
 
                 let rate = 0;
 
-                if (balance >= 40000) rate = 0.40;
-                else if (balance >= 20000) rate = 0.35;
-                else if (balance >= 10000) rate = 0.30;
-                else if (balance >= 4000) rate = 0.25;
+                if (balance >= 40000) {
+                    rate = 0.40;
+                } else if (balance >= 20000) {
+                    rate = 0.35;
+                } else if (balance >= 10000) {
+                    rate = 0.30;
+                } else if (balance >= 4000) {
+                    rate = 0.25;
+                }
 
-                pay(
-                    balance * rate,
-                    "Депозит «Зростаючий»"
+                if (rate <= 0) {
+                    break;
+                }
+
+                /* =====================================
+                   2. ПЕРЕВІРКА ФІНАНСОВИХ ПЕРІОДІВ
+                ===================================== */
+
+                const completedPeriods = Math.floor(
+                    elapsed / BANK_TURNS_PER_MONTH
                 );
+
+                const paidPeriods = Math.max(
+                    0,
+                    Number(product.incomePeriodsPaid) || 0
+                );
+
+                if (
+                    completedPeriods <= paidPeriods
+                ) {
+                    break;
+                }
+
+                /* =====================================
+                   3. РОЗРАХУНОК ДОХОДУ
+                ===================================== */
+
+                const income = bankRoundMoney(
+                    balance * rate
+                );
+
+                if (income <= 0) {
+                    break;
+                }
+
+                /* =====================================
+                   4. ВИПЛАТА ЗА НЕОПЛАЧЕНІ ПЕРІОДИ
+
+                   На кожному виклику обробляємо
+                   один період, щоб не створювати
+                   неконтрольованих нарахувань.
+                ===================================== */
+
+                const success = pay(
+                    income,
+                    "Депозит «Зростаючий»: " +
+                    `дохід за період ${paidPeriods + 1}`
+                );
+
+                /* =====================================
+                   5. ФІКСАЦІЯ УСПІШНОЇ ВИПЛАТИ
+                ===================================== */
+
+                if (success) {
+
+                    product.incomePeriodsPaid =
+                        paidPeriods + 1;
+
+                    product.lastIncomeTurn =
+                        currentTurn;
+                }
+
                 break;
             }
 
+
+
+           
+            /* =========================================
+               ДЕПОЗИТ «СКРИНЯ»
+
+               Правка №39.17
+
+               - Дохід власника: 25% за місяць.
+               - Один місяць = 3 власні ходи.
+               - Дохід залежить від внеску власника.
+               - Успішні виплати фіксуються.
+               - Невиконані виплати не губляться.
+               - Повторна виплата за той самий
+                 період не допускається.
+            ========================================= */
+
             case "deposit_chest": {
-                if (!monthly) break;
 
-                const contributions = product.contributions;
-
-                if (
-                    !contributions ||
-                    typeof contributions !== "object"
-                ) {
-                    pay(
-                        principal * 0.25,
-                        "Скриня: дохід власника"
-                    );
-                    break;
-                }
+                /* =====================================
+                   1. ВИЗНАЧЕННЯ ВЛАСНИКА
+                ===================================== */
 
                 const ownerId = String(
                     product.ownerId ?? player.id
                 );
 
-                const ownerContribution = Math.max(
-                    0,
-                    Number(contributions[ownerId]) || 0
-                );
+                const contributions =
+                    product.contributions;
 
-                pay(
-                    ownerContribution * 0.25,
-                    "Скриня: дохід власника"
-                );
-                break;
-            }
+                /* =====================================
+                   2. ВИЗНАЧЕННЯ ВНЕСКУ ВЛАСНИКА
+                ===================================== */
 
-            case "deposit_line": {
-                if (monthly) {
-                    pay(
-                        Math.max(
-                            0,
-                            Number(product.depositAmount) || 0
-                        ) * 0.25,
-                        "Депозитна лінія"
+                let ownerContribution = principal;
+
+                if (
+                    contributions &&
+                    typeof contributions === "object"
+                ) {
+
+                    ownerContribution = Number(
+                        contributions[ownerId]
                     );
                 }
+
+                if (
+                    !Number.isSafeInteger(ownerContribution) ||
+                    ownerContribution <= 0
+                ) {
+                    break;
+                }
+
+                /* =====================================
+                   3. КІЛЬКІСТЬ ЗАВЕРШЕНИХ МІСЯЦІВ
+                ===================================== */
+
+                const completedPeriods = Math.floor(
+                    elapsed / BANK_TURNS_PER_MONTH
+                );
+
+                const paidPeriods = Math.max(
+                    0,
+                    Number(product.incomePeriodsPaid) || 0
+                );
+
+                if (
+                    completedPeriods <= paidPeriods
+                ) {
+                    break;
+                }
+
+                /* =====================================
+                   4. РОЗРАХУНОК ДОХОДУ
+
+                   25% від внеску власника.
+                   Округлення до 100 грн.
+                ===================================== */
+
+                const income = bankRoundMoney(
+                    ownerContribution * 0.25
+                );
+
+                if (income <= 0) {
+                    break;
+                }
+
+                /* =====================================
+                   5. ЗАРАХУВАННЯ ДОХОДУ
+
+                   Обробляємо один неоплачений
+                   період за виклик функції.
+                ===================================== */
+
+                const success = pay(
+                    income,
+                    "Скриня: дохід власника " +
+                    `за період ${paidPeriods + 1}`
+                );
+
+                /* =====================================
+                   6. ФІКСАЦІЯ ВИПЛАТИ
+
+                   Оновлюємо лічильник лише
+                   після успішного зарахування.
+                ===================================== */
+
+                if (success) {
+
+                    product.incomePeriodsPaid =
+                        paidPeriods + 1;
+
+                    product.lastIncomeTurn =
+                        currentTurn;
+
+                    product.totalIncomePaid =
+                        (Number(product.totalIncomePaid) || 0) +
+                        income;
+                }
+
                 break;
             }
+
+
+        
+            /* =========================================
+               ДЕПОЗИТНА ЛІНІЯ
+
+               Правка №39.18
+
+               - Дохід: 25% за місяць.
+               - 1 місяць = 3 власні ходи.
+               - Розрахунок від поточної суми вкладу.
+               - Облік успішно оплачених періодів.
+               - Повторення невдалих виплат.
+               - Захист від подвійного нарахування.
+            ========================================= */
+
+            case "deposit_line": {
+
+                /* =====================================
+                   1. ПОТОЧНА СУМА ДЕПОЗИТУ
+                ===================================== */
+
+                const depositBalance = Number(
+                    product.depositAmount
+                );
+
+                if (
+                    !Number.isSafeInteger(depositBalance) ||
+                    depositBalance <= 0
+                ) {
+                    break;
+                }
+
+                /* =====================================
+                   2. ЗАВЕРШЕНІ ФІНАНСОВІ ПЕРІОДИ
+                ===================================== */
+
+                const completedPeriods = Math.floor(
+                    elapsed / BANK_TURNS_PER_MONTH
+                );
+
+                const paidPeriods = Math.max(
+                    0,
+                    Number(product.incomePeriodsPaid) || 0
+                );
+
+                if (completedPeriods <= paidPeriods) {
+                    break;
+                }
+
+                /* =====================================
+                   3. РОЗРАХУНОК ДОХОДУ
+
+                   25% від поточного залишку.
+                ===================================== */
+
+                const income = bankRoundMoney(
+                    depositBalance * 0.25
+                );
+
+                if (income <= 0) {
+                    break;
+                }
+
+                /* =====================================
+                   4. ВИПЛАТА
+
+                   Один неоплачений період
+                   за один виклик обробки.
+                ===================================== */
+
+                const success = pay(
+                    income,
+                    "Депозитна лінія: дохід " +
+                    `за період ${paidPeriods + 1}`
+                );
+
+                /* =====================================
+                   5. ЗАПИС УСПІШНОЇ ВИПЛАТИ
+                ===================================== */
+
+                if (success) {
+
+                    product.incomePeriodsPaid =
+                        paidPeriods + 1;
+
+                    product.lastIncomeTurn =
+                        currentTurn;
+
+                    product.totalIncomePaid =
+                        (Number(product.totalIncomePaid) || 0) +
+                        income;
+                }
+
+                break;
+            }
+
+
 
             /* =========================================
                ІНВЕСТИЦІЇ
@@ -33092,24 +33496,97 @@ function processActiveBankProducts(player) {
                 break;
             }
 
+
+            /* =========================================
+               ЗВИЧАЙНІ АКЦІЇ
+
+               Правка №39.15
+
+               - Дивіденди: 75% на 9-му ході.
+               - Виплата лише один раз.
+               - Позначка про виплату ставиться
+                 тільки після успішного зарахування.
+               - На 18-му ході повертається
+                 вартість акцій із приростом 25%.
+            ========================================= */
+
             case "common_stock": {
+
+                /* =====================================
+                   1. ПЕРЕВІРКА ДИВІДЕНДІВ
+                ===================================== */
+
                 if (
                     elapsed >= 9 &&
                     !product.dividendPaid
                 ) {
-                    product.dividendPaid = true;
 
-                    pay(
-                        principal * 0.75,
-                        "Звичайні акції: дивіденди"
-                    );
+                    const dividend =
+                        bankRoundMoney(
+                            principal * 0.75
+                        );
+
+                    /* =================================
+                       2. ЗАРАХУВАННЯ ДИВІДЕНДІВ
+                    ================================= */
+
+                    if (dividend > 0) {
+
+                        const paid = pay(
+                            dividend,
+                            "Звичайні акції: дивіденди"
+                        );
+
+                        /* Позначаємо виплату тільки
+                           після успішного зарахування. */
+
+                        if (paid) {
+
+                            product.dividendPaid = true;
+                            product.dividendPaidTurn =
+                                currentTurn;
+                        }
+                    }
                 }
+
+                /* =====================================
+                   3. ЗАВЕРШЕННЯ ІНВЕСТИЦІЇ
+
+                   Якщо дивіденди не виплачені,
+                   не закриваємо продукт до
+                   успішного зарахування.
+                ===================================== */
 
                 if (elapsed >= 18) {
-                    finish(principal * 1.25);
+
+                    if (
+                        !product.dividendPaid
+                    ) {
+                        break;
+                    }
+
+                    const finalReturn =
+                        bankRoundMoney(
+                            principal * 1.25
+                        );
+
+                    if (finalReturn > 0) {
+
+                        const closed = finish(
+                            finalReturn,
+                            true
+                        );
+
+                        if (closed) {
+
+                            product.maturityProcessed = true;
+                        }
+                    }
                 }
+
                 break;
             }
+
 
             case "preferred_stock": {
                 if (monthly && elapsed <= 18) {
@@ -33441,12 +33918,31 @@ function processActiveBankProducts(player) {
 }
 
 
-/* =========================================================
-   145.2.5. ДОХІД ВІД БАНКІВСЬКОГО ПРОДУКТУ
-== */
 
 /* =========================================================
    145.2.5. ДОХІД ВІД БАНКІВСЬКОГО ПРОДУКТУ
+
+   Правка №39.14
+
+   Використовується для:
+   - депозитних відсотків;
+   - купонного доходу ОВДП;
+   - дивідендів;
+   - доходу ETF;
+   - регулярних банківських бонусів.
+
+   Захист:
+   1. Перевірка активності продукту.
+   2. Перевірка суми доходу.
+   3. Перевірка балансу гравця.
+   4. Захист від некоректного зарахування.
+   5. Запис у фінансову історію.
+
+   УВАГА:
+   Періодичність виплат контролює
+   processActiveBankProducts().
+   Ця функція виконує одне зарахування
+   на один успішний виклик.
 ========================================================= */
 
 function payBankIncome(
@@ -33455,40 +33951,131 @@ function payBankIncome(
     amount,
     title
 ) {
-    const value = Number(amount);
+
+    /* =====================================================
+       1. ПЕРЕВІРКА ГРАВЦЯ ТА ПРОДУКТУ
+    ===================================================== */
 
     if (
         !player ||
         !product ||
         product.active === false ||
-        !Number.isFinite(value) ||
-        value <= 0
+        product.closedTurn != null ||
+        product.returnProcessed === true
     ) {
         return false;
     }
 
-    const balanceBefore = Number(player.money);
+    /* =====================================================
+       2. ПЕРЕВІРКА СУМИ ДОХОДУ
+    ===================================================== */
 
-    if (!Number.isFinite(balanceBefore)) {
+    const income = Number(amount);
+
+    if (
+        !Number.isSafeInteger(income) ||
+        income <= 0
+    ) {
+
+        addLog(
+            "⚠️ Банк: дохід не зараховано. " +
+            "Некоректна сума."
+        );
+
         return false;
     }
 
-    player.money = balanceBefore + value;
+    /* =====================================================
+       3. ПЕРЕВІРКА ПОТОЧНОГО БАЛАНСУ
+    ===================================================== */
+
+    const balanceBefore = Number(player.money);
+
+    if (
+        !Number.isSafeInteger(balanceBefore) ||
+        balanceBefore < 0
+    ) {
+
+        addLog(
+            "⚠️ Банк: дохід не зараховано. " +
+            "Некоректний баланс гравця."
+        );
+
+        return false;
+    }
+
+    /* =====================================================
+       4. РОЗРАХУНОК НОВОГО БАЛАНСУ
+    ===================================================== */
+
+    const balanceAfter =
+        balanceBefore + income;
+
+    if (
+        !Number.isSafeInteger(balanceAfter) ||
+        balanceAfter < balanceBefore
+    ) {
+
+        addLog(
+            "⚠️ Банк: перевищено допустимий " +
+            "розмір фінансової операції."
+        );
+
+        return false;
+    }
+
+    /* =====================================================
+       5. ЗАРАХУВАННЯ ДОХОДУ
+    ===================================================== */
+
+    player.money = balanceAfter;
+
+    /* =====================================================
+       6. ФІНАНСОВА ІСТОРІЯ
+    ===================================================== */
 
     addFinancialLog({
         type: "bank_income",
-        title: title || "Банківський дохід",
-        amount: value,
-        balanceBefore: balanceBefore,
-        balanceAfter: player.money,
+
+        title:
+            title || "Банківський дохід",
+
+        amount: income,
+
+        balanceBefore,
+        balanceAfter,
+
         productId: product.id
     });
+
+    /* =====================================================
+       7. УСПІШНЕ ЗАВЕРШЕННЯ
+    ===================================================== */
 
     return true;
 }
 
+
+
 /* =========================================================
-   145.2.6. ПЛАТІЖ ЗА БАНКІВСЬКИМ ПРОДУКТОМ
+   145.2.6. БЕЗПЕЧНЕ СПИСАННЯ БАНКІВСЬКОГО ПЛАТЕЖУ
+
+   Правка №39.13
+
+   Використовується для:
+   - кредитних платежів;
+   - відсотків за овердрафтом;
+   - страхових внесків;
+   - обслуговування банківських продуктів.
+
+   Захист:
+   1. Не списувати гроші із закритого продукту.
+   2. Не допускати від'ємних або дробових сум.
+   3. Перевіряти достатність коштів.
+   4. Не допускати від'ємного балансу.
+   5. Фіксувати кожне успішне списання.
+   6. Не змінювати борг автоматично:
+      його оновлює відповідна логіка продукту.
 ========================================================= */
 
 function chargeBankPayment(
@@ -33498,60 +34085,131 @@ function chargeBankPayment(
     title
 ) {
 
-    const value =
-        Number(amount);
+    /* =====================================================
+       1. ПЕРЕВІРКА ГРАВЦЯ ТА ПРОДУКТУ
+    ===================================================== */
 
     if (
         !player ||
         !product ||
-        product.active === false ||
-        !Number.isFinite(value) ||
-        value < 0
+        product.active === false
     ) {
         return false;
     }
 
-    if (
-        !value
-    ) {
-        return true;
-    }
+    /* =====================================================
+       2. ПЕРЕВІРКА СУМИ
+    ===================================================== */
+
+    const payment = Number(amount);
 
     if (
-        player.money < value
+        !Number.isSafeInteger(payment) ||
+        payment < 0
     ) {
 
         addLog(
-            `⚠️ ${title}: недостатньо грошей для платежу ${formatMoney(value)} грн`
+            "⚠️ Банк: платіж скасовано. " +
+            "Некоректна сума."
         );
 
         return false;
-
     }
 
-   
-const balanceBefore = Number(player.money);
+    /* Нульовий платіж не змінює баланс. */
 
-if (!Number.isFinite(balanceBefore)) {
-    return false;
+    if (payment === 0) {
+        return true;
+    }
+
+    /* =====================================================
+       3. ПЕРЕВІРКА БАЛАНСУ
+    ===================================================== */
+
+    const balanceBefore = Number(player.money);
+
+    if (
+        !Number.isSafeInteger(balanceBefore) ||
+        balanceBefore < 0
+    ) {
+
+        addLog(
+            "⚠️ Банк: некоректний баланс гравця."
+        );
+
+        return false;
+    }
+
+    /* =====================================================
+       4. НЕДОСТАТНЬО КОШТІВ
+    ===================================================== */
+
+    if (balanceBefore < payment) {
+
+        addLog(
+            `⚠️ ${title || "Банківський платіж"}: ` +
+            `недостатньо коштів. ` +
+            `Потрібно ${formatMoney(payment)} грн, ` +
+            `доступно ${formatMoney(balanceBefore)} грн.`
+        );
+
+        return false;
+    }
+
+    /* =====================================================
+       5. РОЗРАХУНОК НОВОГО БАЛАНСУ
+    ===================================================== */
+
+    const balanceAfter =
+        balanceBefore - payment;
+
+    if (
+        !Number.isSafeInteger(balanceAfter) ||
+        balanceAfter < 0
+    ) {
+        return false;
+    }
+
+    /* =====================================================
+       6. СПИСАННЯ
+
+       Сума списується один раз у межах
+       одного виклику функції.
+    ===================================================== */
+
+    player.money = balanceAfter;
+
+    /* =====================================================
+       7. ФІНАНСОВА ІСТОРІЯ
+    ===================================================== */
+
+    addFinancialLog({
+        type: "bank_payment",
+
+        title:
+            title || "Банківський платіж",
+
+        amount: -payment,
+
+        balanceBefore,
+        balanceAfter,
+
+        productId: product.id
+    });
+
+    /* =====================================================
+       8. ЗАВЕРШЕННЯ
+
+       Повертаємо true лише після
+       успішного списання.
+
+       Оновлення боргу, графіка платежів
+       і закриття продукту виконуються
+       окремими функціями.
+    ===================================================== */
+
+    return true;
 }
-
-player.money = balanceBefore - value;
-
-addFinancialLog({
-    type: "bank_payment",
-    title: title || "Банківський платіж",
-    amount: -value,
-    balanceBefore: balanceBefore,
-    balanceAfter: player.money,
-    productId: product.id
-});
-
-return true;
-
-
-}
-
 
 
 /* =========================================================
